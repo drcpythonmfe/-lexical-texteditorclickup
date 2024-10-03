@@ -59,10 +59,10 @@ var useLexicalNodeSelection = require('@lexical/react/useLexicalNodeSelection');
 var useLexicalTextEntity = require('@lexical/react/useLexicalTextEntity');
 var LexicalLinkPlugin = require('@lexical/react/LexicalLinkPlugin');
 var LexicalTreeView = require('@lexical/react/LexicalTreeView');
-var Excalidraw = require('@excalidraw/excalidraw');
 var clipboard = require('@lexical/clipboard');
 var yWebsocket = require('y-websocket');
 var LexicalContentEditable$1 = require('@lexical/react/LexicalContentEditable');
+var Excalidraw = require('@excalidraw/excalidraw');
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -957,158 +957,6 @@ const PLAYGROUND_TRANSFORMERS = [TABLE, HR, IMAGE, TWEET, markdown.CHECK_LIST, .
  *
  */
 
-const getElement = () => {
-  let element = document.getElementById('report-container');
-
-  if (element === null) {
-    element = document.createElement('div');
-    element.id = 'report-container';
-    element.style.position = 'fixed';
-    element.style.top = '50%';
-    element.style.left = '50%';
-    element.style.fontSize = '32px';
-    element.style.transform = 'translate(-50%, -50px)';
-    element.style.padding = '20px';
-    element.style.background = 'rgba(240, 240, 240, 0.4)';
-    element.style.borderRadius = '20px';
-
-    if (document.body) {
-      document.body.appendChild(element);
-    }
-  }
-
-  return element;
-};
-
-function useReport() {
-  const timer = React.useRef(null);
-  const cleanup = React.useCallback(() => {
-    if (timer !== null) {
-      clearTimeout(timer.current);
-    }
-
-    if (document.body) {
-      document.body.removeChild(getElement());
-    }
-  }, []);
-  React.useEffect(() => {
-    return cleanup;
-  }, [cleanup]);
-  return React.useCallback(content => {
-    // eslint-disable-next-line no-console
-    console.log(content);
-    const element = getElement();
-    clearTimeout(timer.current);
-    element.innerHTML = content;
-    timer.current = setTimeout(cleanup, 1000);
-    return timer.current;
-  }, [cleanup]);
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const SPEECH_TO_TEXT_COMMAND = lexical.createCommand('SPEECH_TO_TEXT_COMMAND');
-const VOICE_COMMANDS = {
-  '\n': ({
-    selection
-  }) => {
-    selection.insertParagraph();
-  },
-  redo: ({
-    editor
-  }) => {
-    editor.dispatchCommand(lexical.REDO_COMMAND, undefined);
-  },
-  undo: ({
-    editor
-  }) => {
-    editor.dispatchCommand(lexical.UNDO_COMMAND, undefined);
-  }
-};
-const SUPPORT_SPEECH_RECOGNITION = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-
-function SpeechToTextPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const [isEnabled, setIsEnabled] = React.useState(false);
-  const SpeechRecognition = // @ts-ignore
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = React.useRef(null);
-  const report = useReport();
-  React.useEffect(() => {
-    if (isEnabled && recognition.current === null) {
-      recognition.current = new SpeechRecognition();
-      recognition.current.continuous = true;
-      recognition.current.interimResults = true;
-      recognition.current.addEventListener('result', event => {
-        const resultItem = event.results.item(event.resultIndex);
-        const {
-          transcript
-        } = resultItem.item(0);
-        report(transcript);
-
-        if (!resultItem.isFinal) {
-          return;
-        }
-
-        editor.update(() => {
-          const selection = lexical.$getSelection();
-
-          if (lexical.$isRangeSelection(selection)) {
-            const command = VOICE_COMMANDS[transcript.toLowerCase().trim()];
-
-            if (command) {
-              command({
-                editor,
-                selection
-              });
-            } else if (transcript.match(/\s*\n\s*/)) {
-              selection.insertParagraph();
-            } else {
-              selection.insertText(transcript);
-            }
-          }
-        });
-      });
-    }
-
-    if (recognition.current) {
-      if (isEnabled) {
-        recognition.current.start();
-      } else {
-        recognition.current.stop();
-      }
-    }
-
-    return () => {
-      if (recognition.current !== null) {
-        recognition.current.stop();
-      }
-    };
-  }, [SpeechRecognition, editor, isEnabled, report]);
-  React.useEffect(() => {
-    return editor.registerCommand(SPEECH_TO_TEXT_COMMAND, _isEnabled => {
-      setIsEnabled(_isEnabled);
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
-  return null;
-}
-
-var SpeechToTextPlugin$1 = SUPPORT_SPEECH_RECOGNITION ? SpeechToTextPlugin : () => null;
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 async function validateEditorState(editor) {
   const stringifiedEditorState = JSON.stringify(editor.getEditorState());
   let response = null;
@@ -1135,7 +983,7 @@ function ActionsPlugin({
 }) {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [isEditable, setIsEditable] = React.useState(() => editor.isEditable());
-  const [isSpeechToText, setIsSpeechToText] = React.useState(false);
+  React.useState(false);
   const [connected, setConnected] = React.useState(false);
   const [isEditorEmpty, setIsEditorEmpty] = React.useState(true);
   const [modal, showModal] = useModal();
@@ -1197,17 +1045,7 @@ function ActionsPlugin({
   }, [editor]);
   return /*#__PURE__*/React.createElement("div", {
     className: "actions"
-  }, SUPPORT_SPEECH_RECOGNITION && /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      editor.dispatchCommand(SPEECH_TO_TEXT_COMMAND, !isSpeechToText);
-      setIsSpeechToText(!isSpeechToText);
-    },
-    className: 'action-button action-button-mic ' + (isSpeechToText ? 'active' : ''),
-    title: "Speech To Text",
-    "aria-label": `${isSpeechToText ? 'Enable' : 'Disable'} speech to text`
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "mic"
-  })), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("button", {
     className: "action-button",
     onClick: handleMarkdownToggle,
     title: "Convert From Markdown",
@@ -4366,185 +4204,6 @@ function InsertEquationDialog({
   });
 }
 
-const ExcalidrawComponent$2 = /*#__PURE__*/React.lazy(() => Promise.resolve().then(function () { return ExcalidrawComponent$1; }));
-
-function $convertExcalidrawElement(domNode) {
-  const excalidrawData = domNode.getAttribute('data-lexical-excalidraw-json');
-  const styleAttributes = window.getComputedStyle(domNode);
-  const heightStr = styleAttributes.getPropertyValue('height');
-  const widthStr = styleAttributes.getPropertyValue('width');
-  const height = !heightStr || heightStr === 'inherit' ? 'inherit' : parseInt(heightStr, 10);
-  const width = !widthStr || widthStr === 'inherit' ? 'inherit' : parseInt(widthStr, 10);
-
-  if (excalidrawData) {
-    const node = $createExcalidrawNode(excalidrawData, width, height);
-    return {
-      node
-    };
-  }
-
-  return null;
-}
-
-class ExcalidrawNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'excalidraw';
-  }
-
-  static clone(node) {
-    return new ExcalidrawNode(node.__data, node.__width, node.__height, node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    return new ExcalidrawNode(serializedNode.data, serializedNode.width ?? 'inherit', serializedNode.height ?? 'inherit');
-  }
-
-  exportJSON() {
-    return { ...super.exportJSON(),
-      data: this.__data,
-      height: this.__height === 'inherit' ? undefined : this.__height,
-      type: 'excalidraw',
-      version: 1,
-      width: this.__width === 'inherit' ? undefined : this.__width
-    };
-  }
-
-  constructor(data = '[]', width = 'inherit', height = 'inherit', key) {
-    super(key);
-
-    _defineProperty(this, "__data", void 0);
-
-    _defineProperty(this, "__width", void 0);
-
-    _defineProperty(this, "__height", void 0);
-
-    this.__data = data;
-    this.__width = width;
-    this.__height = height;
-  } // View
-
-
-  createDOM(config) {
-    const span = document.createElement('span');
-    const theme = config.theme;
-    const className = theme.image;
-
-    if (className !== undefined) {
-      span.className = className;
-    }
-
-    return span;
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  static importDOM() {
-    return {
-      span: domNode => {
-        if (!domNode.hasAttribute('data-lexical-excalidraw-json')) {
-          return null;
-        }
-
-        return {
-          conversion: $convertExcalidrawElement,
-          priority: 1
-        };
-      }
-    };
-  }
-
-  exportDOM(editor) {
-    const element = document.createElement('span');
-    element.style.display = 'inline-block';
-    const content = editor.getElementByKey(this.getKey());
-
-    if (content !== null) {
-      const svg = content.querySelector('svg');
-
-      if (svg !== null) {
-        element.innerHTML = svg.outerHTML;
-      }
-    }
-
-    element.style.width = this.__width === 'inherit' ? 'inherit' : `${this.__width}px`;
-    element.style.height = this.__height === 'inherit' ? 'inherit' : `${this.__height}px`;
-    element.setAttribute('data-lexical-excalidraw-json', this.__data);
-    return {
-      element
-    };
-  }
-
-  setData(data) {
-    const self = this.getWritable();
-    self.__data = data;
-  }
-
-  getWidth() {
-    return this.getLatest().__width;
-  }
-
-  setWidth(width) {
-    const self = this.getWritable();
-    self.__width = width;
-  }
-
-  getHeight() {
-    return this.getLatest().__height;
-  }
-
-  setHeight(height) {
-    const self = this.getWritable();
-    self.__height = height;
-  }
-
-  decorate(editor, config) {
-    return /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(ExcalidrawComponent$2, {
-      nodeKey: this.getKey(),
-      data: this.__data
-    }));
-  }
-
-}
-function $createExcalidrawNode(data = '[]', width = 'inherit', height = 'inherit') {
-  return new ExcalidrawNode(data, width, height);
-}
-function $isExcalidrawNode(node) {
-  return node instanceof ExcalidrawNode;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_EXCALIDRAW_COMMAND = lexical.createCommand('INSERT_EXCALIDRAW_COMMAND');
-function ExcalidrawPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  React.useEffect(() => {
-    if (!editor.hasNodes([ExcalidrawNode])) {
-      throw new Error('ExcalidrawPlugin: ExcalidrawNode not registered on editor');
-    }
-
-    return editor.registerCommand(INSERT_EXCALIDRAW_COMMAND, () => {
-      const excalidrawNode = $createExcalidrawNode();
-      lexical.$insertNodes([excalidrawNode]);
-
-      if (lexical.$isRootOrShadowRoot(excalidrawNode.getParentOrThrow())) {
-        utils.$wrapNodeInElement(excalidrawNode, lexical.$createParagraphNode).selectEnd();
-      }
-
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
-  return null;
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -5678,13 +5337,7 @@ function ComponentPickerMenuPlugin() {
           richText.$createHeadingNode(`h${n}`));
         }
       })
-    })), new ComponentPickerOption('Excalidraw', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon diagram-2"
-      }),
-      keywords: ['excalidraw', 'diagram', 'drawing'],
-      onSelect: () => editor.dispatchCommand(INSERT_EXCALIDRAW_COMMAND, undefined)
-    }), new ComponentPickerOption('Table', {
+    })), new ComponentPickerOption('Table', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon table"
       }),
@@ -5758,12 +5411,6 @@ function ComponentPickerMenuPlugin() {
       }),
       keywords: ['horizontal rule', 'divider', 'hr'],
       onSelect: () => editor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined)
-    }), new ComponentPickerOption('Excalidraw', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon diagram-2"
-      }),
-      keywords: ['excalidraw', 'diagram', 'drawing'],
-      onSelect: () => editor.dispatchCommand(INSERT_EXCALIDRAW_COMMAND, undefined)
     }), new ComponentPickerOption('Poll', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon poll"
@@ -7700,7 +7347,7 @@ const AtSignMentionsRegexAliasRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS
 
 const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 const mentionsCache = new Map();
-const dummyMentionsData = ['Aayla Secura', 'Adi Gallia', 'Admiral Dodd Rancit', 'Admiral Firmus Piett', 'Admiral Gial Ackbar', 'Admiral Ozzel', 'Admiral Raddus', 'Admiral Terrinald Screed', 'Admiral Trench', 'Admiral U.O. Statura', 'Agen Kolar', 'Agent Kallus', 'Aiolin and Morit Astarte', 'Aks Moe', 'Almec', 'Alton Kastle', 'Amee', 'AP-5', 'Armitage Hux', 'Artoo', 'Arvel Crynyd', 'Asajj Ventress', 'Aurra Sing', 'AZI-3', 'Bala-Tik', 'Barada', 'Bargwill Tomder', 'Baron Papanoida', 'Barriss Offee', 'Baze Malbus', 'Bazine Netal', 'BB-8', 'BB-9E', 'Ben Quadinaros', 'Berch Teller', 'Beru Lars', 'Bib Fortuna', 'Biggs Darklighter', 'Black Krrsantan', 'Bo-Katan Kryze', 'Boba Fett', 'Bobbajo', 'Bodhi Rook', 'Borvo the Hutt', 'Boss Nass', 'Bossk', 'Breha Antilles-Organa', 'Bren Derlin', 'Brendol Hux', 'BT-1', 'C-3PO', 'C1-10P', 'Cad Bane', 'Caluan Ematt', 'Captain Gregor', 'Captain Phasma', 'Captain Quarsh Panaka', 'Captain Rex', 'Carlist Rieekan', 'Casca Panzoro', 'Cassian Andor', 'Cassio Tagge', 'Cham Syndulla', 'Che Amanwe Papanoida', 'Chewbacca', 'Chi Eekway Papanoida', 'Chief Chirpa', 'Chirrut Îmwe', 'Ciena Ree', 'Cin Drallig', 'Clegg Holdfast', 'Cliegg Lars', 'Coleman Kcaj', 'Coleman Trebor', 'Colonel Kaplan', 'Commander Bly', 'Commander Cody (CC-2224)', 'Commander Fil (CC-3714)', 'Commander Fox', 'Commander Gree', 'Commander Jet', 'Commander Wolffe', 'Conan Antonio Motti', 'Conder Kyl', 'Constable Zuvio', 'Cordé', 'Cpatain Typho', 'Crix Madine', 'Cut Lawquane', 'Dak Ralter', 'Dapp', 'Darth Bane', 'Darth Maul', 'Darth Tyranus', 'Daultay Dofine', 'Del Meeko', 'Delian Mors', 'Dengar', 'Depa Billaba', 'Derek Klivian', 'Dexter Jettster', 'Dineé Ellberger', 'DJ', 'Doctor Aphra', 'Doctor Evazan', 'Dogma', 'Dormé', 'Dr. Cylo', 'Droidbait', 'Droopy McCool', 'Dryden Vos', 'Dud Bolt', 'Ebe E. Endocott', 'Echuu Shen-Jon', 'Eeth Koth', 'Eighth Brother', 'Eirtaé', 'Eli Vanto', 'Ellé', 'Ello Asty', 'Embo', 'Eneb Ray', 'Enfys Nest', 'EV-9D9', 'Evaan Verlaine', 'Even Piell', 'Ezra Bridger', 'Faro Argyus', 'Feral', 'Fifth Brother', 'Finis Valorum', 'Finn', 'Fives', 'FN-1824', 'FN-2003', 'Fodesinbeed Annodue', 'Fulcrum', 'FX-7', 'GA-97', 'Galen Erso', 'Gallius Rax', 'Garazeb "Zeb" Orrelios', 'Gardulla the Hutt', 'Garrick Versio', 'Garven Dreis', 'Gavyn Sykes', 'Gideon Hask', 'Gizor Dellso', 'Gonk droid', 'Grand Inquisitor', 'Greeata Jendowanian', 'Greedo', 'Greer Sonnel', 'Grievous', 'Grummgar', 'Gungi', 'Hammerhead', 'Han Solo', 'Harter Kalonia', 'Has Obbit', 'Hera Syndulla', 'Hevy', 'Hondo Ohnaka', 'Huyang', 'Iden Versio', 'IG-88', 'Ima-Gun Di', 'Inquisitors', 'Inspector Thanoth', 'Jabba', 'Jacen Syndulla', 'Jan Dodonna', 'Jango Fett', 'Janus Greejatus', 'Jar Jar Binks', 'Jas Emari', 'Jaxxon', 'Jek Tono Porkins', 'Jeremoch Colton', 'Jira', 'Jobal Naberrie', 'Jocasta Nu', 'Joclad Danva', 'Joh Yowza', 'Jom Barell', 'Joph Seastriker', 'Jova Tarkin', 'Jubnuk', 'Jyn Erso', 'K-2SO', 'Kanan Jarrus', 'Karbin', 'Karina the Great', 'Kes Dameron', 'Ketsu Onyo', 'Ki-Adi-Mundi', 'King Katuunko', 'Kit Fisto', 'Kitster Banai', 'Klaatu', 'Klik-Klak', 'Korr Sella', 'Kylo Ren', 'L3-37', 'Lama Su', 'Lando Calrissian', 'Lanever Villecham', 'Leia Organa', 'Letta Turmond', 'Lieutenant Kaydel Ko Connix', 'Lieutenant Thire', 'Lobot', 'Logray', 'Lok Durd', 'Longo Two-Guns', 'Lor San Tekka', 'Lorth Needa', 'Lott Dod', 'Luke Skywalker', 'Lumat', 'Luminara Unduli', 'Lux Bonteri', 'Lyn Me', 'Lyra Erso', 'Mace Windu', 'Malakili', 'Mama the Hutt', 'Mars Guo', 'Mas Amedda', 'Mawhonic', 'Max Rebo', 'Maximilian Veers', 'Maz Kanata', 'ME-8D9', 'Meena Tills', 'Mercurial Swift', 'Mina Bonteri', 'Miraj Scintel', 'Mister Bones', 'Mod Terrik', 'Moden Canady', 'Mon Mothma', 'Moradmin Bast', 'Moralo Eval', 'Morley', 'Mother Talzin', 'Nahdar Vebb', 'Nahdonnis Praji', 'Nien Nunb', 'Niima the Hutt', 'Nines', 'Norra Wexley', 'Nute Gunray', 'Nuvo Vindi', 'Obi-Wan Kenobi', 'Odd Ball', 'Ody Mandrell', 'Omi', 'Onaconda Farr', 'Oola', 'OOM-9', 'Oppo Rancisis', 'Orn Free Taa', 'Oro Dassyne', 'Orrimarko', 'Osi Sobeck', 'Owen Lars', 'Pablo-Jill', 'Padmé Amidala', 'Pagetti Rook', 'Paige Tico', 'Paploo', 'Petty Officer Thanisson', 'Pharl McQuarrie', 'Plo Koon', 'Po Nudo', 'Poe Dameron', 'Poggle the Lesser', 'Pong Krell', 'Pooja Naberrie', 'PZ-4CO', 'Quarrie', 'Quay Tolsite', 'Queen Apailana', 'Queen Jamillia', 'Queen Neeyutnee', 'Qui-Gon Jinn', 'Quiggold', 'Quinlan Vos', 'R2-D2', 'R2-KT', 'R3-S6', 'R4-P17', 'R5-D4', 'RA-7', 'Rabé', 'Rako Hardeen', 'Ransolm Casterfo', 'Rappertunie', 'Ratts Tyerell', 'Raymus Antilles', 'Ree-Yees', 'Reeve Panzoro', 'Rey', 'Ric Olié', 'Riff Tamson', 'Riley', 'Rinnriyin Di', 'Rio Durant', 'Rogue Squadron', 'Romba', 'Roos Tarpals', 'Rose Tico', 'Rotta the Hutt', 'Rukh', 'Rune Haako', 'Rush Clovis', 'Ruwee Naberrie', 'Ryoo Naberrie', 'Sabé', 'Sabine Wren', 'Saché', 'Saelt-Marae', 'Saesee Tiin', 'Salacious B. Crumb', 'San Hill', 'Sana Starros', 'Sarco Plank', 'Sarkli', 'Satine Kryze', 'Savage Opress', 'Sebulba', 'Senator Organa', 'Sergeant Kreel', 'Seventh Sister', 'Shaak Ti', 'Shara Bey', 'Shmi Skywalker', 'Shu Mai', 'Sidon Ithano', 'Sifo-Dyas', 'Sim Aloo', 'Siniir Rath Velus', 'Sio Bibble', 'Sixth Brother', 'Slowen Lo', 'Sly Moore', 'Snaggletooth', 'Snap Wexley', 'Snoke', 'Sola Naberrie', 'Sora Bulq', 'Strono Tuggs', 'Sy Snootles', 'Tallissan Lintra', 'Tarfful', 'Tasu Leech', 'Taun We', 'TC-14', 'Tee Watt Kaa', 'Teebo', 'Teedo', 'Teemto Pagalies', 'Temiri Blagg', 'Tessek', 'Tey How', 'Thane Kyrell', 'The Bendu', 'The Smuggler', 'Thrawn', 'Tiaan Jerjerrod', 'Tion Medon', 'Tobias Beckett', 'Tulon Voidgazer', 'Tup', 'U9-C4', 'Unkar Plutt', 'Val Beckett', 'Vanden Willard', 'Vice Admiral Amilyn Holdo', 'Vober Dand', 'WAC-47', 'Wag Too', 'Wald', 'Walrus Man', 'Warok', 'Wat Tambor', 'Watto', 'Wedge Antilles', 'Wes Janson', 'Wicket W. Warrick', 'Wilhuff Tarkin', 'Wollivan', 'Wuher', 'Wullf Yularen', 'Xamuel Lennox', 'Yaddle', 'Yarael Poof', 'Yoda', 'Zam Wesell', 'Zev Senesca', 'Ziro the Hutt', 'Zuckuss'];
+const dummyMentionsData = ["Aagi Ajay", "Aakash Mehta", "Aatif Shekh", "Adil Kadiyawala", "Aditi Das", "Aditya Kaneriya", "Aditya Kumar Upadhyay", "Aditya Upadhyay", "Ajay Kori", "Ajit Thakor", "Akhil Lakhlani", "Akshar Vora", "Akshay Panchal", "Alok Kumar", "Alpesh Desai", "Amit Gosalia", "Amit Namdeo", "Anjan Aghera", "Ankit Gandhi", "Ankit Padiya", "Anoop Tamhaney", "Anshul Shukla", "Archana Patel", "Arjun Kurungot", "Arpan Patel", "Aslam Ansari", "Avani Thakkar", "Ayush Shah", "Bhakti Patel", "Bharat Panjwani", "Bhavik Panchal", "Bhavin Thumar", "Bhumit Patel", "Brijesh Makwana", "Brijesh Padsala", "Charmi Parikh", "Chetan Patel", "Chinmay Sahu", "Chintamani Bhosale", "Chintan Machhi", "Chintan Shah", "Chirag Bhoi", "Chirag Dhorajia", "Chirag Modi", "Darsh Modi", "Darshan Shah", "Deepshikha Makwana", "Devarshi Patel", "Dharm Solanki", "Dharmesh Patel", "Dharmik Maru", "Dharmik Patel", "Dhaval Patel", "Dhaval Travadi", "Dhiraj Jethwani", "Dhrumil Bhalala", "Dhrupad Patel", "Dhruv Kadia", "Dhruvin Patel", "Digesh Prajapati", "Dinesh Vasitha", "Dipak Chavda", "Dipak External", "Dipesh Shah", "Dipesh Shah", "Dipesh Shah(External)", "Divyesh Gol", "Dody Tank", "Drashti Mehta", "Durgesh Yadav", "Durgesh Yadav", "Farouk Susulan", "Fenil Panseriya", "Fulabhai Desai", "Gaurang Vyas", "Gauri Sabhadiya", "Ghanshyam Bhava", "Gopal Jaiswal", "Govind Rajput", "Gowtham Nagaraj", "Hardik Davariya", "Harikrushna Parmar", "Harsh Desai", "Harsh Patel", "Harshil Thakkar", "Harshvardhan Makwana", "Hemant Nandaniya", "Het Patel", "Hiten Barchha", "Hitesh Kava", "Hitesh Patel", "Honey Kawade", "Jahnavi Thakkar", "Jalpa Panchal", "Janmaya Pandya", "Jarna Prajapati", "Jay Jani", "Jay Kansara", "Jay Patel", "Jay Thakkar", "Jaydeep Ladva", "Jaydeep Modi", "Jaydevsinh Gohil", "Jaydip Patel", "Jayesh Chopda", "Jayesh Prajapati", "Jayram Nai", "Jigar Rami", "Jignesh Prajapati", "Jinal patel", "Jisha Patel", "Jitendra Yadav", "Jitendrasinh Bhadoriya", "Kadam", "Kalim Shaikh", "Kamalnayan Parmar", "Kamlesh Helaiya", "Kaushik Ambaliya", "Kaverimanian T", "Ketaki Brahmane", "Keyur Chokshi", "Khushi Kamat", "Khushi Kathrotia", "Kinshuk Sarabhai", "Kiran Chauhan", "Komal Prajapati", "Komal Raval", "Krupali Joshi", "Kruti Trivedi", "Kshama Parmar", "Kush Patel", "Kush Patel", "Kushal Shah", "Laksh Joshi", "Madhavesh Gohel", "Maitri Trivedi", "Malay Thakkar", "Manan Prajapati", "Manan Vadher", "Mansi Chavda", "Mansi Patel", "Manthan Bhanushali", "Margi Patel", "Maulik Lakhnotra", "Meet Boghani", "Meet Parikh", "Meet Patel", "Meet Rachhadiya", "Mehul Bukeliya", "Mehul Vishroliya", "Mihir Trivedi", "Milan Trivedi", "Miral Chauhan", "Mittal Shah", "N D Acharya", "N D Acharya", "Namrata Gosai", "Nandini Joshi", "Nayan Valmiya", "Neel Thakkar", "Nidhi Patel", "Nidhi Patel", "Nilay Patel", "Nilesh Dataniya", "Niraj Mamtora", "Nirali Maheshwari", "Nirali Patel", "Nirmal Bhavsar", "Nishant Goradiya", "Nishith Zaveri", "Niyati Raval", "Pankaj Bhatia", "Paras Pitroda", "Parth Kher", "Patel Vrushi", "Payal Patel", "Piyush Mehra", "Pooja Kolhe", "Pooja Patel", "Pooja Thakkar", "Poonam Shah", "Poonam Singh", "Poornima Meena", "Prakhar Gupta", "Prashant U", "Pratik Ahir", "Pratik Kelkar", "Pravin Ratanpara", "Princy Patel", "Priya Patel", "Priyam Gadhvi", "Priyesh Doshi", "Rahul Sharma", "Raj Cementwala", "Raj Chauhan", "Raj Patel", "Raj Shah", "Rajan Rajgor", "Rajendra Borisagar", "Rajesh Kumar", "Raju Makwana", "Ravi Sachaniya", "Ravishankar Patel", "Rohan Pansara", "Rohan Saraogi", "Ronak Pandya", "Rupal Manvar", "Rupal Patoliya", "Saharsh Modi", "Sakshi Shah", "Samir Parikh", "Sanjana Daki", "Sanjay Prajapati", "Sanket Patel", "Saurav Shailendra", "Savan Barbhaya", "Savan Pansuriya", "Sayma Masoom", "Setu Patel", "setu patel", "Sharda", "Shivani Joshi", "Shraddha Pathak", "Shrenik Shah", "Shubh Trivedi", "Siddharth Kundu", "Smit Patel", "Solomon Thirumurugan", "Sonia Shah", "Sourabh Gaonshindhe", "Sudhir Parmar", "Surabhi Kacha", "Surbhi Panchal", "Surojit Sarkar", "Swapna KS", "Tarak Kadiya", "Teja Satyanarayana", "Tinu Taral", "Ujjval Patdiya", "Umang Bhadja", "Umesh Tank", "Urvesh Joshi", "Utsav Kachchhi", "Uttam Sharma", "Vaibhavi Prajapati", "Vaishali maru", "Vaishnavi Dulala", "Varshil Patel", "Vatsal Shah", "Vignesh Kumar", "Vijay Prajapati", "Viral Patel", "Viram Shah", "Vishal Amipara", "Vishwa Kadivar", "Vishwas Bhimani", "Vrushi Patel", "Yash Bhide", "Yash Panchal", "Yash Thakar", "Yogesh Asanani", "Yogesh Panchani"];
 const dummyLookupService = {
   search(string, callback) {
     setTimeout(() => {
@@ -7951,6 +7598,158 @@ function OnImageUploadPlugin({
   }, [editor, onUpload]);
   return null;
 }
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+const getElement = () => {
+  let element = document.getElementById('report-container');
+
+  if (element === null) {
+    element = document.createElement('div');
+    element.id = 'report-container';
+    element.style.position = 'fixed';
+    element.style.top = '50%';
+    element.style.left = '50%';
+    element.style.fontSize = '32px';
+    element.style.transform = 'translate(-50%, -50px)';
+    element.style.padding = '20px';
+    element.style.background = 'rgba(240, 240, 240, 0.4)';
+    element.style.borderRadius = '20px';
+
+    if (document.body) {
+      document.body.appendChild(element);
+    }
+  }
+
+  return element;
+};
+
+function useReport() {
+  const timer = React.useRef(null);
+  const cleanup = React.useCallback(() => {
+    if (timer !== null) {
+      clearTimeout(timer.current);
+    }
+
+    if (document.body) {
+      document.body.removeChild(getElement());
+    }
+  }, []);
+  React.useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
+  return React.useCallback(content => {
+    // eslint-disable-next-line no-console
+    console.log(content);
+    const element = getElement();
+    clearTimeout(timer.current);
+    element.innerHTML = content;
+    timer.current = setTimeout(cleanup, 1000);
+    return timer.current;
+  }, [cleanup]);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const SPEECH_TO_TEXT_COMMAND = lexical.createCommand('SPEECH_TO_TEXT_COMMAND');
+const VOICE_COMMANDS = {
+  '\n': ({
+    selection
+  }) => {
+    selection.insertParagraph();
+  },
+  redo: ({
+    editor
+  }) => {
+    editor.dispatchCommand(lexical.REDO_COMMAND, undefined);
+  },
+  undo: ({
+    editor
+  }) => {
+    editor.dispatchCommand(lexical.UNDO_COMMAND, undefined);
+  }
+};
+const SUPPORT_SPEECH_RECOGNITION = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+
+function SpeechToTextPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const [isEnabled, setIsEnabled] = React.useState(false);
+  const SpeechRecognition = // @ts-ignore
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = React.useRef(null);
+  const report = useReport();
+  React.useEffect(() => {
+    if (isEnabled && recognition.current === null) {
+      recognition.current = new SpeechRecognition();
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
+      recognition.current.addEventListener('result', event => {
+        const resultItem = event.results.item(event.resultIndex);
+        const {
+          transcript
+        } = resultItem.item(0);
+        report(transcript);
+
+        if (!resultItem.isFinal) {
+          return;
+        }
+
+        editor.update(() => {
+          const selection = lexical.$getSelection();
+
+          if (lexical.$isRangeSelection(selection)) {
+            const command = VOICE_COMMANDS[transcript.toLowerCase().trim()];
+
+            if (command) {
+              command({
+                editor,
+                selection
+              });
+            } else if (transcript.match(/\s*\n\s*/)) {
+              selection.insertParagraph();
+            } else {
+              selection.insertText(transcript);
+            }
+          }
+        });
+      });
+    }
+
+    if (recognition.current) {
+      if (isEnabled) {
+        recognition.current.start();
+      } else {
+        recognition.current.stop();
+      }
+    }
+
+    return () => {
+      if (recognition.current !== null) {
+        recognition.current.stop();
+      }
+    };
+  }, [SpeechRecognition, editor, isEnabled, report]);
+  React.useEffect(() => {
+    return editor.registerCommand(SPEECH_TO_TEXT_COMMAND, _isEnabled => {
+      setIsEnabled(_isEnabled);
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
+var SpeechToTextPlugin$1 = SUPPORT_SPEECH_RECOGNITION ? SpeechToTextPlugin : () => null;
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -10229,7 +10028,7 @@ function Editor({
     maxDepth: 7
   }), /*#__PURE__*/React.createElement(LexicalTablePlugin.TablePlugin, null), /*#__PURE__*/React.createElement(TableCellResizerPlugin, null), /*#__PURE__*/React.createElement(ImagesPlugin, null), /*#__PURE__*/React.createElement(OnImageUploadPlugin, {
     onUpload: onUpload
-  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(ExcalidrawPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
+  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
     anchorElem: floatingAnchorElem
   }), /*#__PURE__*/React.createElement(CodeActionMenuPlugin, {
     anchorElem: floatingAnchorElem
@@ -10256,6 +10055,156 @@ function Editor({
   })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
     config: normToolbarConfig
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
+}
+
+const ExcalidrawComponent$2 = /*#__PURE__*/React.lazy(() => Promise.resolve().then(function () { return ExcalidrawComponent$1; }));
+
+function $convertExcalidrawElement(domNode) {
+  const excalidrawData = domNode.getAttribute('data-lexical-excalidraw-json');
+  const styleAttributes = window.getComputedStyle(domNode);
+  const heightStr = styleAttributes.getPropertyValue('height');
+  const widthStr = styleAttributes.getPropertyValue('width');
+  const height = !heightStr || heightStr === 'inherit' ? 'inherit' : parseInt(heightStr, 10);
+  const width = !widthStr || widthStr === 'inherit' ? 'inherit' : parseInt(widthStr, 10);
+
+  if (excalidrawData) {
+    const node = $createExcalidrawNode(excalidrawData, width, height);
+    return {
+      node
+    };
+  }
+
+  return null;
+}
+
+class ExcalidrawNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'excalidraw';
+  }
+
+  static clone(node) {
+    return new ExcalidrawNode(node.__data, node.__width, node.__height, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    return new ExcalidrawNode(serializedNode.data, serializedNode.width ?? 'inherit', serializedNode.height ?? 'inherit');
+  }
+
+  exportJSON() {
+    return { ...super.exportJSON(),
+      data: this.__data,
+      height: this.__height === 'inherit' ? undefined : this.__height,
+      type: 'excalidraw',
+      version: 1,
+      width: this.__width === 'inherit' ? undefined : this.__width
+    };
+  }
+
+  constructor(data = '[]', width = 'inherit', height = 'inherit', key) {
+    super(key);
+
+    _defineProperty(this, "__data", void 0);
+
+    _defineProperty(this, "__width", void 0);
+
+    _defineProperty(this, "__height", void 0);
+
+    this.__data = data;
+    this.__width = width;
+    this.__height = height;
+  } // View
+
+
+  createDOM(config) {
+    const span = document.createElement('span');
+    const theme = config.theme;
+    const className = theme.image;
+
+    if (className !== undefined) {
+      span.className = className;
+    }
+
+    return span;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  static importDOM() {
+    return {
+      span: domNode => {
+        if (!domNode.hasAttribute('data-lexical-excalidraw-json')) {
+          return null;
+        }
+
+        return {
+          conversion: $convertExcalidrawElement,
+          priority: 1
+        };
+      }
+    };
+  }
+
+  exportDOM(editor) {
+    const element = document.createElement('span');
+    element.style.display = 'inline-block';
+    const content = editor.getElementByKey(this.getKey());
+
+    if (content !== null) {
+      const svg = content.querySelector('svg');
+
+      if (svg !== null) {
+        element.innerHTML = svg.outerHTML;
+      }
+    }
+
+    element.style.width = this.__width === 'inherit' ? 'inherit' : `${this.__width}px`;
+    element.style.height = this.__height === 'inherit' ? 'inherit' : `${this.__height}px`;
+    element.setAttribute('data-lexical-excalidraw-json', this.__data);
+    return {
+      element
+    };
+  }
+
+  setData(data) {
+    const self = this.getWritable();
+    self.__data = data;
+  }
+
+  getWidth() {
+    return this.getLatest().__width;
+  }
+
+  setWidth(width) {
+    const self = this.getWritable();
+    self.__width = width;
+  }
+
+  getHeight() {
+    return this.getLatest().__height;
+  }
+
+  setHeight(height) {
+    const self = this.getWritable();
+    self.__height = height;
+  }
+
+  decorate(editor, config) {
+    return /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(ExcalidrawComponent$2, {
+      nodeKey: this.getKey(),
+      data: this.__data
+    }));
+  }
+
+}
+function $createExcalidrawNode(data = '[]', width = 'inherit', height = 'inherit') {
+  return new ExcalidrawNode(data, width, height);
+}
+function $isExcalidrawNode(node) {
+  return node instanceof ExcalidrawNode;
 }
 
 /**
@@ -11454,366 +11403,6 @@ function ImageComponent({
 var ImageComponent$1 = {
   __proto__: null,
   'default': ImageComponent
-};
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-// exportToSvg has fonts from excalidraw.com
-// We don't want them to be used in open source
-const removeStyleFromSvg_HACK = svg => {
-  const styleTag = svg?.firstElementChild?.firstElementChild; // Generated SVG is getting double-sized by height and width attributes
-  // We want to match the real size of the SVG element
-
-  const viewBox = svg.getAttribute('viewBox');
-
-  if (viewBox != null) {
-    const viewBoxDimensions = viewBox.split(' ');
-    svg.setAttribute('width', viewBoxDimensions[2]);
-    svg.setAttribute('height', viewBoxDimensions[3]);
-  }
-
-  if (styleTag && styleTag.tagName === 'style') {
-    styleTag.remove();
-  }
-};
-/**
- * @explorer-desc
- * A component for rendering Excalidraw elements as a static image
- */
-
-
-function ExcalidrawImage({
-  elements,
-  imageContainerRef,
-  appState = null,
-  rootClassName = null
-}) {
-  const [Svg, setSvg] = React.useState(null);
-  React.useEffect(() => {
-    const setContent = async () => {
-      const svg = await Excalidraw.exportToSvg({
-        elements,
-        files: null
-      });
-      removeStyleFromSvg_HACK(svg);
-      svg.setAttribute('width', '100%');
-      svg.setAttribute('height', '100%');
-      svg.setAttribute('display', 'block');
-      setSvg(svg);
-    };
-
-    setContent();
-  }, [elements, appState]);
-  return /*#__PURE__*/React.createElement("div", {
-    ref: imageContainerRef,
-    className: rootClassName ?? '',
-    dangerouslySetInnerHTML: {
-      __html: Svg?.outerHTML ?? ''
-    }
-  });
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-/**
- * @explorer-desc
- * A component which renders a modal with Excalidraw (a painting app)
- * which can be used to export an editable image
- */
-function ExcalidrawModal({
-  closeOnClickOutside = false,
-  onSave,
-  initialElements,
-  isShown = false,
-  onDelete
-}) {
-  const excaliDrawModelRef = React.useRef(null);
-  const [discardModalOpen, setDiscardModalOpen] = React.useState(false);
-  const [elements, setElements] = React.useState(initialElements);
-  React.useEffect(() => {
-    if (excaliDrawModelRef.current !== null) {
-      excaliDrawModelRef.current.focus();
-    }
-  }, []);
-  React.useEffect(() => {
-    let modalOverlayElement = null;
-
-    const clickOutsideHandler = event => {
-      const target = event.target;
-
-      if (excaliDrawModelRef.current !== null && !excaliDrawModelRef.current.contains(target) && closeOnClickOutside) {
-        onDelete();
-      }
-    };
-
-    if (excaliDrawModelRef.current !== null) {
-      modalOverlayElement = excaliDrawModelRef.current?.parentElement;
-
-      if (modalOverlayElement !== null) {
-        modalOverlayElement?.addEventListener('click', clickOutsideHandler);
-      }
-    }
-
-    return () => {
-      if (modalOverlayElement !== null) {
-        modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
-      }
-    };
-  }, [closeOnClickOutside, onDelete]);
-  React.useLayoutEffect(() => {
-    const currentModalRef = excaliDrawModelRef.current;
-
-    const onKeyDown = event => {
-      if (event.key === 'Escape') {
-        onDelete();
-      }
-    };
-
-    if (currentModalRef !== null) {
-      currentModalRef.addEventListener('keydown', onKeyDown);
-    }
-
-    return () => {
-      if (currentModalRef !== null) {
-        currentModalRef.removeEventListener('keydown', onKeyDown);
-      }
-    };
-  }, [elements, onDelete]);
-
-  const save = () => {
-    if (elements.filter(el => !el.isDeleted).length > 0) {
-      onSave(elements);
-    } else {
-      // delete node if the scene is clear
-      onDelete();
-    }
-  };
-
-  const discard = () => {
-    if (elements.filter(el => !el.isDeleted).length === 0) {
-      // delete node if the scene is clear
-      onDelete();
-    } else {
-      //Otherwise, show confirmation dialog before closing
-      setDiscardModalOpen(true);
-    }
-  };
-
-  function ShowDiscardDialog() {
-    return /*#__PURE__*/React.createElement(Modal, {
-      title: "Discard",
-      onClose: () => {
-        setDiscardModalOpen(false);
-      },
-      closeOnClickOutside: true
-    }, "Are you sure you want to discard the changes?", /*#__PURE__*/React.createElement("div", {
-      className: "ExcalidrawModal__discardModal"
-    }, /*#__PURE__*/React.createElement(Button, {
-      onClick: () => {
-        setDiscardModalOpen(false);
-        onDelete();
-      }
-    }, "Discard"), ' ', /*#__PURE__*/React.createElement(Button, {
-      onClick: () => {
-        setDiscardModalOpen(false);
-      }
-    }, "Cancel")));
-  }
-
-  if (isShown === false) {
-    return null;
-  }
-
-  const onChange = els => {
-    setElements(els);
-  }; // This is a hacky work-around for Excalidraw + Vite.
-  // In DEV, Vite pulls this in fine, in prod it doesn't. It seems
-  // like a module resolution issue with ESM vs CJS?
-
-
-  const _Excalidraw = Excalidraw.$$typeof != null ? Excalidraw : Excalidraw.default;
-
-  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
-    className: "ExcalidrawModal__overlay",
-    role: "dialog"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ExcalidrawModal__modal",
-    ref: excaliDrawModelRef,
-    tabIndex: -1
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ExcalidrawModal__row"
-  }, discardModalOpen && /*#__PURE__*/React.createElement(ShowDiscardDialog, null), /*#__PURE__*/React.createElement(_Excalidraw, {
-    onChange: onChange,
-    initialData: {
-      appState: {
-        isLoading: false
-      },
-      elements: initialElements
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "ExcalidrawModal__actions"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "action-button",
-    onClick: discard
-  }, "Discard"), /*#__PURE__*/React.createElement("button", {
-    className: "action-button",
-    onClick: save
-  }, "Save"))))), document.body);
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-function ExcalidrawComponent({
-  nodeKey,
-  data
-}) {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const [isModalOpen, setModalOpen] = React.useState(data === '[]' && editor.isEditable());
-  const imageContainerRef = React.useRef(null);
-  const buttonRef = React.useRef(null);
-  const captionButtonRef = React.useRef(null);
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
-  const [isResizing, setIsResizing] = React.useState(false);
-  const onDelete = React.useCallback(event => {
-    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
-      event.preventDefault();
-      editor.update(() => {
-        const node = lexical.$getNodeByKey(nodeKey);
-
-        if ($isExcalidrawNode(node)) {
-          node.remove();
-        }
-
-        setSelected(false);
-      });
-    }
-
-    return false;
-  }, [editor, isSelected, nodeKey, setSelected]); // Set editor to readOnly if excalidraw is open to prevent unwanted changes
-
-  React.useEffect(() => {
-    if (isModalOpen) {
-      editor.setEditable(false);
-    } else {
-      editor.setEditable(true);
-    }
-  }, [isModalOpen, editor]);
-  React.useEffect(() => {
-    return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, event => {
-      const buttonElem = buttonRef.current;
-      const eventTarget = event.target;
-
-      if (isResizing) {
-        return true;
-      }
-
-      if (buttonElem !== null && buttonElem.contains(eventTarget)) {
-        if (!event.shiftKey) {
-          clearSelection();
-        }
-
-        setSelected(!isSelected);
-
-        if (event.detail > 1) {
-          setModalOpen(true);
-        }
-
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
-  }, [clearSelection, editor, isSelected, isResizing, onDelete, setSelected]);
-  const deleteNode = React.useCallback(() => {
-    setModalOpen(false);
-    return editor.update(() => {
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isExcalidrawNode(node)) {
-        node.remove();
-      }
-    });
-  }, [editor, nodeKey]);
-
-  const setData = newData => {
-    if (!editor.isEditable()) {
-      return;
-    }
-
-    return editor.update(() => {
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isExcalidrawNode(node)) {
-        if (newData.length > 0) {
-          node.setData(JSON.stringify(newData));
-        } else {
-          node.remove();
-        }
-      }
-    });
-  };
-
-  const onResizeStart = () => {
-    setIsResizing(true);
-  };
-
-  const onResizeEnd = () => {
-    // Delay hiding the resize bars for click case
-    setTimeout(() => {
-      setIsResizing(false);
-    }, 200);
-  };
-
-  const elements = React.useMemo(() => JSON.parse(data), [data]);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ExcalidrawModal, {
-    initialElements: elements,
-    isShown: isModalOpen,
-    onDelete: deleteNode,
-    onSave: newData => {
-      editor.setEditable(true);
-      setData(newData);
-      setModalOpen(false);
-    },
-    closeOnClickOutside: true
-  }), elements.length > 0 && /*#__PURE__*/React.createElement("button", {
-    ref: buttonRef,
-    className: `excalidraw-button ${isSelected ? 'selected' : ''}`
-  }, /*#__PURE__*/React.createElement(ExcalidrawImage, {
-    imageContainerRef: imageContainerRef,
-    className: "image",
-    elements: elements
-  }), (isSelected || isResizing) && /*#__PURE__*/React.createElement(ImageResizer, {
-    buttonRef: captionButtonRef,
-    showCaption: true,
-    setShowCaption: () => null,
-    imageRef: imageContainerRef,
-    editor: editor,
-    onResizeStart: onResizeStart,
-    onResizeEnd: onResizeEnd,
-    captionsEnabled: true
-  })));
-}
-
-var ExcalidrawComponent$1 = {
-  __proto__: null,
-  'default': ExcalidrawComponent
 };
 
 /**
@@ -28453,6 +28042,366 @@ function StickyComponent({
 var StickyComponent$1 = {
   __proto__: null,
   'default': StickyComponent
+};
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+// exportToSvg has fonts from excalidraw.com
+// We don't want them to be used in open source
+const removeStyleFromSvg_HACK = svg => {
+  const styleTag = svg?.firstElementChild?.firstElementChild; // Generated SVG is getting double-sized by height and width attributes
+  // We want to match the real size of the SVG element
+
+  const viewBox = svg.getAttribute('viewBox');
+
+  if (viewBox != null) {
+    const viewBoxDimensions = viewBox.split(' ');
+    svg.setAttribute('width', viewBoxDimensions[2]);
+    svg.setAttribute('height', viewBoxDimensions[3]);
+  }
+
+  if (styleTag && styleTag.tagName === 'style') {
+    styleTag.remove();
+  }
+};
+/**
+ * @explorer-desc
+ * A component for rendering Excalidraw elements as a static image
+ */
+
+
+function ExcalidrawImage({
+  elements,
+  imageContainerRef,
+  appState = null,
+  rootClassName = null
+}) {
+  const [Svg, setSvg] = React.useState(null);
+  React.useEffect(() => {
+    const setContent = async () => {
+      const svg = await Excalidraw.exportToSvg({
+        elements,
+        files: null
+      });
+      removeStyleFromSvg_HACK(svg);
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', '100%');
+      svg.setAttribute('display', 'block');
+      setSvg(svg);
+    };
+
+    setContent();
+  }, [elements, appState]);
+  return /*#__PURE__*/React.createElement("div", {
+    ref: imageContainerRef,
+    className: rootClassName ?? '',
+    dangerouslySetInnerHTML: {
+      __html: Svg?.outerHTML ?? ''
+    }
+  });
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+
+/**
+ * @explorer-desc
+ * A component which renders a modal with Excalidraw (a painting app)
+ * which can be used to export an editable image
+ */
+function ExcalidrawModal({
+  closeOnClickOutside = false,
+  onSave,
+  initialElements,
+  isShown = false,
+  onDelete
+}) {
+  const excaliDrawModelRef = React.useRef(null);
+  const [discardModalOpen, setDiscardModalOpen] = React.useState(false);
+  const [elements, setElements] = React.useState(initialElements);
+  React.useEffect(() => {
+    if (excaliDrawModelRef.current !== null) {
+      excaliDrawModelRef.current.focus();
+    }
+  }, []);
+  React.useEffect(() => {
+    let modalOverlayElement = null;
+
+    const clickOutsideHandler = event => {
+      const target = event.target;
+
+      if (excaliDrawModelRef.current !== null && !excaliDrawModelRef.current.contains(target) && closeOnClickOutside) {
+        onDelete();
+      }
+    };
+
+    if (excaliDrawModelRef.current !== null) {
+      modalOverlayElement = excaliDrawModelRef.current?.parentElement;
+
+      if (modalOverlayElement !== null) {
+        modalOverlayElement?.addEventListener('click', clickOutsideHandler);
+      }
+    }
+
+    return () => {
+      if (modalOverlayElement !== null) {
+        modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
+      }
+    };
+  }, [closeOnClickOutside, onDelete]);
+  React.useLayoutEffect(() => {
+    const currentModalRef = excaliDrawModelRef.current;
+
+    const onKeyDown = event => {
+      if (event.key === 'Escape') {
+        onDelete();
+      }
+    };
+
+    if (currentModalRef !== null) {
+      currentModalRef.addEventListener('keydown', onKeyDown);
+    }
+
+    return () => {
+      if (currentModalRef !== null) {
+        currentModalRef.removeEventListener('keydown', onKeyDown);
+      }
+    };
+  }, [elements, onDelete]);
+
+  const save = () => {
+    if (elements.filter(el => !el.isDeleted).length > 0) {
+      onSave(elements);
+    } else {
+      // delete node if the scene is clear
+      onDelete();
+    }
+  };
+
+  const discard = () => {
+    if (elements.filter(el => !el.isDeleted).length === 0) {
+      // delete node if the scene is clear
+      onDelete();
+    } else {
+      //Otherwise, show confirmation dialog before closing
+      setDiscardModalOpen(true);
+    }
+  };
+
+  function ShowDiscardDialog() {
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: "Discard",
+      onClose: () => {
+        setDiscardModalOpen(false);
+      },
+      closeOnClickOutside: true
+    }, "Are you sure you want to discard the changes?", /*#__PURE__*/React.createElement("div", {
+      className: "ExcalidrawModal__discardModal"
+    }, /*#__PURE__*/React.createElement(Button, {
+      onClick: () => {
+        setDiscardModalOpen(false);
+        onDelete();
+      }
+    }, "Discard"), ' ', /*#__PURE__*/React.createElement(Button, {
+      onClick: () => {
+        setDiscardModalOpen(false);
+      }
+    }, "Cancel")));
+  }
+
+  if (isShown === false) {
+    return null;
+  }
+
+  const onChange = els => {
+    setElements(els);
+  }; // This is a hacky work-around for Excalidraw + Vite.
+  // In DEV, Vite pulls this in fine, in prod it doesn't. It seems
+  // like a module resolution issue with ESM vs CJS?
+
+
+  const _Excalidraw = Excalidraw.$$typeof != null ? Excalidraw : Excalidraw.default;
+
+  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
+    className: "ExcalidrawModal__overlay",
+    role: "dialog"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ExcalidrawModal__modal",
+    ref: excaliDrawModelRef,
+    tabIndex: -1
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ExcalidrawModal__row"
+  }, discardModalOpen && /*#__PURE__*/React.createElement(ShowDiscardDialog, null), /*#__PURE__*/React.createElement(_Excalidraw, {
+    onChange: onChange,
+    initialData: {
+      appState: {
+        isLoading: false
+      },
+      elements: initialElements
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "ExcalidrawModal__actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "action-button",
+    onClick: discard
+  }, "Discard"), /*#__PURE__*/React.createElement("button", {
+    className: "action-button",
+    onClick: save
+  }, "Save"))))), document.body);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+function ExcalidrawComponent({
+  nodeKey,
+  data
+}) {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const [isModalOpen, setModalOpen] = React.useState(data === '[]' && editor.isEditable());
+  const imageContainerRef = React.useRef(null);
+  const buttonRef = React.useRef(null);
+  const captionButtonRef = React.useRef(null);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
+  const [isResizing, setIsResizing] = React.useState(false);
+  const onDelete = React.useCallback(event => {
+    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
+      event.preventDefault();
+      editor.update(() => {
+        const node = lexical.$getNodeByKey(nodeKey);
+
+        if ($isExcalidrawNode(node)) {
+          node.remove();
+        }
+
+        setSelected(false);
+      });
+    }
+
+    return false;
+  }, [editor, isSelected, nodeKey, setSelected]); // Set editor to readOnly if excalidraw is open to prevent unwanted changes
+
+  React.useEffect(() => {
+    if (isModalOpen) {
+      editor.setEditable(false);
+    } else {
+      editor.setEditable(true);
+    }
+  }, [isModalOpen, editor]);
+  React.useEffect(() => {
+    return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, event => {
+      const buttonElem = buttonRef.current;
+      const eventTarget = event.target;
+
+      if (isResizing) {
+        return true;
+      }
+
+      if (buttonElem !== null && buttonElem.contains(eventTarget)) {
+        if (!event.shiftKey) {
+          clearSelection();
+        }
+
+        setSelected(!isSelected);
+
+        if (event.detail > 1) {
+          setModalOpen(true);
+        }
+
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
+  }, [clearSelection, editor, isSelected, isResizing, onDelete, setSelected]);
+  const deleteNode = React.useCallback(() => {
+    setModalOpen(false);
+    return editor.update(() => {
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isExcalidrawNode(node)) {
+        node.remove();
+      }
+    });
+  }, [editor, nodeKey]);
+
+  const setData = newData => {
+    if (!editor.isEditable()) {
+      return;
+    }
+
+    return editor.update(() => {
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isExcalidrawNode(node)) {
+        if (newData.length > 0) {
+          node.setData(JSON.stringify(newData));
+        } else {
+          node.remove();
+        }
+      }
+    });
+  };
+
+  const onResizeStart = () => {
+    setIsResizing(true);
+  };
+
+  const onResizeEnd = () => {
+    // Delay hiding the resize bars for click case
+    setTimeout(() => {
+      setIsResizing(false);
+    }, 200);
+  };
+
+  const elements = React.useMemo(() => JSON.parse(data), [data]);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ExcalidrawModal, {
+    initialElements: elements,
+    isShown: isModalOpen,
+    onDelete: deleteNode,
+    onSave: newData => {
+      editor.setEditable(true);
+      setData(newData);
+      setModalOpen(false);
+    },
+    closeOnClickOutside: true
+  }), elements.length > 0 && /*#__PURE__*/React.createElement("button", {
+    ref: buttonRef,
+    className: `excalidraw-button ${isSelected ? 'selected' : ''}`
+  }, /*#__PURE__*/React.createElement(ExcalidrawImage, {
+    imageContainerRef: imageContainerRef,
+    className: "image",
+    elements: elements
+  }), (isSelected || isResizing) && /*#__PURE__*/React.createElement(ImageResizer, {
+    buttonRef: captionButtonRef,
+    showCaption: true,
+    setShowCaption: () => null,
+    imageRef: imageContainerRef,
+    editor: editor,
+    onResizeStart: onResizeStart,
+    onResizeEnd: onResizeEnd,
+    captionsEnabled: true
+  })));
+}
+
+var ExcalidrawComponent$1 = {
+  __proto__: null,
+  'default': ExcalidrawComponent
 };
 
 exports.Editor = Editor;
