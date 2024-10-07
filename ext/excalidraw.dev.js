@@ -14,40 +14,39 @@ var useLexicalNodeSelection = require('@lexical/react/useLexicalNodeSelection');
 var Excalidraw = require('@excalidraw/excalidraw');
 var reactDom = require('react-dom');
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
 }
-
 function _extends() {
-  _extends = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
+  return _extends = Object.assign ? Object.assign.bind() : function (n) {
+    for (var e = 1; e < arguments.length; e++) {
+      var t = arguments[e];
+      for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
     }
-
-    return target;
-  };
-  return _extends.apply(this, arguments);
+    return n;
+  }, _extends.apply(null, arguments);
+}
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
 }
 
 const ExcalidrawComponent$2 = /*#__PURE__*/React.lazy(() => Promise.resolve().then(function () { return ExcalidrawComponent$1; }));
-
 function $convertExcalidrawElement(domNode) {
   const excalidrawData = domNode.getAttribute('data-lexical-excalidraw-json');
   const styleAttributes = window.getComputedStyle(domNode);
@@ -55,32 +54,27 @@ function $convertExcalidrawElement(domNode) {
   const widthStr = styleAttributes.getPropertyValue('width');
   const height = !heightStr || heightStr === 'inherit' ? 'inherit' : parseInt(heightStr, 10);
   const width = !widthStr || widthStr === 'inherit' ? 'inherit' : parseInt(widthStr, 10);
-
   if (excalidrawData) {
     const node = $createExcalidrawNode(excalidrawData, width, height);
     return {
       node
     };
   }
-
   return null;
 }
-
 class ExcalidrawNode extends lexical.DecoratorNode {
   static getType() {
     return 'excalidraw';
   }
-
   static clone(node) {
     return new ExcalidrawNode(node.__data, node.__width, node.__height, node.__key);
   }
-
   static importJSON(serializedNode) {
     return new ExcalidrawNode(serializedNode.data, serializedNode.width ?? 'inherit', serializedNode.height ?? 'inherit');
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       data: this.__data,
       height: this.__height === 'inherit' ? undefined : this.__height,
       type: 'excalidraw',
@@ -88,45 +82,35 @@ class ExcalidrawNode extends lexical.DecoratorNode {
       width: this.__width === 'inherit' ? undefined : this.__width
     };
   }
-
   constructor(data = '[]', width = 'inherit', height = 'inherit', key) {
     super(key);
-
     _defineProperty(this, "__data", void 0);
-
     _defineProperty(this, "__width", void 0);
-
     _defineProperty(this, "__height", void 0);
-
     this.__data = data;
     this.__width = width;
     this.__height = height;
-  } // View
+  }
 
-
+  // View
   createDOM(config) {
     const span = document.createElement('span');
     const theme = config.theme;
     const className = theme.image;
-
     if (className !== undefined) {
       span.className = className;
     }
-
     return span;
   }
-
   updateDOM() {
     return false;
   }
-
   static importDOM() {
     return {
       span: domNode => {
         if (!domNode.hasAttribute('data-lexical-excalidraw-json')) {
           return null;
         }
-
         return {
           conversion: $convertExcalidrawElement,
           priority: 1
@@ -134,20 +118,16 @@ class ExcalidrawNode extends lexical.DecoratorNode {
       }
     };
   }
-
   exportDOM(editor) {
     const element = document.createElement('span');
     element.style.display = 'inline-block';
     const content = editor.getElementByKey(this.getKey());
-
     if (content !== null) {
       const svg = content.querySelector('svg');
-
       if (svg !== null) {
         element.innerHTML = svg.outerHTML;
       }
     }
-
     element.style.width = this.__width === 'inherit' ? 'inherit' : `${this.__width}px`;
     element.style.height = this.__height === 'inherit' ? 'inherit' : `${this.__height}px`;
     element.setAttribute('data-lexical-excalidraw-json', this.__data);
@@ -155,30 +135,24 @@ class ExcalidrawNode extends lexical.DecoratorNode {
       element
     };
   }
-
   setData(data) {
     const self = this.getWritable();
     self.__data = data;
   }
-
   getWidth() {
     return this.getLatest().__width;
   }
-
   setWidth(width) {
     const self = this.getWritable();
     self.__width = width;
   }
-
   getHeight() {
     return this.getLatest().__height;
   }
-
   setHeight(height) {
     const self = this.getWritable();
     self.__height = height;
   }
-
   decorate(editor, config) {
     return /*#__PURE__*/React.createElement(React.Suspense, {
       fallback: null
@@ -187,7 +161,6 @@ class ExcalidrawNode extends lexical.DecoratorNode {
       data: this.__data
     }));
   }
-
 }
 function $createExcalidrawNode(data = '[]', width = 'inherit', height = 'inherit') {
   return new ExcalidrawNode(data, width, height);
@@ -210,15 +183,12 @@ function ExcalidrawPlugin() {
     if (!editor.hasNodes([ExcalidrawNode])) {
       throw new Error('ExcalidrawPlugin: ExcalidrawNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_EXCALIDRAW_COMMAND, () => {
       const excalidrawNode = $createExcalidrawNode();
       lexical.$insertNodes([excalidrawNode]);
-
       if (lexical.$isRootOrShadowRoot(excalidrawNode.getParentOrThrow())) {
         utils.$wrapNodeInElement(excalidrawNode, lexical.$createParagraphNode).selectEnd();
       }
-
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR);
   }, [editor]);
@@ -241,11 +211,9 @@ function DropDownItem({
 }) {
   const ref = React.useRef(null);
   const dropDownContext = React.useContext(DropDownContext);
-
   if (dropDownContext === null) {
     throw new Error('DropDownItem must be used within a DropDown');
   }
-
   const {
     registerItem
   } = dropDownContext;
@@ -300,11 +268,9 @@ const excalidrawExt = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-
 const Direction = {
   east: 1 << 0,
   north: 1 << 3,
@@ -338,23 +304,20 @@ function ImageResizer({
     startX: 0,
     startY: 0
   });
-  const editorRootElement = editor.getRootElement(); // Find max width, accounting for editor padding.
-
+  const editorRootElement = editor.getRootElement();
+  // Find max width, accounting for editor padding.
   const maxWidthContainer = maxWidth ? maxWidth : editorRootElement !== null ? editorRootElement.getBoundingClientRect().width - 20 : 100;
   const maxHeightContainer = editorRootElement !== null ? editorRootElement.getBoundingClientRect().height - 20 : 100;
   const minWidth = 100;
   const minHeight = 100;
-
   const setStartCursor = direction => {
     const ew = direction === Direction.east || direction === Direction.west;
     const ns = direction === Direction.north || direction === Direction.south;
     const nwse = direction & Direction.north && direction & Direction.west || direction & Direction.south && direction & Direction.east;
     const cursorDir = ew ? 'ew' : ns ? 'ns' : nwse ? 'nwse' : 'nesw';
-
     if (editorRootElement !== null) {
       editorRootElement.style.setProperty('cursor', `${cursorDir}-resize`, 'important');
     }
-
     if (document.body !== null) {
       document.body.style.setProperty('cursor', `${cursorDir}-resize`, 'important');
       userSelect.current.value = document.body.style.getPropertyValue('-webkit-user-select');
@@ -362,26 +325,21 @@ function ImageResizer({
       document.body.style.setProperty('-webkit-user-select', `none`, 'important');
     }
   };
-
   const setEndCursor = () => {
     if (editorRootElement !== null) {
       editorRootElement.style.setProperty('cursor', 'default');
     }
-
     if (document.body !== null) {
       document.body.style.setProperty('cursor', 'default');
       document.body.style.setProperty('-webkit-user-select', userSelect.current.value, userSelect.current.priority);
     }
   };
-
   const handlePointerDown = (event, direction) => {
     if (!editor.isEditable()) {
       return;
     }
-
     const image = imageRef.current;
     const controlWrapper = controlWrapperRef.current;
-
     if (image !== null && controlWrapper !== null) {
       const {
         width,
@@ -406,13 +364,11 @@ function ImageResizer({
       document.addEventListener('pointerup', handlePointerUp);
     }
   };
-
   const handlePointerMove = event => {
     const image = imageRef.current;
     const positioning = positioningRef.current;
     const isHorizontal = positioning.direction & (Direction.east | Direction.west);
     const isVertical = positioning.direction & (Direction.south | Direction.north);
-
     if (image !== null && positioning.isResizing) {
       // Corner cursor
       if (isHorizontal && isVertical) {
@@ -439,12 +395,10 @@ function ImageResizer({
       }
     }
   };
-
   const handlePointerUp = () => {
     const image = imageRef.current;
     const positioning = positioningRef.current;
     const controlWrapper = controlWrapperRef.current;
-
     if (image !== null && controlWrapper !== null && positioning.isResizing) {
       const width = positioning.currentWidth;
       const height = positioning.currentHeight;
@@ -463,7 +417,6 @@ function ImageResizer({
       document.removeEventListener('pointerup', handlePointerUp);
     }
   };
-
   return /*#__PURE__*/React.createElement("div", {
     ref: controlWrapperRef
   }, !showCaption && captionsEnabled && /*#__PURE__*/React.createElement("button", {
@@ -522,31 +475,28 @@ function ImageResizer({
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 // exportToSvg has fonts from excalidraw.com
 // We don't want them to be used in open source
 const removeStyleFromSvg_HACK = svg => {
-  const styleTag = svg?.firstElementChild?.firstElementChild; // Generated SVG is getting double-sized by height and width attributes
+  const styleTag = svg?.firstElementChild?.firstElementChild;
+
+  // Generated SVG is getting double-sized by height and width attributes
   // We want to match the real size of the SVG element
-
   const viewBox = svg.getAttribute('viewBox');
-
   if (viewBox != null) {
     const viewBoxDimensions = viewBox.split(' ');
     svg.setAttribute('width', viewBoxDimensions[2]);
     svg.setAttribute('height', viewBoxDimensions[3]);
   }
-
   if (styleTag && styleTag.tagName === 'style') {
     styleTag.remove();
   }
 };
+
 /**
  * @explorer-desc
  * A component for rendering Excalidraw elements as a static image
  */
-
-
 function ExcalidrawImage({
   elements,
   imageContainerRef,
@@ -566,7 +516,6 @@ function ExcalidrawImage({
       svg.setAttribute('display', 'block');
       setSvg(svg);
     };
-
     setContent();
   }, [elements, appState]);
   return /*#__PURE__*/React.createElement("div", {
@@ -585,6 +534,7 @@ function ExcalidrawImage({
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 function joinClasses(...args) {
   return args.filter(Boolean).join(' ');
 }
@@ -616,7 +566,6 @@ function Button({
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function PortalImpl({
   onClose,
   children,
@@ -631,35 +580,27 @@ function PortalImpl({
   }, []);
   React.useEffect(() => {
     let modalOverlayElement = null;
-
     const handler = event => {
       if (event.keyCode === 27) {
         onClose();
       }
     };
-
     const clickOutsideHandler = event => {
       const target = event.target;
-
       if (modalRef.current !== null && !modalRef.current.contains(target) && closeOnClickOutside) {
         onClose();
       }
     };
-
     const modelElement = modalRef.current;
-
     if (modelElement !== null) {
       modalOverlayElement = modelElement.parentElement;
-
       if (modalOverlayElement !== null) {
         modalOverlayElement.addEventListener('click', clickOutsideHandler);
       }
     }
-
     window.addEventListener('keydown', handler);
     return () => {
       window.removeEventListener('keydown', handler);
-
       if (modalOverlayElement !== null) {
         modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
       }
@@ -683,14 +624,13 @@ function PortalImpl({
     className: "Modal__content"
   }, children)));
 }
-
 function Modal({
   onClose,
   children,
   title,
   closeOnClickOutside = false
 }) {
-  return /*#__PURE__*/reactDom.createPortal( /*#__PURE__*/React.createElement(PortalImpl, {
+  return /*#__PURE__*/reactDom.createPortal(/*#__PURE__*/React.createElement(PortalImpl, {
     onClose: onClose,
     title: title,
     closeOnClickOutside: closeOnClickOutside
@@ -704,7 +644,6 @@ function Modal({
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 /**
  * @explorer-desc
  * A component which renders a modal with Excalidraw (a painting app)
@@ -727,23 +666,18 @@ function ExcalidrawModal({
   }, []);
   React.useEffect(() => {
     let modalOverlayElement = null;
-
     const clickOutsideHandler = event => {
       const target = event.target;
-
       if (excaliDrawModelRef.current !== null && !excaliDrawModelRef.current.contains(target) && closeOnClickOutside) {
         onDelete();
       }
     };
-
     if (excaliDrawModelRef.current !== null) {
       modalOverlayElement = excaliDrawModelRef.current?.parentElement;
-
       if (modalOverlayElement !== null) {
         modalOverlayElement?.addEventListener('click', clickOutsideHandler);
       }
     }
-
     return () => {
       if (modalOverlayElement !== null) {
         modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
@@ -752,24 +686,20 @@ function ExcalidrawModal({
   }, [closeOnClickOutside, onDelete]);
   React.useLayoutEffect(() => {
     const currentModalRef = excaliDrawModelRef.current;
-
     const onKeyDown = event => {
       if (event.key === 'Escape') {
         onDelete();
       }
     };
-
     if (currentModalRef !== null) {
       currentModalRef.addEventListener('keydown', onKeyDown);
     }
-
     return () => {
       if (currentModalRef !== null) {
         currentModalRef.removeEventListener('keydown', onKeyDown);
       }
     };
   }, [elements, onDelete]);
-
   const save = () => {
     if (elements.filter(el => !el.isDeleted).length > 0) {
       onSave(elements);
@@ -778,7 +708,6 @@ function ExcalidrawModal({
       onDelete();
     }
   };
-
   const discard = () => {
     if (elements.filter(el => !el.isDeleted).length === 0) {
       // delete node if the scene is clear
@@ -788,7 +717,6 @@ function ExcalidrawModal({
       setDiscardModalOpen(true);
     }
   };
-
   function ShowDiscardDialog() {
     return /*#__PURE__*/React.createElement(Modal, {
       title: "Discard",
@@ -809,21 +737,18 @@ function ExcalidrawModal({
       }
     }, "Cancel")));
   }
-
   if (isShown === false) {
     return null;
   }
-
   const onChange = els => {
     setElements(els);
-  }; // This is a hacky work-around for Excalidraw + Vite.
+  };
+
+  // This is a hacky work-around for Excalidraw + Vite.
   // In DEV, Vite pulls this in fine, in prod it doesn't. It seems
   // like a module resolution issue with ESM vs CJS?
-
-
   const _Excalidraw = Excalidraw.$$typeof != null ? Excalidraw : Excalidraw.default;
-
-  return /*#__PURE__*/reactDom.createPortal( /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/reactDom.createPortal(/*#__PURE__*/React.createElement("div", {
     className: "ExcalidrawModal__overlay",
     role: "dialog"
   }, /*#__PURE__*/React.createElement("div", {
@@ -874,18 +799,16 @@ function ExcalidrawComponent({
       event.preventDefault();
       editor.update(() => {
         const node = lexical.$getNodeByKey(nodeKey);
-
         if ($isExcalidrawNode(node)) {
           node.remove();
         }
-
         setSelected(false);
       });
     }
-
     return false;
-  }, [editor, isSelected, nodeKey, setSelected]); // Set editor to readOnly if excalidraw is open to prevent unwanted changes
+  }, [editor, isSelected, nodeKey, setSelected]);
 
+  // Set editor to readOnly if excalidraw is open to prevent unwanted changes
   React.useEffect(() => {
     if (isModalOpen) {
       editor.setEditable(false);
@@ -897,25 +820,19 @@ function ExcalidrawComponent({
     return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, event => {
       const buttonElem = buttonRef.current;
       const eventTarget = event.target;
-
       if (isResizing) {
         return true;
       }
-
       if (buttonElem !== null && buttonElem.contains(eventTarget)) {
         if (!event.shiftKey) {
           clearSelection();
         }
-
         setSelected(!isSelected);
-
         if (event.detail > 1) {
           setModalOpen(true);
         }
-
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
   }, [clearSelection, editor, isSelected, isResizing, onDelete, setSelected]);
@@ -923,21 +840,17 @@ function ExcalidrawComponent({
     setModalOpen(false);
     return editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isExcalidrawNode(node)) {
         node.remove();
       }
     });
   }, [editor, nodeKey]);
-
   const setData = newData => {
     if (!editor.isEditable()) {
       return;
     }
-
     return editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isExcalidrawNode(node)) {
         if (newData.length > 0) {
           node.setData(JSON.stringify(newData));
@@ -947,18 +860,15 @@ function ExcalidrawComponent({
       }
     });
   };
-
   const onResizeStart = () => {
     setIsResizing(true);
   };
-
   const onResizeEnd = () => {
     // Delay hiding the resize bars for click case
     setTimeout(() => {
       setIsResizing(false);
     }, 200);
   };
-
   const elements = React.useMemo(() => JSON.parse(data), [data]);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ExcalidrawModal, {
     initialElements: elements,

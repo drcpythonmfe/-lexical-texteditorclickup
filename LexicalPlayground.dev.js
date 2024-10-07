@@ -70,6 +70,7 @@ var LexicalContentEditable$1 = require('@lexical/react/LexicalContentEditable');
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 const CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
 
 /**
@@ -83,18 +84,17 @@ const url = new URL(window.location.href);
 const params = new URLSearchParams(url.search);
 const WEBSOCKET_ENDPOINT = params.get('collabEndpoint') || 'ws://localhost:1234';
 const WEBSOCKET_SLUG = 'playground';
-const WEBSOCKET_ID = params.get('collabId') || '0'; // parent dom -> child doc
+const WEBSOCKET_ID = params.get('collabId') || '0';
 
+// parent dom -> child doc
 function createWebsocketProvider(id, yjsDocMap) {
   let doc = yjsDocMap.get(id);
-
   if (doc === undefined) {
     doc = new yjs.Doc();
     yjsDocMap.set(id, doc);
   } else {
     doc.load();
   }
-
   return new yWebsocket.WebsocketProvider(WEBSOCKET_ENDPOINT, WEBSOCKET_SLUG + '/' + WEBSOCKET_ID + '/' + id, doc, {
     connect: false
   });
@@ -126,13 +126,11 @@ const useSharedHistoryContext = () => {
 const EditorComposerContext = /*#__PURE__*/React.createContext(null);
 function useEditorComposerContext() {
   const editorContext = React.useContext(EditorComposerContext);
-
   if (editorContext == null) {
     {
       throw Error(`Cannot find an EditorComposerContext`);
     }
   }
-
   return editorContext;
 }
 
@@ -143,7 +141,6 @@ function useEditorComposerContext() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function PortalImpl({
   onClose,
   children,
@@ -158,35 +155,27 @@ function PortalImpl({
   }, []);
   React.useEffect(() => {
     let modalOverlayElement = null;
-
     const handler = event => {
       if (event.keyCode === 27) {
         onClose();
       }
     };
-
     const clickOutsideHandler = event => {
       const target = event.target;
-
       if (modalRef.current !== null && !modalRef.current.contains(target) && closeOnClickOutside) {
         onClose();
       }
     };
-
     const modelElement = modalRef.current;
-
     if (modelElement !== null) {
       modalOverlayElement = modelElement.parentElement;
-
       if (modalOverlayElement !== null) {
         modalOverlayElement.addEventListener('click', clickOutsideHandler);
       }
     }
-
     window.addEventListener('keydown', handler);
     return () => {
       window.removeEventListener('keydown', handler);
-
       if (modalOverlayElement !== null) {
         modalOverlayElement?.removeEventListener('click', clickOutsideHandler);
       }
@@ -210,14 +199,13 @@ function PortalImpl({
     className: "Modal__content"
   }, children)));
 }
-
 function Modal({
   onClose,
   children,
   title,
   closeOnClickOutside = false
 }) {
-  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(PortalImpl, {
+  return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(PortalImpl, {
     onClose: onClose,
     title: title,
     closeOnClickOutside: closeOnClickOutside
@@ -240,7 +228,6 @@ function useModal() {
     if (modalContent === null) {
       return null;
     }
-
     const {
       title,
       content,
@@ -262,36 +249,36 @@ function useModal() {
   return [modal, showModal];
 }
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
 }
-
 function _extends() {
-  _extends = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
+  return _extends = Object.assign ? Object.assign.bind() : function (n) {
+    for (var e = 1; e < arguments.length; e++) {
+      var t = arguments[e];
+      for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
     }
-
-    return target;
-  };
-  return _extends.apply(this, arguments);
+    return n;
+  }, _extends.apply(null, arguments);
+}
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
 }
 
 /**
@@ -301,6 +288,7 @@ function _extends() {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 function joinClasses(...args) {
   return args.filter(Boolean).join(' ');
 }
@@ -326,7 +314,6 @@ function Button({
 }
 
 /* eslint-disable header/header */
-
 const useIsShownDelayed = (delayMs = 400) => {
   const [isShown, setIsShown] = React.useState(false);
   React.useEffect(() => {
@@ -338,10 +325,8 @@ const useIsShownDelayed = (delayMs = 400) => {
       isMounted = false;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   return isShown;
 };
-
 function ImageSpinner() {
   const isShown = useIsShownDelayed();
   if (!isShown) return null;
@@ -363,9 +348,9 @@ function ImageSpinner() {
   }));
 }
 
-const ImageComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+const ImageComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
 () => Promise.resolve().then(function () { return ImageComponent$1; }));
-
 function convertImageElement(domNode) {
   if (domNode instanceof HTMLImageElement) {
     const {
@@ -384,24 +369,20 @@ function convertImageElement(domNode) {
       node
     };
   }
-
   return null;
 }
-
 const genClassName = theme => {
   return joinClasses(theme.image, 'editor-image');
 };
-
 class ImageNode extends lexical.DecoratorNode {
   // Captions cannot yet be used within editor cells
+
   static getType() {
     return 'image';
   }
-
   static clone(node) {
     return new ImageNode(node.__src, node.__altText, node.__maxWidth, node.__width, node.__height, node.__showCaption, node.__caption, node.__captionsEnabled, node.__key, node.__file);
   }
-
   static importJSON(serializedNode) {
     const {
       altText,
@@ -422,14 +403,11 @@ class ImageNode extends lexical.DecoratorNode {
     });
     const nestedEditor = node.__caption;
     const editorState = nestedEditor.parseEditorState(caption.editorState);
-
     if (!editorState.isEmpty()) {
       nestedEditor.setEditorState(editorState);
     }
-
     return node;
   }
-
   exportDOM(editor) {
     const className = genClassName(editor._config.theme);
     const element = document.createElement('img');
@@ -442,7 +420,6 @@ class ImageNode extends lexical.DecoratorNode {
       element
     };
   }
-
   static importDOM() {
     return {
       img: node => ({
@@ -451,28 +428,17 @@ class ImageNode extends lexical.DecoratorNode {
       })
     };
   }
-
   constructor(src, altText, maxWidth, width, height, showCaption, caption, captionsEnabled, key, file) {
     super(key);
-
     _defineProperty(this, "__src", void 0);
-
     _defineProperty(this, "__altText", void 0);
-
     _defineProperty(this, "__width", void 0);
-
     _defineProperty(this, "__height", void 0);
-
     _defineProperty(this, "__maxWidth", void 0);
-
     _defineProperty(this, "__showCaption", void 0);
-
     _defineProperty(this, "__caption", void 0);
-
     _defineProperty(this, "__captionsEnabled", void 0);
-
     _defineProperty(this, "__file", void 0);
-
     this.__src = src;
     this.__altText = altText;
     this.__maxWidth = maxWidth;
@@ -483,7 +449,6 @@ class ImageNode extends lexical.DecoratorNode {
     this.__captionsEnabled = captionsEnabled || captionsEnabled === undefined;
     this.__file = file;
   }
-
   exportJSON() {
     return {
       altText: this.getAltText(),
@@ -497,57 +462,46 @@ class ImageNode extends lexical.DecoratorNode {
       width: this.__width === 'inherit' ? 0 : this.__width
     };
   }
-
   setWidthAndHeight(width, height) {
     const writable = this.getWritable();
     writable.__width = width;
     writable.__height = height;
   }
-
   setShowCaption(showCaption) {
     const writable = this.getWritable();
     writable.__showCaption = showCaption;
   }
-
   setSrc(src) {
     const writable = this.getWritable();
     writable.__src = src;
   }
-
   setFile(file) {
     const writable = this.getWritable();
     writable.__file = file;
-  } // View
-
+  }
+  // View
 
   createDOM(config) {
     const span = document.createElement('span');
     const theme = config.theme;
     const className = genClassName(theme);
-
     if (className !== undefined) {
       span.className = className;
     }
-
     return span;
   }
-
   updateDOM() {
     return false;
   }
-
   getSrc() {
     return this.__src;
   }
-
   getAltText() {
     return this.__altText;
   }
-
   getFile() {
     return this.__file;
   }
-
   decorate() {
     return /*#__PURE__*/React.createElement(React.Suspense, {
       fallback: null
@@ -564,7 +518,6 @@ class ImageNode extends lexical.DecoratorNode {
       resizable: true
     }), this.__file && /*#__PURE__*/React.createElement(ImageSpinner, null));
   }
-
 }
 function $createImageNode({
   altText,
@@ -585,22 +538,17 @@ function $isImageNode(node) {
 }
 
 const WIDGET_SCRIPT_URL = 'https://platform.twitter.com/widgets.js';
-
 function convertTweetElement(domNode) {
   const id = domNode.getAttribute('data-lexical-tweet-id');
-
   if (id) {
     const node = $createTweetNode(id);
     return {
       node
     };
   }
-
   return null;
 }
-
 let isTwitterScriptLoading = true;
-
 function TweetComponent({
   className,
   format,
@@ -619,7 +567,6 @@ function TweetComponent({
       await window.twttr.widgets.createTweet(tweetID, containerRef.current);
       setIsTweetLoading(false);
       isTwitterScriptLoading = false;
-
       if (onLoad) {
         onLoad();
       }
@@ -632,21 +579,18 @@ function TweetComponent({
   React.useEffect(() => {
     if (tweetID !== previousTweetIDRef.current) {
       setIsTweetLoading(true);
-
       if (isTwitterScriptLoading) {
         const script = document.createElement('script');
         script.src = WIDGET_SCRIPT_URL;
         script.async = true;
         document.body?.appendChild(script);
         script.onload = createTweet;
-
         if (onError) {
           script.onerror = onError;
         }
       } else {
         createTweet();
       }
-
       if (previousTweetIDRef) {
         previousTweetIDRef.current = tweetID;
       }
@@ -664,37 +608,32 @@ function TweetComponent({
     ref: containerRef
   }));
 }
-
 class TweetNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static getType() {
     return 'tweet';
   }
-
   static clone(node) {
     return new TweetNode(node.__id, node.__format, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createTweetNode(serializedNode.id);
     node.setFormat(serializedNode.format);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       id: this.getId(),
       type: 'tweet',
       version: 1
     };
   }
-
   static importDOM() {
     return {
       div: domNode => {
         if (!domNode.hasAttribute('data-lexical-tweet-id')) {
           return null;
         }
-
         return {
           conversion: convertTweetElement,
           priority: 2
@@ -702,7 +641,6 @@ class TweetNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       }
     };
   }
-
   exportDOM() {
     const element = document.createElement('div');
     element.setAttribute('data-lexical-tweet-id', this.__id);
@@ -712,23 +650,17 @@ class TweetNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       element
     };
   }
-
   constructor(id, format, key) {
     super(format, key);
-
     _defineProperty(this, "__id", void 0);
-
     this.__id = id;
   }
-
   getId() {
     return this.__id;
   }
-
   getTextContent(_includeInert, _includeDirectionless) {
     return `https://twitter.com/i/web/status/${this.__id}`;
   }
-
   decorate(editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
     const className = {
@@ -743,11 +675,9 @@ class TweetNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       tweetID: this.__id
     });
   }
-
   isInline() {
     return false;
   }
-
 }
 function $createTweetNode(tweetID) {
   return new TweetNode(tweetID);
@@ -770,14 +700,14 @@ const HR = {
   },
   regExp: /^(---|\*\*\*|___)\s?$/,
   replace: (parentNode, _1, _2, isImport) => {
-    const line = LexicalHorizontalRuleNode.$createHorizontalRuleNode(); // TODO: Get rid of isImport flag
+    const line = LexicalHorizontalRuleNode.$createHorizontalRuleNode();
 
+    // TODO: Get rid of isImport flag
     if (isImport || parentNode.getNextSibling() != null) {
       parentNode.replace(line);
     } else {
       parentNode.insertBefore(line);
     }
-
     line.selectNext();
   },
   type: 'element'
@@ -788,7 +718,6 @@ const IMAGE = {
     if (!$isImageNode(node)) {
       return null;
     }
-
     return `![${node.getAltText()}](${node.getSrc()})`;
   },
   importRegExp: /!(?:\[([^[]*)\])(?:\(([^(]+)\))/,
@@ -811,7 +740,6 @@ const TWEET = {
     if (!$isTweetNode(node)) {
       return null;
     }
-
     return `<tweet id="${node.getId()}" />`;
   },
   regExp: /<tweet id="([^"]+?)"\s?\/>\s?$/,
@@ -821,8 +749,9 @@ const TWEET = {
     textNode.replace(tweetNode);
   },
   type: 'element'
-}; // Very primitive table setup
+};
 
+// Very primitive table setup
 const TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
 const TABLE = {
   // TODO: refactor transformer for new TableNode
@@ -831,12 +760,9 @@ const TABLE = {
     if (!table.$isTableNode(node)) {
       return null;
     }
-
     const output = [];
-
     for (const row of node.getChildren()) {
       const rowOutput = [];
-
       if (table.$isTableRowNode(row)) {
         for (const cell of row.getChildren()) {
           // It's TableCellNode (hence ElementNode) so it's just to make flow happy
@@ -845,107 +771,82 @@ const TABLE = {
           }
         }
       }
-
       output.push(`| ${rowOutput.join(' | ')} |`);
     }
-
     return output.join('\n');
   },
   regExp: TABLE_ROW_REG_EXP,
   replace: (parentNode, _1, match) => {
     const matchCells = mapToTableCells(match[0]);
-
     if (matchCells == null) {
       return;
     }
-
     const rows = [matchCells];
     let sibling = parentNode.getPreviousSibling();
     let maxCells = matchCells.length;
-
     while (sibling) {
       if (!lexical.$isParagraphNode(sibling)) {
         break;
       }
-
       if (sibling.getChildrenSize() !== 1) {
         break;
       }
-
       const firstChild = sibling.getFirstChild();
-
       if (!lexical.$isTextNode(firstChild)) {
         break;
       }
-
       const cells = mapToTableCells(firstChild.getTextContent());
-
       if (cells == null) {
         break;
       }
-
       maxCells = Math.max(maxCells, cells.length);
       rows.unshift(cells);
       const previousSibling = sibling.getPreviousSibling();
       sibling.remove();
       sibling = previousSibling;
     }
-
     const table$1 = table.$createTableNode();
-
     for (const cells of rows) {
       const tableRow = table.$createTableRowNode();
       table$1.append(tableRow);
-
       for (let i = 0; i < maxCells; i++) {
         tableRow.append(i < cells.length ? cells[i] : createTableCell(null));
       }
     }
-
     const previousSibling = parentNode.getPreviousSibling();
-
     if (table.$isTableNode(previousSibling) && getTableColumnsSize(previousSibling) === maxCells) {
       previousSibling.append(...table$1.getChildren());
       parentNode.remove();
     } else {
       parentNode.replace(table$1);
     }
-
     table$1.selectEnd();
   },
   type: 'element'
 };
-
 function getTableColumnsSize(table$1) {
   const row = table$1.getFirstChild();
   return table.$isTableRowNode(row) ? row.getChildrenSize() : 0;
 }
-
 const createTableCell = textContent => {
   const cell = table.$createTableCellNode(table.TableCellHeaderStates.NO_STATUS);
   const paragraph = lexical.$createParagraphNode();
-
   if (textContent != null) {
     paragraph.append(lexical.$createTextNode(textContent.trim()));
   }
-
   cell.append(paragraph);
   return cell;
 };
-
 const mapToTableCells = textContent => {
   // TODO:
   // For now plain text, single node. Can be expanded to more complex content
   // including formatted text
   const match = textContent.match(TABLE_ROW_REG_EXP);
-
   if (!match || !match[1]) {
     return null;
   }
-
   return match[1].split('|').map(text => createTableCell(text));
 };
-
 const PLAYGROUND_TRANSFORMERS = [TABLE, HR, IMAGE, TWEET, markdown.CHECK_LIST, ...markdown.ELEMENT_TRANSFORMERS, ...markdown.TEXT_FORMAT_TRANSFORMERS, ...markdown.TEXT_MATCH_TRANSFORMERS];
 
 /**
@@ -955,11 +856,9 @@ const PLAYGROUND_TRANSFORMERS = [TABLE, HR, IMAGE, TWEET, markdown.CHECK_LIST, .
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 async function validateEditorState(editor) {
   const stringifiedEditorState = JSON.stringify(editor.getEditorState());
   let response = null;
-
   try {
     response = await fetch('http://localhost:1235/validateEditorState', {
       body: stringifiedEditorState,
@@ -969,14 +868,13 @@ async function validateEditorState(editor) {
       },
       method: 'POST'
     });
-  } catch {// NO-OP
+  } catch {
+    // NO-OP
   }
-
   if (response !== null && response.status === 403) {
     throw new Error('Editor state validation failed! Server did not accept changes.');
   }
 }
-
 function ActionsPlugin({
   isRichText
 }) {
@@ -1009,11 +907,9 @@ function ActionsPlugin({
       if (!isEditable && dirtyElements.size > 0 && !tags.has('historic') && !tags.has('collaboration')) {
         validateEditorState(editor);
       }
-
       editor.getEditorState().read(() => {
         const root = lexical.$getRoot();
         const children = root.getChildren();
-
         if (children.length > 1) {
           setIsEditorEmpty(false);
         } else {
@@ -1031,14 +927,12 @@ function ActionsPlugin({
     editor.update(() => {
       const root = lexical.$getRoot();
       const firstChild = root.getFirstChild();
-
       if (code.$isCodeNode(firstChild) && firstChild.getLanguage() === 'markdown') {
         markdown.$convertFromMarkdownString(firstChild.getTextContent(), PLAYGROUND_TRANSFORMERS);
       } else {
         const markdown$1 = markdown.$convertToMarkdownString(PLAYGROUND_TRANSFORMERS);
         root.clear().append(code.$createCodeNode('markdown').append(lexical.$createTextNode(markdown$1)));
       }
-
       root.selectEnd();
     });
   }, [editor]);
@@ -1089,7 +983,6 @@ const SharedAutocompleteContext = ({
       };
     }, newSuggestion => {
       suggestion = newSuggestion;
-
       for (const listener of listeners) {
         listener(newSuggestion);
       }
@@ -1112,61 +1005,51 @@ const useSharedAutocompleteContext = () => {
 
 class AutocompleteNode extends lexical.DecoratorNode {
   // TODO add comment
+
   static clone(node) {
     return new AutocompleteNode(node.__key);
   }
-
   static getType() {
     return 'autocomplete';
   }
-
   static importJSON(serializedNode) {
     const node = $createAutocompleteNode(serializedNode.uuid);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       type: 'autocomplete',
       uuid: this.__uuid,
       version: 1
     };
   }
-
   constructor(uuid, key) {
     super(key);
-
     _defineProperty(this, "__uuid", void 0);
-
     this.__uuid = uuid;
   }
-
   updateDOM(prevNode, dom, config) {
     return false;
   }
-
   createDOM(config) {
     return document.createElement('span');
   }
-
   decorate() {
     if (this.__uuid !== uuid) {
       return null;
     }
-
     return /*#__PURE__*/React.createElement(AutocompleteComponent, null);
   }
-
 }
 function $createAutocompleteNode(uuid) {
   return new AutocompleteNode(uuid);
 }
-
 function AutocompleteComponent() {
   const [suggestion] = useSharedAutocompleteContext();
   const userAgentData = window.navigator.userAgentData;
-  const isMobile = userAgentData !== undefined ? userAgentData.mobile : window.innerWidth <= 800 && window.innerHeight <= 600; // TODO Move to theme
-
+  const isMobile = userAgentData !== undefined ? userAgentData.mobile : window.innerWidth <= 800 && window.innerHeight <= 600;
+  // TODO Move to theme
   return /*#__PURE__*/React.createElement("span", {
     style: {
       color: '#ccc'
@@ -1182,50 +1065,39 @@ function AutocompleteComponent() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const elements = new WeakMap();
 
+const elements = new WeakMap();
 function readTouch(e) {
   const touch = e.changedTouches[0];
-
   if (touch === undefined) {
     return null;
   }
-
   return [touch.clientX, touch.clientY];
 }
-
 function addListener(element, cb) {
   let elementValues = elements.get(element);
-
   if (elementValues === undefined) {
     const listeners = new Set();
-
     const handleTouchstart = e => {
       if (elementValues !== undefined) {
         elementValues.start = readTouch(e);
       }
     };
-
     const handleTouchend = e => {
       if (elementValues === undefined) {
         return;
       }
-
       const start = elementValues.start;
-
       if (start === null) {
         return;
       }
-
       const end = readTouch(e);
-
       for (const listener of listeners) {
         if (end !== null) {
           listener([end[0] - start[0], end[1] - start[1]], e);
         }
       }
     };
-
     element.addEventListener('touchstart', handleTouchstart);
     element.addEventListener('touchend', handleTouchend);
     elementValues = {
@@ -1236,21 +1108,16 @@ function addListener(element, cb) {
     };
     elements.set(element, elementValues);
   }
-
   elementValues.listeners.add(cb);
   return () => deleteListener(element, cb);
 }
-
 function deleteListener(element, cb) {
   const elementValues = elements.get(element);
-
   if (elementValues === undefined) {
     return;
   }
-
   const listeners = elementValues.listeners;
   listeners.delete(cb);
-
   if (listeners.size === 0) {
     elements.delete(element);
     element.removeEventListener('touchstart', elementValues.handleTouchstart);
@@ -1260,44 +1127,39 @@ function deleteListener(element, cb) {
 function addSwipeRightListener(element, cb) {
   return addListener(element, (force, e) => {
     const [x, y] = force;
-
     if (x > 0 && x > Math.abs(y)) {
       cb(x, e);
     }
   });
 }
 
-const uuid = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5); // TODO lookup should be custom
+const uuid = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 
+// TODO lookup should be custom
 function $search(selection$1) {
   if (!lexical.$isRangeSelection(selection$1) || !selection$1.isCollapsed()) {
     return [false, ''];
   }
-
   const node = selection$1.getNodes()[0];
-  const anchor = selection$1.anchor; // Check siblings?
-
+  const anchor = selection$1.anchor;
+  // Check siblings?
   if (!lexical.$isTextNode(node) || !node.isSimpleText() || !selection.$isAtNodeEnd(anchor)) {
     return [false, ''];
   }
-
   const word = [];
   const text = node.getTextContent();
   let i = node.getTextContentSize();
   let c;
-
   while (i-- && i >= 0 && (c = text[i]) !== ' ') {
     word.push(c);
   }
-
   if (word.length === 0) {
     return [false, ''];
   }
-
   return [true, word.reverse().join('')];
-} // TODO query should be custom
+}
 
-
+// TODO query should be custom
 function useQuery() {
   return React.useCallback(searchText => {
     const server = new AutocompleteServer();
@@ -1307,7 +1169,6 @@ function useQuery() {
     return response;
   }, []);
 }
-
 function AutocompletePlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [, setSuggestion] = useSharedAutocompleteContext();
@@ -1317,40 +1178,32 @@ function AutocompletePlugin() {
     let lastMatch = null;
     let lastSuggestion = null;
     let searchPromise = null;
-
     function $clearSuggestion() {
       const autocompleteNode = autocompleteNodeKey !== null ? lexical.$getNodeByKey(autocompleteNodeKey) : null;
-
       if (autocompleteNode !== null && autocompleteNode.isAttached()) {
         autocompleteNode.remove();
         autocompleteNodeKey = null;
       }
-
       if (searchPromise !== null) {
         searchPromise.dismiss();
         searchPromise = null;
       }
-
       lastMatch = null;
       lastSuggestion = null;
       setSuggestion(null);
     }
-
     function updateAsyncSuggestion(refSearchPromise, newSuggestion) {
       if (searchPromise !== refSearchPromise || newSuggestion === null) {
         // Outdated or no suggestion
         return;
       }
-
       editor.update(() => {
         const selection = lexical.$getSelection();
         const [hasMatch, match] = $search(selection);
-
         if (!hasMatch || match !== lastMatch || !lexical.$isRangeSelection(selection)) {
           // Outdated
           return;
         }
-
         const selectionCopy = selection.clone();
         const node = $createAutocompleteNode(uuid);
         autocompleteNodeKey = node.getKey();
@@ -1362,30 +1215,24 @@ function AutocompletePlugin() {
         tag: 'history-merge'
       });
     }
-
     function handleAutocompleteNodeTransform(node) {
       const key = node.getKey();
-
       if (node.__uuid === uuid && key !== autocompleteNodeKey) {
         // Max one Autocomplete node per session
         $clearSuggestion();
       }
     }
-
     function handleUpdate() {
       editor.update(() => {
         const selection = lexical.$getSelection();
         const [hasMatch, match] = $search(selection);
-
         if (!hasMatch) {
           $clearSuggestion();
           return;
         }
-
         if (match === lastMatch) {
           return;
         }
-
         $clearSuggestion();
         searchPromise = query(match);
         searchPromise.promise.then(newSuggestion => {
@@ -1398,34 +1245,27 @@ function AutocompletePlugin() {
         lastMatch = match;
       });
     }
-
     function $handleAutocompleteIntent() {
       if (lastSuggestion === null || autocompleteNodeKey === null) {
         return false;
       }
-
       const autocompleteNode = lexical.$getNodeByKey(autocompleteNodeKey);
-
       if (autocompleteNode === null) {
         return false;
       }
-
       const textNode = lexical.$createTextNode(lastSuggestion);
       autocompleteNode.replace(textNode);
       textNode.selectNext();
       $clearSuggestion();
       return true;
     }
-
     function $handleKeypressCommand(e) {
       if ($handleAutocompleteIntent()) {
         e.preventDefault();
         return true;
       }
-
       return false;
     }
-
     function handleSwipeRight(_force, e) {
       editor.update(() => {
         if ($handleAutocompleteIntent()) {
@@ -1433,65 +1273,52 @@ function AutocompletePlugin() {
         }
       });
     }
-
     function unmountSuggestion() {
       editor.update(() => {
         $clearSuggestion();
       });
     }
-
     const rootElem = editor.getRootElement();
     return utils.mergeRegister(editor.registerNodeTransform(AutocompleteNode, handleAutocompleteNodeTransform), editor.registerUpdateListener(handleUpdate), editor.registerCommand(lexical.KEY_TAB_COMMAND, $handleKeypressCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_RIGHT_COMMAND, $handleKeypressCommand, lexical.COMMAND_PRIORITY_LOW), ...(rootElem !== null ? [addSwipeRightListener(rootElem, handleSwipeRight)] : []), unmountSuggestion);
   }, [editor, query, setSuggestion]);
   return null;
 }
+
 /*
  * Simulate an asynchronous autocomplete server (typical in more common use cases like GMail where
  * the data is not static).
  */
-
 class AutocompleteServer {
   constructor() {
     _defineProperty(this, "DATABASE", DICTIONARY);
-
     _defineProperty(this, "LATENCY", 200);
-
     _defineProperty(this, "query", searchText => {
       let isDismissed = false;
-
       const dismiss = () => {
         isDismissed = true;
       };
-
       const promise = new Promise((resolve, reject) => {
         setTimeout(() => {
           if (isDismissed) {
             // TODO cache result
             return reject('Dismissed');
           }
-
           const searchTextLength = searchText.length;
-
           if (searchText === '' || searchTextLength < 4) {
             return resolve(null);
           }
-
           const char0 = searchText.charCodeAt(0);
           const isCapitalized = char0 >= 65 && char0 <= 90;
           const caseInsensitiveSearchText = isCapitalized ? String.fromCharCode(char0 + 32) + searchText.substring(1) : searchText;
           const match = this.DATABASE.find(dictionaryWord => dictionaryWord.startsWith(caseInsensitiveSearchText) ?? null);
-
           if (match === undefined) {
             return resolve(null);
           }
-
           const matchCapitalized = isCapitalized ? String.fromCharCode(match.charCodeAt(0) - 32) + match.substring(1) : match;
           const autocompleteChunk = matchCapitalized.substring(searchTextLength);
-
           if (autocompleteChunk === '') {
             return resolve(null);
           }
-
           return resolve(autocompleteChunk);
         }, this.LATENCY);
       });
@@ -1501,10 +1328,9 @@ class AutocompleteServer {
       };
     });
   }
+}
 
-} // https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa-no-swears-long.txt
-
-
+// https://raw.githubusercontent.com/first20hours/google-10000-english/master/google-10000-english-usa-no-swears-long.txt
 const DICTIONARY = ['information', 'available', 'copyright', 'university', 'management', 'international', 'development', 'education', 'community', 'technology', 'following', 'resources', 'including', 'directory', 'government', 'department', 'description', 'insurance', 'different', 'categories', 'conditions', 'accessories', 'september', 'questions', 'application', 'financial', 'equipment', 'performance', 'experience', 'important', 'activities', 'additional', 'something', 'professional', 'committee', 'washington', 'california', 'reference', 'companies', 'computers', 'president', 'australia', 'discussion', 'entertainment', 'agreement', 'marketing', 'association', 'collection', 'solutions', 'electronics', 'technical', 'microsoft', 'conference', 'environment', 'statement', 'downloads', 'applications', 'requirements', 'individual', 'subscribe', 'everything', 'production', 'commercial', 'advertising', 'treatment', 'newsletter', 'knowledge', 'currently', 'construction', 'registered', 'protection', 'engineering', 'published', 'corporate', 'customers', 'materials', 'countries', 'standards', 'political', 'advertise', 'environmental', 'availability', 'employment', 'commission', 'administration', 'institute', 'sponsored', 'electronic', 'condition', 'effective', 'organization', 'selection', 'corporation', 'executive', 'necessary', 'according', 'particular', 'facilities', 'opportunities', 'appropriate', 'statistics', 'investment', 'christmas', 'registration', 'furniture', 'wednesday', 'structure', 'distribution', 'industrial', 'potential', 'responsible', 'communications', 'associated', 'foundation', 'documents', 'communication', 'independent', 'operating', 'developed', 'telephone', 'population', 'navigation', 'operations', 'therefore', 'christian', 'understand', 'publications', 'worldwide', 'connection', 'publisher', 'introduction', 'properties', 'accommodation', 'excellent', 'opportunity', 'assessment', 'especially', 'interface', 'operation', 'restaurants', 'beautiful', 'locations', 'significant', 'technologies', 'manufacturer', 'providing', 'authority', 'considered', 'programme', 'enterprise', 'educational', 'employees', 'alternative', 'processing', 'responsibility', 'resolution', 'publication', 'relations', 'photography', 'components', 'assistance', 'completed', 'organizations', 'otherwise', 'transportation', 'disclaimer', 'membership', 'recommended', 'background', 'character', 'maintenance', 'functions', 'trademarks', 'phentermine', 'submitted', 'television', 'interested', 'throughout', 'established', 'programming', 'regarding', 'instructions', 'increased', 'understanding', 'beginning', 'associates', 'instruments', 'businesses', 'specified', 'restaurant', 'procedures', 'relationship', 'traditional', 'sometimes', 'themselves', 'transport', 'interesting', 'evaluation', 'implementation', 'galleries', 'references', 'presented', 'literature', 'respective', 'definition', 'secretary', 'networking', 'australian', 'magazines', 'francisco', 'individuals', 'guidelines', 'installation', 'described', 'attention', 'difference', 'regulations', 'certificate', 'directions', 'documentation', 'automotive', 'successful', 'communities', 'situation', 'publishing', 'emergency', 'developing', 'determine', 'temperature', 'announcements', 'historical', 'ringtones', 'difficult', 'scientific', 'satellite', 'particularly', 'functional', 'monitoring', 'architecture', 'recommend', 'dictionary', 'accounting', 'manufacturing', 'professor', 'generally', 'continued', 'techniques', 'permission', 'generation', 'component', 'guarantee', 'processes', 'interests', 'paperback', 'classifieds', 'supported', 'competition', 'providers', 'characters', 'thousands', 'apartments', 'generated', 'administrative', 'practices', 'reporting', 'essential', 'affiliate', 'immediately', 'designated', 'integrated', 'configuration', 'comprehensive', 'universal', 'presentation', 'languages', 'compliance', 'improvement', 'pennsylvania', 'challenge', 'acceptance', 'strategies', 'affiliates', 'multimedia', 'certified', 'computing', 'interactive', 'procedure', 'leadership', 'religious', 'breakfast', 'developer', 'approximately', 'recommendations', 'comparison', 'automatically', 'minnesota', 'adventure', 'institutions', 'assistant', 'advertisement', 'headlines', 'yesterday', 'determined', 'wholesale', 'extension', 'statements', 'completely', 'electrical', 'applicable', 'manufacturers', 'classical', 'dedicated', 'direction', 'basketball', 'wisconsin', 'personnel', 'identified', 'professionals', 'advantage', 'newsletters', 'estimated', 'anonymous', 'miscellaneous', 'integration', 'interview', 'framework', 'installed', 'massachusetts', 'associate', 'frequently', 'discussions', 'laboratory', 'destination', 'intelligence', 'specifications', 'tripadvisor', 'residential', 'decisions', 'industries', 'partnership', 'editorial', 'expression', 'provisions', 'principles', 'suggestions', 'replacement', 'strategic', 'economics', 'compatible', 'apartment', 'netherlands', 'consulting', 'recreation', 'participants', 'favorites', 'translation', 'estimates', 'protected', 'philadelphia', 'officials', 'contained', 'legislation', 'parameters', 'relationships', 'tennessee', 'representative', 'frequency', 'introduced', 'departments', 'residents', 'displayed', 'performed', 'administrator', 'addresses', 'permanent', 'agriculture', 'constitutes', 'portfolio', 'practical', 'delivered', 'collectibles', 'infrastructure', 'exclusive', 'originally', 'utilities', 'philosophy', 'regulation', 'reduction', 'nutrition', 'recording', 'secondary', 'wonderful', 'announced', 'prevention', 'mentioned', 'automatic', 'healthcare', 'maintained', 'increasing', 'connected', 'directors', 'participation', 'containing', 'combination', 'amendment', 'guaranteed', 'libraries', 'distributed', 'singapore', 'enterprises', 'convention', 'principal', 'certification', 'previously', 'buildings', 'household', 'batteries', 'positions', 'subscription', 'contemporary', 'panasonic', 'permalink', 'signature', 'provision', 'certainly', 'newspaper', 'liability', 'trademark', 'trackback', 'americans', 'promotion', 'conversion', 'reasonable', 'broadband', 'influence', 'importance', 'webmaster', 'prescription', 'specifically', 'represent', 'conservation', 'louisiana', 'javascript', 'marketplace', 'evolution', 'certificates', 'objectives', 'suggested', 'concerned', 'structures', 'encyclopedia', 'continuing', 'interracial', 'competitive', 'suppliers', 'preparation', 'receiving', 'accordance', 'discussed', 'elizabeth', 'reservations', 'playstation', 'instruction', 'annotation', 'differences', 'establish', 'expressed', 'paragraph', 'mathematics', 'compensation', 'conducted', 'percentage', 'mississippi', 'requested', 'connecticut', 'personals', 'immediate', 'agricultural', 'supporting', 'collections', 'participate', 'specialist', 'experienced', 'investigation', 'institution', 'searching', 'proceedings', 'transmission', 'characteristics', 'experiences', 'extremely', 'verzeichnis', 'contracts', 'concerning', 'developers', 'equivalent', 'chemistry', 'neighborhood', 'variables', 'continues', 'curriculum', 'psychology', 'responses', 'circumstances', 'identification', 'appliances', 'elementary', 'unlimited', 'printable', 'enforcement', 'hardcover', 'celebrity', 'chocolate', 'hampshire', 'bluetooth', 'controlled', 'requirement', 'authorities', 'representatives', 'pregnancy', 'biography', 'attractions', 'transactions', 'authorized', 'retirement', 'financing', 'efficiency', 'efficient', 'commitment', 'specialty', 'interviews', 'qualified', 'discovery', 'classified', 'confidence', 'lifestyle', 'consistent', 'clearance', 'connections', 'inventory', 'converter', 'organisation', 'objective', 'indicated', 'securities', 'volunteer', 'democratic', 'switzerland', 'parameter', 'processor', 'dimensions', 'contribute', 'challenges', 'recognition', 'submission', 'encourage', 'regulatory', 'inspection', 'consumers', 'territory', 'transaction', 'manchester', 'contributions', 'continuous', 'resulting', 'cambridge', 'initiative', 'execution', 'disability', 'increases', 'contractor', 'examination', 'indicates', 'committed', 'extensive', 'affordable', 'candidate', 'databases', 'outstanding', 'perspective', 'messenger', 'tournament', 'consideration', 'discounts', 'catalogue', 'publishers', 'caribbean', 'reservation', 'remaining', 'depending', 'expansion', 'purchased', 'performing', 'collected', 'absolutely', 'featuring', 'implement', 'scheduled', 'calculator', 'significantly', 'temporary', 'sufficient', 'awareness', 'vancouver', 'contribution', 'measurement', 'constitution', 'packaging', 'consultation', 'northwest', 'classroom', 'democracy', 'wallpaper', 'merchandise', 'resistance', 'baltimore', 'candidates', 'charlotte', 'biological', 'transition', 'preferences', 'instrument', 'classification', 'physician', 'hollywood', 'wikipedia', 'spiritual', 'photographs', 'relatively', 'satisfaction', 'represents', 'pittsburgh', 'preferred', 'intellectual', 'comfortable', 'interaction', 'listening', 'effectively', 'experimental', 'revolution', 'consolidation', 'landscape', 'dependent', 'mechanical', 'consultants', 'applicant', 'cooperation', 'acquisition', 'implemented', 'directories', 'recognized', 'notification', 'licensing', 'textbooks', 'diversity', 'cleveland', 'investments', 'accessibility', 'sensitive', 'templates', 'completion', 'universities', 'technique', 'contractors', 'subscriptions', 'calculate', 'alexander', 'broadcast', 'converted', 'anniversary', 'improvements', 'specification', 'accessible', 'accessory', 'typically', 'representation', 'arrangements', 'conferences', 'uniprotkb', 'consumption', 'birmingham', 'afternoon', 'consultant', 'controller', 'ownership', 'committees', 'legislative', 'researchers', 'unsubscribe', 'molecular', 'residence', 'attorneys', 'operators', 'sustainable', 'philippines', 'statistical', 'innovation', 'employers', 'definitions', 'elections', 'stainless', 'newspapers', 'hospitals', 'exception', 'successfully', 'indonesia', 'primarily', 'capabilities', 'recommendation', 'recruitment', 'organized', 'improving', 'expensive', 'organisations', 'explained', 'programmes', 'expertise', 'mechanism', 'jewellery', 'eventually', 'agreements', 'considering', 'innovative', 'conclusion', 'disorders', 'collaboration', 'detection', 'formation', 'engineers', 'proposals', 'moderator', 'tutorials', 'settlement', 'collectables', 'fantastic', 'governments', 'purchasing', 'appointed', 'operational', 'corresponding', 'descriptions', 'determination', 'animation', 'productions', 'telecommunications', 'instructor', 'approaches', 'highlights', 'designers', 'melbourne', 'scientists', 'blackjack', 'argentina', 'possibility', 'commissioner', 'dangerous', 'reliability', 'unfortunately', 'respectively', 'volunteers', 'attachment', 'appointment', 'workshops', 'hurricane', 'represented', 'mortgages', 'responsibilities', 'carefully', 'productivity', 'investors', 'underground', 'diagnosis', 'principle', 'vacations', 'calculated', 'appearance', 'incorporated', 'notebooks', 'algorithm', 'valentine', 'involving', 'investing', 'christopher', 'admission', 'terrorism', 'parliament', 'situations', 'allocated', 'corrections', 'structural', 'municipal', 'describes', 'disabilities', 'substance', 'prohibited', 'addressed', 'simulation', 'initiatives', 'concentration', 'interpretation', 'bankruptcy', 'optimization', 'substances', 'discovered', 'restrictions', 'participating', 'exhibition', 'composition', 'nationwide', 'definitely', 'existence', 'commentary', 'limousines', 'developments', 'immigration', 'destinations', 'necessarily', 'attribute', 'apparently', 'surrounding', 'mountains', 'popularity', 'postposted', 'coordinator', 'obviously', 'fundamental', 'substantial', 'progressive', 'championship', 'sacramento', 'impossible', 'depression', 'testimonials', 'memorabilia', 'cartridge', 'explanation', 'cincinnati', 'subsection', 'electricity', 'permitted', 'workplace', 'confirmed', 'wallpapers', 'infection', 'eligibility', 'involvement', 'placement', 'observations', 'vbulletin', 'subsequent', 'motorcycle', 'disclosure', 'establishment', 'presentations', 'undergraduate', 'occupation', 'donations', 'associations', 'citysearch', 'radiation', 'seriously', 'elsewhere', 'pollution', 'conservative', 'guestbook', 'effectiveness', 'demonstrate', 'atmosphere', 'experiment', 'purchases', 'federation', 'assignment', 'chemicals', 'everybody', 'nashville', 'counseling', 'acceptable', 'satisfied', 'measurements', 'milwaukee', 'medication', 'warehouse', 'shareware', 'violation', 'configure', 'stability', 'southwest', 'institutional', 'expectations', 'independence', 'metabolism', 'personally', 'excellence', 'somewhere', 'attributes', 'recognize', 'screening', 'thumbnail', 'forgotten', 'intelligent', 'edinburgh', 'obligation', 'regardless', 'restricted', 'republican', 'merchants', 'attendance', 'arguments', 'amsterdam', 'adventures', 'announcement', 'appreciate', 'regularly', 'mechanisms', 'customize', 'tradition', 'indicators', 'emissions', 'physicians', 'complaint', 'experiments', 'afghanistan', 'scholarship', 'governance', 'supplements', 'camcorder', 'implementing', 'ourselves', 'conversation', 'capability', 'producing', 'precision', 'contributed', 'reproduction', 'ingredients', 'franchise', 'complaints', 'promotions', 'rehabilitation', 'maintaining', 'environments', 'reception', 'correctly', 'consequences', 'geography', 'appearing', 'integrity', 'discrimination', 'processed', 'implications', 'functionality', 'intermediate', 'emotional', 'platforms', 'overnight', 'geographic', 'preliminary', 'districts', 'introduce', 'promotional', 'chevrolet', 'specialists', 'generator', 'suspension', 'correction', 'authentication', 'communicate', 'supplement', 'showtimes', 'promoting', 'machinery', 'bandwidth', 'probability', 'dimension', 'schedules', 'admissions', 'quarterly', 'illustrated', 'continental', 'alternate', 'achievement', 'limitations', 'automated', 'passenger', 'convenient', 'orientation', 'childhood', 'flexibility', 'jurisdiction', 'displaying', 'encouraged', 'cartridges', 'declaration', 'automation', 'advantages', 'preparing', 'recipient', 'extensions', 'athletics', 'southeast', 'alternatives', 'determining', 'personalized', 'conditioning', 'partnerships', 'destruction', 'increasingly', 'migration', 'basically', 'conventional', 'applicants', 'occupational', 'adjustment', 'treatments', 'camcorders', 'difficulty', 'collective', 'coalition', 'enrollment', 'producers', 'collector', 'interfaces', 'advertisers', 'representing', 'observation', 'restoration', 'convenience', 'returning', 'opposition', 'container', 'defendant', 'confirmation', 'supervisor', 'peripherals', 'bestsellers', 'departure', 'minneapolis', 'interactions', 'intervention', 'attraction', 'modification', 'customized', 'understood', 'assurance', 'happening', 'amendments', 'metropolitan', 'compilation', 'verification', 'attractive', 'recordings', 'jefferson', 'gardening', 'obligations', 'orchestra', 'polyphonic', 'outsourcing', 'adjustable', 'allocation', 'discipline', 'demonstrated', 'identifying', 'alphabetical', 'dispatched', 'installing', 'voluntary', 'photographer', 'messaging', 'constructed', 'additions', 'requiring', 'engagement', 'refinance', 'calendars', 'arrangement', 'conclusions', 'bibliography', 'compatibility', 'furthermore', 'cooperative', 'measuring', 'jacksonville', 'headquarters', 'transfers', 'transformation', 'attachments', 'administrators', 'personality', 'facilitate', 'subscriber', 'priorities', 'bookstore', 'parenting', 'incredible', 'commonwealth', 'pharmaceutical', 'manhattan', 'workforce', 'organizational', 'portuguese', 'everywhere', 'discharge', 'halloween', 'hazardous', 'methodology', 'housewares', 'reputation', 'resistant', 'democrats', 'recycling', 'qualifications', 'slideshow', 'variation', 'transferred', 'photograph', 'distributor', 'underlying', 'wrestling', 'photoshop', 'gathering', 'projection', 'mathematical', 'specialized', 'diagnostic', 'indianapolis', 'corporations', 'criticism', 'automobile', 'confidential', 'statutory', 'accommodations', 'northeast', 'downloaded', 'paintings', 'injection', 'yorkshire', 'populations', 'protective', 'initially', 'indicator', 'eliminate', 'sunglasses', 'preference', 'threshold', 'venezuela', 'exploration', 'sequences', 'astronomy', 'translate', 'announces', 'compression', 'establishing', 'constitutional', 'perfectly', 'instantly', 'litigation', 'submissions', 'broadcasting', 'horizontal', 'terrorist', 'informational', 'ecommerce', 'suffering', 'prospective', 'ultimately', 'artificial', 'spectacular', 'coordination', 'connector', 'affiliated', 'activation', 'naturally', 'subscribers', 'mitsubishi', 'underwear', 'potentially', 'constraints', 'inclusive', 'dimensional', 'considerable', 'selecting', 'processors', 'pantyhose', 'difficulties', 'complexity', 'constantly', 'barcelona', 'presidential', 'documentary', 'territories', 'palestinian', 'legislature', 'hospitality', 'procurement', 'theoretical', 'exercises', 'surveillance', 'protocols', 'highlight', 'substitute', 'inclusion', 'hopefully', 'brilliant', 'evaluated', 'assignments', 'termination', 'households', 'authentic', 'montgomery', 'architectural', 'louisville', 'macintosh', 'movements', 'amenities', 'virtually', 'authorization', 'projector', 'comparative', 'psychological', 'surprised', 'genealogy', 'expenditure', 'liverpool', 'connectivity', 'algorithms', 'similarly', 'collaborative', 'excluding', 'commander', 'suggestion', 'spotlight', 'investigate', 'connecting', 'logistics', 'proportion', 'significance', 'symposium', 'essentials', 'protecting', 'transmitted', 'screenshots', 'intensive', 'switching', 'correspondence', 'supervision', 'expenditures', 'separation', 'testimony', 'celebrities', 'mandatory', 'boundaries', 'syndication', 'celebration', 'filtering', 'luxembourg', 'offensive', 'deployment', 'colleagues', 'separated', 'directive', 'governing', 'retailers', 'occasionally', 'attending', 'recruiting', 'instructional', 'traveling', 'permissions', 'biotechnology', 'prescribed', 'catherine', 'reproduced', 'calculation', 'consolidated', 'occasions', 'equations', 'exceptional', 'respondents', 'considerations', 'queensland', 'musicians', 'composite', 'unavailable', 'essentially', 'designing', 'assessments', 'brunswick', 'sensitivity', 'preservation', 'streaming', 'intensity', 'technological', 'syndicate', 'antivirus', 'addressing', 'discounted', 'bangladesh', 'constitute', 'concluded', 'desperate', 'demonstration', 'governmental', 'manufactured', 'graduation', 'variations', 'addiction', 'springfield', 'synthesis', 'undefined', 'unemployment', 'enhancement', 'newcastle', 'performances', 'societies', 'brazilian', 'identical', 'petroleum', 'norwegian', 'retention', 'exchanges', 'soundtrack', 'wondering', 'profession', 'separately', 'physiology', 'collecting', 'participant', 'scholarships', 'recreational', 'dominican', 'friendship', 'expanding', 'provincial', 'investigations', 'medications', 'rochester', 'advertiser', 'encryption', 'downloadable', 'sophisticated', 'possession', 'laboratories', 'vegetables', 'thumbnails', 'stockings', 'respondent', 'destroyed', 'manufacture', 'wordpress', 'vulnerability', 'accountability', 'celebrate', 'accredited', 'appliance', 'compressed', 'scheduling', 'perspectives', 'mortality', 'christians', 'therapeutic', 'impressive', 'accordingly', 'architect', 'challenging', 'microwave', 'accidents', 'relocation', 'contributors', 'violations', 'temperatures', 'competitions', 'discretion', 'cosmetics', 'repository', 'concentrations', 'christianity', 'negotiations', 'realistic', 'generating', 'christina', 'congressional', 'photographic', 'modifications', 'millennium', 'achieving', 'fisheries', 'exceptions', 'reactions', 'macromedia', 'companion', 'divisions', 'additionally', 'fellowship', 'victorian', 'copyrights', 'lithuania', 'mastercard', 'chronicles', 'obtaining', 'distribute', 'decorative', 'enlargement', 'campaigns', 'conjunction', 'instances', 'indigenous', 'validation', 'corruption', 'incentives', 'cholesterol', 'differential', 'scientist', 'starsmerchant', 'arthritis', 'nevertheless', 'practitioners', 'transcript', 'inflation', 'compounds', 'contracting', 'structured', 'reasonably', 'graduates', 'recommends', 'controlling', 'distributors', 'arlington', 'particles', 'extraordinary', 'indicating', 'coordinate', 'exclusively', 'limitation', 'widescreen', 'illustration', 'construct', 'inquiries', 'inspiration', 'affecting', 'downloading', 'aggregate', 'forecasts', 'complicated', 'shopzilla', 'decorating', 'expressions', 'shakespeare', 'connectors', 'conflicts', 'travelers', 'offerings', 'incorrect', 'furnishings', 'guatemala', 'perception', 'renaissance', 'pathology', 'ordinance', 'photographers', 'infections', 'configured', 'festivals', 'possibilities', 'contributing', 'analytical', 'circulation', 'assumption', 'jerusalem', 'transexuales', 'invention', 'technician', 'executives', 'enquiries', 'cognitive', 'exploring', 'registrar', 'supporters', 'withdrawal', 'predicted', 'saskatchewan', 'cancellation', 'ministers', 'veterinary', 'prostores', 'relevance', 'incentive', 'butterfly', 'mechanics', 'numerical', 'reflection', 'accompanied', 'invitation', 'princeton', 'spirituality', 'meanwhile', 'proprietary', 'childrens', 'thumbzilla', 'porcelain', 'pichunter', 'translated', 'columnists', 'consensus', 'delivering', 'journalism', 'intention', 'undertaken', 'statewide', 'semiconductor', 'illustrations', 'happiness', 'substantially', 'identifier', 'calculations', 'conducting', 'accomplished', 'calculators', 'impression', 'correlation', 'fragrance', 'neighbors', 'transparent', 'charleston', 'champions', 'selections', 'projectors', 'inappropriate', 'comparing', 'vocational', 'pharmacies', 'introducing', 'appreciated', 'albuquerque', 'distinguished', 'projected', 'assumptions', 'shareholders', 'developmental', 'regulated', 'anticipated', 'completing', 'comparable', 'confusion', 'copyrighted', 'warranties', 'documented', 'paperbacks', 'keyboards', 'vulnerable', 'reflected', 'respiratory', 'notifications', 'transexual', 'mainstream', 'evaluating', 'subcommittee', 'maternity', 'journalists', 'foundations', 'volleyball', 'liabilities', 'decreased', 'tolerance', 'creativity', 'describing', 'lightning', 'quotations', 'inspector', 'bookmarks', 'behavioral', 'riverside', 'bathrooms', 'abilities', 'initiated', 'nonprofit', 'lancaster', 'suspended', 'containers', 'attitudes', 'simultaneously', 'integrate', 'sociology', 'screenshot', 'exhibitions', 'confident', 'retrieved', 'officially', 'consortium', 'recipients', 'delicious', 'traditions', 'periodically', 'hungarian', 'referring', 'transform', 'educators', 'vegetable', 'humanities', 'independently', 'alignment', 'henderson', 'britannica', 'competitors', 'visibility', 'consciousness', 'encounter', 'resolutions', 'accessing', 'attempted', 'witnesses', 'administered', 'strengthen', 'frederick', 'aggressive', 'advertisements', 'sublimedirectory', 'disturbed', 'determines', 'sculpture', 'motivation', 'pharmacology', 'passengers', 'quantities', 'petersburg', 'consistently', 'powerpoint', 'obituaries', 'punishment', 'appreciation', 'subsequently', 'providence', 'restriction', 'incorporate', 'backgrounds', 'treasurer', 'lightweight', 'transcription', 'complications', 'scripting', 'remembered', 'synthetic', 'testament', 'specifics', 'partially', 'wilderness', 'generations', 'tournaments', 'sponsorship', 'headphones', 'proceeding', 'volkswagen', 'uncertainty', 'breakdown', 'reconstruction', 'subsidiary', 'strengths', 'encouraging', 'furnished', 'terrorists', 'comparisons', 'beneficial', 'distributions', 'viewpicture', 'threatened', 'republicans', 'discusses', 'responded', 'abstracts', 'prediction', 'pharmaceuticals', 'thesaurus', 'individually', 'battlefield', 'literally', 'ecological', 'appraisal', 'consisting', 'submitting', 'citations', 'geographical', 'mozambique', 'disclaimers', 'championships', 'sheffield', 'finishing', 'wellington', 'prospects', 'bulgarian', 'aboriginal', 'remarkable', 'preventing', 'productive', 'boulevard', 'compliant', 'penalties', 'imagination', 'refurbished', 'activated', 'conferencing', 'armstrong', 'politicians', 'trackbacks', 'accommodate', 'christine', 'accepting', 'precipitation', 'isolation', 'sustained', 'approximate', 'programmer', 'greetings', 'inherited', 'incomplete', 'chronicle', 'legitimate', 'biographies', 'investigator', 'plaintiff', 'prisoners', 'mediterranean', 'nightlife', 'architects', 'entrepreneur', 'freelance', 'excessive', 'screensaver', 'valuation', 'unexpected', 'cigarette', 'characteristic', 'metallica', 'consequently', 'appointments', 'narrative', 'academics', 'quantitative', 'screensavers', 'subdivision', 'distinction', 'livestock', 'exemption', 'sustainability', 'formatting', 'nutritional', 'nicaragua', 'affiliation', 'relatives', 'satisfactory', 'revolutionary', 'bracelets', 'telephony', 'breathing', 'thickness', 'adjustments', 'graphical', 'discussing', 'aerospace', 'meaningful', 'maintains', 'shortcuts', 'voyeurweb', 'extending', 'specifies', 'accreditation', 'blackberry', 'meditation', 'microphone', 'macedonia', 'combining', 'instrumental', 'organizing', 'moderators', 'kazakhstan', 'standings', 'partition', 'invisible', 'translations', 'commodity', 'kilometers', 'thanksgiving', 'guarantees', 'indication', 'congratulations', 'cigarettes', 'controllers', 'consultancy', 'conventions', 'coordinates', 'responding', 'physically', 'stakeholders', 'hydrocodone', 'consecutive', 'attempting', 'representations', 'competing', 'peninsula', 'accurately', 'considers', 'ministries', 'vacancies', 'parliamentary', 'acknowledge', 'thoroughly', 'nottingham', 'identifies', 'questionnaire', 'qualification', 'modelling', 'miniature', 'interstate', 'consequence', 'systematic', 'perceived', 'madagascar', 'presenting', 'troubleshooting', 'uzbekistan', 'centuries', 'magnitude', 'richardson', 'fragrances', 'vocabulary', 'earthquake', 'fundraising', 'geological', 'assessing', 'introduces', 'webmasters', 'computational', 'acdbentity', 'participated', 'handhelds', 'answering', 'impressed', 'conspiracy', 'organizer', 'combinations', 'preceding', 'cumulative', 'amplifier', 'arbitrary', 'prominent', 'lexington', 'contacted', 'recorders', 'occasional', 'innovations', 'postcards', 'reviewing', 'explicitly', 'transsexual', 'citizenship', 'informative', 'girlfriend', 'bloomberg', 'hierarchy', 'influenced', 'abandoned', 'complement', 'mauritius', 'checklist', 'requesting', 'lauderdale', 'scenarios', 'extraction', 'elevation', 'utilization', 'beverages', 'calibration', 'efficiently', 'entertaining', 'prerequisite', 'hypothesis', 'medicines', 'regression', 'enhancements', 'renewable', 'intersection', 'passwords', 'consistency', 'collectors', 'azerbaijan', 'astrology', 'occurring', 'supplemental', 'travelling', 'induction', 'precisely', 'spreading', 'provinces', 'widespread', 'incidence', 'incidents', 'enhancing', 'interference', 'palestine', 'listprice', 'atmospheric', 'knowledgestorm', 'referenced', 'publicity', 'proposition', 'allowance', 'designation', 'duplicate', 'criterion', 'civilization', 'vietnamese', 'tremendous', 'corrected', 'encountered', 'internationally', 'surrounded', 'creatures', 'commented', 'accomplish', 'vegetarian', 'newfoundland', 'investigated', 'ambassador', 'stephanie', 'contacting', 'vegetation', 'findarticles', 'specially', 'infectious', 'continuity', 'phenomenon', 'conscious', 'referrals', 'differently', 'integrating', 'revisions', 'reasoning', 'charitable', 'annotated', 'convinced', 'burlington', 'replacing', 'researcher', 'watershed', 'occupations', 'acknowledged', 'equilibrium', 'characterized', 'privilege', 'qualifying', 'estimation', 'pediatric', 'techrepublic', 'institutes', 'brochures', 'traveller', 'appropriations', 'suspected', 'benchmark', 'beginners', 'instructors', 'highlighted', 'stationery', 'unauthorized', 'competent', 'contributor', 'demonstrates', 'gradually', 'desirable', 'journalist', 'afterwards', 'religions', 'explosion', 'signatures', 'disciplines', 'daughters', 'conversations', 'simplified', 'motherboard', 'bibliographic', 'champagne', 'deviation', 'superintendent', 'housewives', 'influences', 'inspections', 'irrigation', 'hydraulic', 'robertson', 'penetration', 'conviction', 'omissions', 'retrieval', 'qualities', 'prototype', 'importantly', 'apparatus', 'explaining', 'nomination', 'empirical', 'dependence', 'sexuality', 'polyester', 'commitments', 'suggesting', 'remainder', 'privileges', 'televisions', 'specializing', 'commodities', 'motorcycles', 'concentrate', 'reproductive', 'molecules', 'refrigerator', 'intervals', 'sentences', 'exclusion', 'workstation', 'holocaust', 'receivers', 'disposition', 'navigator', 'investigators', 'marijuana', 'cathedral', 'fairfield', 'fascinating', 'landscapes', 'lafayette', 'computation', 'cardiovascular', 'salvation', 'predictions', 'accompanying', 'selective', 'arbitration', 'configuring', 'editorials', 'sacrifice', 'removable', 'convergence', 'gibraltar', 'anthropology', 'malpractice', 'reporters', 'necessity', 'rendering', 'hepatitis', 'nationally', 'waterproof', 'specialties', 'humanitarian', 'invitations', 'functioning', 'economies', 'alexandria', 'bacterial', 'undertake', 'continuously', 'achievements', 'convertible', 'secretariat', 'paragraphs', 'adolescent', 'nominations', 'cancelled', 'introductory', 'reservoir', 'occurrence', 'worcester', 'demographic', 'disciplinary', 'respected', 'portraits', 'interpreted', 'evaluations', 'elimination', 'hypothetical', 'immigrants', 'complimentary', 'helicopter', 'performer', 'commissions', 'powerseller', 'graduated', 'surprising', 'unnecessary', 'dramatically', 'yugoslavia', 'characterization', 'likelihood', 'fundamentals', 'contamination', 'endangered', 'compromise', 'expiration', 'namespace', 'peripheral', 'negotiation', 'opponents', 'nominated', 'confidentiality', 'electoral', 'changelog', 'alternatively', 'greensboro', 'controversial', 'recovered', 'upgrading', 'frontpage', 'demanding', 'defensive', 'forbidden', 'programmers', 'monitored', 'installations', 'deutschland', 'practitioner', 'motivated', 'smithsonian', 'examining', 'revelation', 'delegation', 'dictionaries', 'greenhouse', 'transparency', 'currencies', 'survivors', 'positioning', 'descending', 'temporarily', 'frequencies', 'reflections', 'municipality', 'detective', 'experiencing', 'fireplace', 'endorsement', 'psychiatry', 'persistent', 'summaries', 'looksmart', 'magnificent', 'colleague', 'adaptation', 'paintball', 'enclosure', 'supervisors', 'westminster', 'distances', 'absorption', 'treasures', 'transcripts', 'disappointed', 'continually', 'communist', 'collectible', 'entrepreneurs', 'creations', 'acquisitions', 'biodiversity', 'excitement', 'presently', 'mysterious', 'librarian', 'subsidiaries', 'stockholm', 'indonesian', 'therapist', 'promising', 'relaxation', 'thereafter', 'commissioners', 'forwarding', 'nightmare', 'reductions', 'southampton', 'organisms', 'telescope', 'portsmouth', 'advancement', 'harassment', 'generators', 'generates', 'replication', 'inexpensive', 'receptors', 'interventions', 'huntington', 'internship', 'aluminium', 'snowboard', 'beastality', 'evanescence', 'coordinated', 'shipments', 'antarctica', 'chancellor', 'controversy', 'legendary', 'beautifully', 'antibodies', 'examinations', 'immunology', 'departmental', 'terminology', 'gentleman', 'reproduce', 'convicted', 'roommates', 'threatening', 'spokesman', 'activists', 'frankfurt', 'encourages', 'assembled', 'restructuring', 'terminals', 'simulations', 'sufficiently', 'conditional', 'crossword', 'conceptual', 'liechtenstein', 'translator', 'automobiles', 'continent', 'longitude', 'challenged', 'telecharger', 'insertion', 'instrumentation', 'constraint', 'groundwater', 'strengthening', 'insulation', 'infringement', 'subjective', 'swaziland', 'varieties', 'mediawiki', 'configurations'];
 
 /**
@@ -1549,50 +1375,40 @@ function FigmaComponent({
     allowFullScreen: true
   }));
 }
-
 class FigmaNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static getType() {
     return 'figma';
   }
-
   static clone(node) {
     return new FigmaNode(node.__id, node.__format, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createFigmaNode(serializedNode.documentID);
     node.setFormat(serializedNode.format);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       documentID: this.__id,
       type: 'figma',
       version: 1
     };
   }
-
   constructor(id, format, key) {
     super(format, key);
-
     _defineProperty(this, "__id", void 0);
-
     this.__id = id;
   }
-
   updateDOM() {
     return false;
   }
-
   getId() {
     return this.__id;
   }
-
   getTextContent(_includeInert, _includeDirectionless) {
     return `https://www.figma.com/file/${this.__id}`;
   }
-
   decorate(_editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
     const className = {
@@ -1606,11 +1422,9 @@ class FigmaNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       documentID: this.__id
     });
   }
-
   isInline() {
     return false;
   }
-
 }
 function $createFigmaNode(documentID) {
   return new FigmaNode(documentID);
@@ -1630,7 +1444,6 @@ function FigmaPlugin() {
     if (!editor.hasNodes([FigmaNode])) {
       throw new Error('FigmaPlugin: FigmaNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_FIGMA_COMMAND, payload => {
       const figmaNode = $createFigmaNode(payload);
       utils.$insertNodeToNearestRoot(figmaNode);
@@ -1654,7 +1467,6 @@ function TwitterPlugin() {
     if (!editor.hasNodes([TweetNode])) {
       throw new Error('TwitterPlugin: TweetNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_TWEET_COMMAND, payload => {
       const tweetNode = $createTweetNode(payload);
       utils.$insertNodeToNearestRoot(tweetNode);
@@ -1684,51 +1496,41 @@ function YouTubeComponent({
     title: "YouTube video"
   }));
 }
-
 function convertYoutubeElement(domNode) {
   const videoID = domNode.getAttribute('data-lexical-youtube');
-
   if (videoID) {
     const node = $createYouTubeNode(videoID);
     return {
       node
     };
   }
-
   return null;
 }
-
 class YouTubeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static getType() {
     return 'youtube';
   }
-
   static clone(node) {
     return new YouTubeNode(node.__id, node.__format, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createYouTubeNode(serializedNode.videoID);
     node.setFormat(serializedNode.format);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       type: 'youtube',
       version: 1,
       videoID: this.__id
     };
   }
-
   constructor(id, format, key) {
     super(format, key);
-
     _defineProperty(this, "__id", void 0);
-
     this.__id = id;
   }
-
   exportDOM() {
     const element = document.createElement('iframe');
     element.setAttribute('data-lexical-youtube', this.__id);
@@ -1743,14 +1545,12 @@ class YouTubeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       element
     };
   }
-
   static importDOM() {
     return {
       iframe: domNode => {
         if (!domNode.hasAttribute('data-lexical-youtube')) {
           return null;
         }
-
         return {
           conversion: convertYoutubeElement,
           priority: 1
@@ -1758,19 +1558,15 @@ class YouTubeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       }
     };
   }
-
   updateDOM() {
     return false;
   }
-
   getId() {
     return this.__id;
   }
-
   getTextContent(_includeInert, _includeDirectionless) {
     return `https://www.youtube.com/watch?v=${this.__id}`;
   }
-
   decorate(_editor, config) {
     const embedBlockTheme = config.theme.embedBlock || {};
     const className = {
@@ -1784,11 +1580,9 @@ class YouTubeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       videoID: this.__id
     });
   }
-
   isInline() {
     return false;
   }
-
 }
 function $createYouTubeNode(videoID) {
   return new YouTubeNode(videoID);
@@ -1808,7 +1602,6 @@ function YouTubePlugin() {
     if (!editor.hasNodes([YouTubeNode])) {
       throw new Error('YouTubePlugin: YouTubeNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_YOUTUBE_COMMAND, payload => {
       const youTubeNode = $createYouTubeNode(payload);
       utils.$insertNodeToNearestRoot(youTubeNode);
@@ -1840,14 +1633,12 @@ const YoutubeEmbedConfig = {
   parseUrl: async url => {
     const match = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/.exec(url);
     const id = match ? match?.[2].length === 11 ? match[2] : null : null;
-
     if (id != null) {
       return {
         id,
         url
       };
     }
-
     return null;
   },
   type: 'youtube-video'
@@ -1869,14 +1660,12 @@ const TwitterEmbedConfig = {
   // Determine if a given URL is a match and return url data.
   parseUrl: text => {
     const match = /^https:\/\/twitter\.com\/(#!\/)?(\w+)\/status(es)*\/(\d+)$/.exec(text);
-
     if (match != null) {
       return {
         id: match[4],
         url: match[0]
       };
     }
-
     return null;
   },
   type: 'tweet'
@@ -1894,20 +1683,17 @@ const FigmaEmbedConfig = {
   // Determine if a given URL is a match and return url data.
   parseUrl: text => {
     const match = /https:\/\/([\w.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(?:\/.*)?$/.exec(text);
-
     if (match != null) {
       return {
         id: match[3],
         url: match[0]
       };
     }
-
     return null;
   },
   type: 'figma'
 };
 const EmbedConfigs = [TwitterEmbedConfig, YoutubeEmbedConfig, FigmaEmbedConfig];
-
 function AutoEmbedMenuItem({
   index,
   isSelected,
@@ -1916,11 +1702,9 @@ function AutoEmbedMenuItem({
   option
 }) {
   let className = 'item';
-
   if (isSelected) {
     className += ' selected';
   }
-
   return /*#__PURE__*/React.createElement("li", {
     key: option.key,
     tabIndex: -1,
@@ -1935,7 +1719,6 @@ function AutoEmbedMenuItem({
     className: "text"
   }, option.title));
 }
-
 function AutoEmbedMenu({
   options,
   selectedItemIndex,
@@ -1953,7 +1736,6 @@ function AutoEmbedMenu({
     option: option
   }))));
 }
-
 const debounce = (callback, delay) => {
   let timeoutId;
   return text => {
@@ -1963,7 +1745,6 @@ const debounce = (callback, delay) => {
     }, delay);
   };
 };
-
 function AutoEmbedDialog({
   embedConfig,
   onClose
@@ -1973,7 +1754,6 @@ function AutoEmbedDialog({
   const [embedResult, setEmbedResult] = React.useState(null);
   const validateText = React.useMemo(() => debounce(inputText => {
     const urlMatch = LexicalAutoEmbedPlugin.URL_MATCHER.exec(inputText);
-
     if (embedConfig != null && inputText != null && urlMatch != null) {
       Promise.resolve(embedConfig.parseUrl(inputText)).then(parseResult => {
         setEmbedResult(parseResult);
@@ -1982,14 +1762,12 @@ function AutoEmbedDialog({
       setEmbedResult(null);
     }
   }, 200), [embedConfig, embedResult]);
-
   const onClick = () => {
     if (embedResult != null) {
       embedConfig.insertNode(editor, embedResult);
       onClose();
     }
   };
-
   return /*#__PURE__*/React.createElement("div", {
     style: {
       width: '600px'
@@ -2017,14 +1795,12 @@ function AutoEmbedDialog({
 }
 function AutoEmbedPlugin() {
   const [modal, showModal] = useModal();
-
   const openEmbedModal = embedConfig => {
     showModal(`Embed ${embedConfig.contentName}`, onClose => /*#__PURE__*/React.createElement(AutoEmbedDialog, {
       embedConfig: embedConfig,
       onClose: onClose
     }));
   };
-
   const getMenuOptions = (activeEmbedConfig, embedFn, dismissFn) => {
     return [new LexicalAutoEmbedPlugin.AutoEmbedOption('Dismiss', {
       onSelect: dismissFn
@@ -2032,7 +1808,6 @@ function AutoEmbedPlugin() {
       onSelect: embedFn
     })];
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, modal, /*#__PURE__*/React.createElement(LexicalAutoEmbedPlugin.LexicalAutoEmbedPlugin, {
     embedConfigs: EmbedConfigs,
     onOpenEmbedModalForConfig: openEmbedModal,
@@ -2042,7 +1817,7 @@ function AutoEmbedPlugin() {
       options,
       selectOptionAndCleanUp,
       setHighlightedIndex
-    }) => anchorElementRef.current ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
+    }) => anchorElementRef.current ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
       className: "typeahead-popover auto-embed-menu",
       style: {
         marginLeft: anchorElementRef.current.style.width,
@@ -2073,11 +1848,9 @@ const URL_MATCHER$1 = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,25
 const EMAIL_MATCHER = /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 const MATCHERS = [text => {
   const match = URL_MATCHER$1.exec(text);
-
   if (match === null) {
     return null;
   }
-
   const fullMatch = match[0];
   return {
     index: match.index,
@@ -2116,53 +1889,44 @@ function ClickableLinkPlugin({
     function onClick(e) {
       const event = e;
       const linkDomNode = getLinkDomNode(event, editor);
-
       if (linkDomNode === null) {
         return;
       }
-
       const href = linkDomNode.getAttribute('href');
-
       if (linkDomNode.getAttribute('contenteditable') === 'false' || href === undefined) {
-        return;
-      } // Allow user to select link text without following url
-
-
-      const selection = editor.getEditorState().read(lexical.$getSelection);
-
-      if (lexical.$isRangeSelection(selection) && !selection.isCollapsed()) {
         return;
       }
 
+      // Allow user to select link text without following url
+      const selection = editor.getEditorState().read(lexical.$getSelection);
+      if (lexical.$isRangeSelection(selection) && !selection.isCollapsed()) {
+        return;
+      }
       let linkNode = null;
       editor.update(() => {
         const maybeLinkNode = lexical.$getNearestNodeFromDOMNode(linkDomNode);
-
         if (link.$isLinkNode(maybeLinkNode)) {
           linkNode = maybeLinkNode;
         }
       });
-
       if (linkNode === null || filter !== undefined && !filter(event, linkNode)) {
         return;
       }
-
       try {
         if (href !== null) {
           const isMiddle = event.type === 'auxclick' && event.button === 1;
           window.open(href, newTab || event.metaKey || event.ctrlKey || isMiddle ? '_blank' : '_self');
           event.preventDefault();
         }
-      } catch {// It didn't work, which is better than throwing an exception!
+      } catch {
+        // It didn't work, which is better than throwing an exception!
       }
     }
-
     return editor.registerRootListener((rootElement, prevRootElement) => {
       if (prevRootElement !== null) {
         prevRootElement.removeEventListener('click', onClick);
         prevRootElement.removeEventListener('auxclick', onClick);
       }
-
       if (rootElement !== null) {
         rootElement.addEventListener('click', onClick);
         rootElement.addEventListener('auxclick', onClick);
@@ -2171,23 +1935,18 @@ function ClickableLinkPlugin({
   }, [editor, filter, newTab]);
   return null;
 }
-
 function isLinkDomNode(domNode) {
   return domNode.nodeName.toLowerCase() === 'a';
 }
-
 function getLinkDomNode(event, editor) {
   return editor.getEditorState().read(() => {
     const domNode = event.target;
-
     if (isLinkDomNode(domNode)) {
       return domNode;
     }
-
     if (domNode.parentNode && isLinkDomNode(domNode.parentNode)) {
       return domNode.parentNode;
     }
-
     return null;
   });
 }
@@ -2226,26 +1985,20 @@ function CopyButton({
   const removeSuccessIcon = useDebounce(() => {
     setCopyCompleted(false);
   }, 1000);
-
   async function handleClick() {
     const codeDOMNode = getCodeDOMNode();
-
     if (!codeDOMNode) {
       return;
     }
-
     let content = '';
     editor.update(() => {
       const codeNode = lexical.$getNearestNodeFromDOMNode(codeDOMNode);
-
       if (code.$isCodeNode(codeNode)) {
         content = codeNode.getTextContent();
       }
-
       const selection = lexical.$getSelection();
       lexical.$setSelection(selection);
     });
-
     try {
       await navigator.clipboard.writeText(content);
       setCopyCompleted(true);
@@ -2254,7 +2007,6 @@ function CopyButton({
       console.error('Failed to copy: ', err);
     }
   }
-
   return /*#__PURE__*/React.createElement("button", {
     className: "menu-item",
     onClick: handleClick,
@@ -2274,7 +2026,6 @@ function CopyButton({
  *
  */
 const CODE_PADDING = 8;
-
 function CodeActionMenuContainer({
   anchorElem
 }) {
@@ -2288,38 +2039,31 @@ function CodeActionMenuContainer({
   });
   const codeSetRef = React.useRef(new Set());
   const codeDOMNodeRef = React.useRef(null);
-
   function getCodeDOMNode() {
     return codeDOMNodeRef.current;
   }
-
   const debouncedOnMouseMove = useDebounce(event => {
     const {
       codeDOMNode,
       isOutside
     } = getMouseInfo(event);
-
     if (isOutside) {
       setShown(false);
       return;
     }
-
     if (!codeDOMNode) {
       return;
     }
-
     codeDOMNodeRef.current = codeDOMNode;
     let codeNode = null;
     let _lang = '';
     editor.update(() => {
       const maybeCodeNode = lexical.$getNearestNodeFromDOMNode(codeDOMNode);
-
       if (code.$isCodeNode(maybeCodeNode)) {
         codeNode = maybeCodeNode;
         _lang = codeNode.getLanguage() || '';
       }
     });
-
     if (codeNode) {
       const {
         y: editorElemY,
@@ -2341,7 +2085,6 @@ function CodeActionMenuContainer({
     if (!shouldListenMouseMove) {
       return;
     }
-
     document.addEventListener('mousemove', debouncedOnMouseMove);
     return () => {
       setShown(false);
@@ -2357,7 +2100,6 @@ function CodeActionMenuContainer({
             codeSetRef.current.add(key);
             setShouldListenMouseMove(codeSetRef.current.size > 0);
             break;
-
           case 'destroyed':
             codeSetRef.current.delete(key);
             setShouldListenMouseMove(codeSetRef.current.size > 0);
@@ -2369,7 +2111,8 @@ function CodeActionMenuContainer({
   const codeFriendlyName = code.getLanguageFriendlyName(lang);
   return /*#__PURE__*/React.createElement(React.Fragment, null, isShown ? /*#__PURE__*/React.createElement("div", {
     className: "code-action-menu-container",
-    style: { ...position
+    style: {
+      ...position
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "code-highlight-language"
@@ -2378,10 +2121,8 @@ function CodeActionMenuContainer({
     getCodeDOMNode: getCodeDOMNode
   })) : null);
 }
-
 function getMouseInfo(event) {
   const target = event.target;
-
   if (target && target instanceof HTMLElement) {
     const codeDOMNode = target.closest('code.PlaygroundEditorTheme__code');
     const isOutside = !(codeDOMNode || target.closest('div.code-action-menu-container'));
@@ -2396,11 +2137,10 @@ function getMouseInfo(event) {
     };
   }
 }
-
 function CodeActionMenuPlugin({
   anchorElem = document.body
 }) {
-  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(CodeActionMenuContainer, {
+  return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(CodeActionMenuContainer, {
     anchorElem: anchorElem
   }), anchorElem);
 }
@@ -2430,35 +2170,27 @@ function convertDetailsElement(domNode) {
 class CollapsibleContainerNode extends lexical.ElementNode {
   constructor(open, key) {
     super(key);
-
     _defineProperty(this, "__open", void 0);
-
     this.__open = open;
   }
-
   static getType() {
     return 'collapsible-container';
   }
-
   static clone(node) {
     return new CollapsibleContainerNode(node.__open, node.__key);
   }
-
   createDOM(config) {
     const dom = document.createElement('details');
     dom.classList.add('Collapsible__container');
     dom.open = this.__open;
     return dom;
   }
-
   updateDOM(prevNode, dom) {
     if (prevNode.__open !== this.__open) {
       dom.open = this.__open;
     }
-
     return false;
   }
-
   static importDOM() {
     return {
       details: domNode => {
@@ -2469,12 +2201,10 @@ class CollapsibleContainerNode extends lexical.ElementNode {
       }
     };
   }
-
   static importJSON(serializedNode) {
     const node = $createCollapsibleContainerNode(serializedNode.open);
     return node;
   }
-
   exportDOM() {
     const element = document.createElement('details');
     element.open = this.__open;
@@ -2482,28 +2212,24 @@ class CollapsibleContainerNode extends lexical.ElementNode {
       element
     };
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       open: this.__open,
       type: 'collapsible-container',
       version: 1
     };
   }
-
   setOpen(open) {
     const writable = this.getWritable();
     writable.__open = open;
   }
-
   getOpen() {
     return this.__open;
   }
-
   toggleOpen() {
     this.setOpen(!this.getOpen());
   }
-
 }
 function $createCollapsibleContainerNode(isOpen) {
   return new CollapsibleContainerNode(isOpen);
@@ -2529,28 +2255,23 @@ class CollapsibleContentNode extends lexical.ElementNode {
   static getType() {
     return 'collapsible-content';
   }
-
   static clone(node) {
     return new CollapsibleContentNode(node.__key);
   }
-
   createDOM(config) {
     const dom = document.createElement('div');
     dom.classList.add('Collapsible__content');
     return dom;
   }
-
   updateDOM(prevNode, dom) {
     return false;
   }
-
   static importDOM() {
     return {
       div: domNode => {
         if (!domNode.hasAttribute('data-lexical-collapsible-content')) {
           return null;
         }
-
         return {
           conversion: convertCollapsibleContentElement,
           priority: 2
@@ -2558,7 +2279,6 @@ class CollapsibleContentNode extends lexical.ElementNode {
       }
     };
   }
-
   exportDOM() {
     const element = document.createElement('div');
     element.setAttribute('data-lexical-collapsible-content', 'true');
@@ -2566,22 +2286,19 @@ class CollapsibleContentNode extends lexical.ElementNode {
       element
     };
   }
-
   static importJSON(serializedNode) {
     return $createCollapsibleContentNode();
   }
-
   isShadowRoot() {
     return true;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       type: 'collapsible-content',
       version: 1
     };
   }
-
 }
 function $createCollapsibleContentNode() {
   return new CollapsibleContentNode();
@@ -2607,21 +2324,17 @@ class CollapsibleTitleNode extends lexical.ElementNode {
   static getType() {
     return 'collapsible-title';
   }
-
   static clone(node) {
     return new CollapsibleTitleNode(node.__key);
   }
-
   createDOM(config, editor) {
     const dom = document.createElement('summary');
     dom.classList.add('Collapsible__title');
     return dom;
   }
-
   updateDOM(prevNode, dom) {
     return false;
   }
-
   static importDOM() {
     return {
       summary: domNode => {
@@ -2632,46 +2345,37 @@ class CollapsibleTitleNode extends lexical.ElementNode {
       }
     };
   }
-
   static importJSON(serializedNode) {
     return $createCollapsibleTitleNode();
   }
-
   exportDOM() {
     const element = document.createElement('summary');
     return {
       element
     };
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       type: 'collapsible-title',
       version: 1
     };
   }
-
   collapseAtStart(_selection) {
     this.getParentOrThrow().insertBefore(this);
     return true;
   }
-
   insertNewAfter(_, restoreSelection = true) {
     const containerNode = this.getParentOrThrow();
-
     if (!$isCollapsibleContainerNode(containerNode)) {
       throw new Error('CollapsibleTitleNode expects to be child of CollapsibleContainerNode');
     }
-
     if (containerNode.getOpen()) {
       const contentNode = this.getNextSibling();
-
       if (!$isCollapsibleContentNode(contentNode)) {
         throw new Error('CollapsibleTitleNode expects to have CollapsibleContentNode sibling');
       }
-
       const firstChild = contentNode.getFirstChild();
-
       if (lexical.$isElementNode(firstChild)) {
         return firstChild;
       } else {
@@ -2685,7 +2389,6 @@ class CollapsibleTitleNode extends lexical.ElementNode {
       return paragraph;
     }
   }
-
 }
 function $createCollapsibleTitleNode() {
   return new CollapsibleTitleNode();
@@ -2709,102 +2412,83 @@ function CollapsiblePlugin() {
     if (!editor.hasNodes([CollapsibleContainerNode, CollapsibleTitleNode, CollapsibleContentNode])) {
       throw new Error('CollapsiblePlugin: CollapsibleContainerNode, CollapsibleTitleNode, or CollapsibleContentNode not registered on editor');
     }
-
-    return utils.mergeRegister( // Structure enforcing transformers for each node type. In case nesting structure is not
+    return utils.mergeRegister(
+    // Structure enforcing transformers for each node type. In case nesting structure is not
     // "Container > Title + Content" it'll unwrap nodes and convert it back
     // to regular content.
     editor.registerNodeTransform(CollapsibleContentNode, node => {
       const parent = node.getParent();
-
       if (!$isCollapsibleContainerNode(parent)) {
         const children = node.getChildren();
-
         for (const child of children) {
           node.insertBefore(child);
         }
-
         node.remove();
       }
     }), editor.registerNodeTransform(CollapsibleTitleNode, node => {
       const parent = node.getParent();
-
       if (!$isCollapsibleContainerNode(parent)) {
         node.replace(lexical.$createParagraphNode().append(...node.getChildren()));
       }
     }), editor.registerNodeTransform(CollapsibleContainerNode, node => {
       const children = node.getChildren();
-
       if (children.length !== 2 || !$isCollapsibleTitleNode(children[0]) || !$isCollapsibleContentNode(children[1])) {
         for (const child of children) {
           node.insertBefore(child);
         }
-
         node.remove();
       }
-    }), // This handles the case when container is collapsed and we delete its previous sibling
+    }),
+    // This handles the case when container is collapsed and we delete its previous sibling
     // into it, it would cause collapsed content deleted (since it's display: none, and selection
     // swallows it when deletes single char). Instead we expand container, which is although
     // not perfect, but avoids bigger problem
     editor.registerCommand(lexical.DELETE_CHARACTER_COMMAND, () => {
       const selection = lexical.$getSelection();
-
       if (!lexical.$isRangeSelection(selection) || !selection.isCollapsed() || selection.anchor.offset !== 0) {
         return false;
       }
-
       const anchorNode = selection.anchor.getNode();
       const topLevelElement = anchorNode.getTopLevelElement();
-
       if (topLevelElement === null) {
         return false;
       }
-
       const container = topLevelElement.getPreviousSibling();
-
       if (!$isCollapsibleContainerNode(container) || container.getOpen()) {
         return false;
       }
-
       container.setOpen(true);
       return true;
-    }, lexical.COMMAND_PRIORITY_LOW), // When collapsible is the last child pressing down arrow will insert paragraph
+    }, lexical.COMMAND_PRIORITY_LOW),
+    // When collapsible is the last child pressing down arrow will insert paragraph
     // below it to allow adding more content. It's similar what $insertBlockNode
     // (mainly for decorators), except it'll always be possible to continue adding
     // new content even if trailing paragraph is accidentally deleted
     editor.registerCommand(lexical.KEY_ARROW_DOWN_COMMAND, () => {
       const selection = lexical.$getSelection();
-
       if (!lexical.$isRangeSelection(selection) || !selection.isCollapsed()) {
         return false;
       }
-
       const container = utils.$findMatchingParent(selection.anchor.getNode(), $isCollapsibleContainerNode);
-
       if (container === null) {
         return false;
       }
-
       const parent = container.getParent();
-
       if (parent !== null && parent.getLastChild() === container) {
         parent.append(lexical.$createParagraphNode());
       }
-
       return false;
-    }, lexical.COMMAND_PRIORITY_LOW), // Handling CMD+Enter to toggle collapsible element collapsed state
+    }, lexical.COMMAND_PRIORITY_LOW),
+    // Handling CMD+Enter to toggle collapsible element collapsed state
     editor.registerCommand(lexical.INSERT_PARAGRAPH_COMMAND, () => {
       // @ts-ignore
       const windowEvent = editor._window?.event;
-
       if (windowEvent && (windowEvent.ctrlKey || windowEvent.metaKey) && windowEvent.key === 'Enter') {
         const selection = lexical.$getPreviousSelection();
-
         if (lexical.$isRangeSelection(selection) && selection.isCollapsed()) {
           const parent = utils.$findMatchingParent(selection.anchor.getNode(), node => lexical.$isElementNode(node) && !node.isInline());
-
           if ($isCollapsibleTitleNode(parent)) {
             const container = parent.getParent();
-
             if ($isCollapsibleContainerNode(container)) {
               container.toggleOpen();
               lexical.$setSelection(selection.clone());
@@ -2813,16 +2497,13 @@ function CollapsiblePlugin() {
           }
         }
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(INSERT_COLLAPSIBLE_COMMAND, () => {
       editor.update(() => {
         const selection = lexical.$getSelection();
-
         if (!lexical.$isRangeSelection(selection)) {
           return;
         }
-
         const title = $createCollapsibleTitleNode();
         const content = $createCollapsibleContentNode().append(lexical.$createParagraphNode());
         const container = $createCollapsibleContainerNode(true).append(title, content);
@@ -2833,7 +2514,6 @@ function CollapsiblePlugin() {
     }, lexical.COMMAND_PRIORITY_EDITOR), editor.registerCommand(TOGGLE_COLLAPSIBLE_COMMAND, key => {
       editor.update(() => {
         const containerNode = lexical.$getNodeByKey(key);
-
         if ($isCollapsibleContainerNode(containerNode)) {
           containerNode.toggleOpen();
         }
@@ -2857,7 +2537,6 @@ var useLayoutEffect = useLayoutEffectImpl;
 function createUID$2() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
-
 function createComment(content, author, id, timeStamp, deleted) {
   return {
     author,
@@ -2876,7 +2555,6 @@ function createThread(quote, comments, id) {
     type: 'thread'
   };
 }
-
 function cloneThread(thread) {
   return {
     comments: Array.from(thread.comments),
@@ -2885,7 +2563,6 @@ function cloneThread(thread) {
     type: 'thread'
   };
 }
-
 function markDeleted(comment) {
   return {
     author: comment.author,
@@ -2896,141 +2573,108 @@ function markDeleted(comment) {
     type: 'comment'
   };
 }
-
 function triggerOnChange(commentStore) {
   const listeners = commentStore._changeListeners;
-
   for (const listener of listeners) {
     listener();
   }
 }
-
 class CommentStore {
   constructor(editor) {
     _defineProperty(this, "_editor", void 0);
-
     _defineProperty(this, "_comments", void 0);
-
     _defineProperty(this, "_changeListeners", void 0);
-
     _defineProperty(this, "_collabProvider", void 0);
-
     this._comments = [];
     this._editor = editor;
     this._collabProvider = null;
     this._changeListeners = new Set();
   }
-
   isCollaborative() {
     return this._collabProvider !== null;
   }
-
   getComments() {
     return this._comments;
   }
-
   addComment(commentOrThread, thread, offset) {
-    const nextComments = Array.from(this._comments); // The YJS types explicitly use `any` as well.
+    const nextComments = Array.from(this._comments);
+    // The YJS types explicitly use `any` as well.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
     const sharedCommentsArray = this._getCollabComments();
-
     if (thread !== undefined && commentOrThread.type === 'comment') {
       for (let i = 0; i < nextComments.length; i++) {
         const comment = nextComments[i];
-
         if (comment.type === 'thread' && comment.id === thread.id) {
           const newThread = cloneThread(comment);
           nextComments.splice(i, 1, newThread);
           const insertOffset = offset !== undefined ? offset : newThread.comments.length;
-
           if (this.isCollaborative() && sharedCommentsArray !== null) {
             const parentSharedArray = sharedCommentsArray.get(i).get('comments');
-
             this._withRemoteTransaction(() => {
               const sharedMap = this._createCollabSharedMap(commentOrThread);
-
               parentSharedArray.insert(insertOffset, [sharedMap]);
             });
           }
-
           newThread.comments.splice(insertOffset, 0, commentOrThread);
           break;
         }
       }
     } else {
       const insertOffset = offset !== undefined ? offset : nextComments.length;
-
       if (this.isCollaborative() && sharedCommentsArray !== null) {
         this._withRemoteTransaction(() => {
           const sharedMap = this._createCollabSharedMap(commentOrThread);
-
           sharedCommentsArray.insert(insertOffset, [sharedMap]);
         });
       }
-
       nextComments.splice(insertOffset, 0, commentOrThread);
     }
-
     this._comments = nextComments;
     triggerOnChange(this);
   }
-
   deleteCommentOrThread(commentOrThread, thread) {
-    const nextComments = Array.from(this._comments); // The YJS types explicitly use `any` as well.
+    const nextComments = Array.from(this._comments);
+    // The YJS types explicitly use `any` as well.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
     const sharedCommentsArray = this._getCollabComments();
-
     let commentIndex = null;
-
     if (thread !== undefined) {
       for (let i = 0; i < nextComments.length; i++) {
         const nextComment = nextComments[i];
-
         if (nextComment.type === 'thread' && nextComment.id === thread.id) {
           const newThread = cloneThread(nextComment);
           nextComments.splice(i, 1, newThread);
           const threadComments = newThread.comments;
           commentIndex = threadComments.indexOf(commentOrThread);
-
           if (this.isCollaborative() && sharedCommentsArray !== null) {
             const parentSharedArray = sharedCommentsArray.get(i).get('comments');
-
             this._withRemoteTransaction(() => {
               parentSharedArray.delete(commentIndex);
             });
           }
-
           threadComments.splice(commentIndex, 1);
           break;
         }
       }
     } else {
       commentIndex = nextComments.indexOf(commentOrThread);
-
       if (this.isCollaborative() && sharedCommentsArray !== null) {
         this._withRemoteTransaction(() => {
           sharedCommentsArray.delete(commentIndex);
         });
       }
-
       nextComments.splice(commentIndex, 1);
     }
-
     this._comments = nextComments;
     triggerOnChange(this);
-
     if (commentOrThread.type === 'comment') {
       return {
         index: commentIndex,
         markedComment: markDeleted(commentOrThread)
       };
     }
-
     return null;
   }
-
   registerOnChange(onChange) {
     const changeListeners = this._changeListeners;
     changeListeners.add(onChange);
@@ -3038,50 +2682,43 @@ class CommentStore {
       changeListeners.delete(onChange);
     };
   }
-
   _withRemoteTransaction(fn) {
     const provider = this._collabProvider;
-
     if (provider !== null) {
       // @ts-ignore doc does exist
       const doc = provider.doc;
       doc.transact(fn, this);
     }
   }
-
   _withLocalTransaction(fn) {
     const collabProvider = this._collabProvider;
-
     try {
       this._collabProvider = null;
       fn();
     } finally {
       this._collabProvider = collabProvider;
     }
-  } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }
 
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _getCollabComments() {
     const provider = this._collabProvider;
-
     if (provider !== null) {
       // @ts-ignore doc does exist
-      const doc = provider.doc; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
+      const doc = provider.doc;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return doc.get('comments', yjs.Array);
     }
-
     return null;
-  } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }
 
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _createCollabSharedMap(commentOrThread) {
     const sharedMap = new yjs.Map();
     const type = commentOrThread.type;
     const id = commentOrThread.id;
     sharedMap.set('type', type);
     sharedMap.set('id', id);
-
     if (type === 'comment') {
       sharedMap.set('author', commentOrThread.author);
       sharedMap.set('content', commentOrThread.content);
@@ -3092,35 +2729,28 @@ class CommentStore {
       const commentsArray = new yjs.Array();
       commentOrThread.comments.forEach((comment, i) => {
         const sharedChildComment = this._createCollabSharedMap(comment);
-
         commentsArray.insert(i, [sharedChildComment]);
       });
       sharedMap.set('comments', commentsArray);
     }
-
     return sharedMap;
   }
-
   registerCollaboration(provider) {
     this._collabProvider = provider;
-
     const sharedCommentsArray = this._getCollabComments();
-
     const connect = () => {
       provider.connect();
     };
-
     const disconnect = () => {
       try {
         provider.disconnect();
-      } catch (e) {// Do nothing
+      } catch (e) {
+        // Do nothing
       }
     };
-
     const unsubscribe = this._editor.registerCommand(yjs$1.TOGGLE_CONNECT_COMMAND, payload => {
       if (connect !== undefined && disconnect !== undefined) {
         const shouldConnect = payload;
-
         if (shouldConnect) {
           // eslint-disable-next-line no-console
           console.log('Comments connected!');
@@ -3131,20 +2761,16 @@ class CommentStore {
           disconnect();
         }
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW);
-
     const onSharedCommentChanges = (events, transaction) => {
       if (transaction.origin !== this) {
         for (let i = 0; i < events.length; i++) {
           const event = events[i];
-
           if (event instanceof yjs.YArrayEvent) {
             const target = event.target;
             const deltas = event.delta;
             let offset = 0;
-
             for (let s = 0; s < deltas.length; s++) {
               const delta = deltas[s];
               const insert = delta.insert;
@@ -3152,15 +2778,14 @@ class CommentStore {
               const del = delta.delete;
               const parent = target.parent;
               const parentThread = target === sharedCommentsArray ? undefined : parent instanceof yjs.Map && this._comments.find(t => t.id === parent.get('id'));
-
               if (Array.isArray(insert)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 insert.forEach(map => {
                   const id = map.get('id');
                   const type = map.get('type');
-                  const commentOrThread = type === 'thread' ? createThread(map.get('quote'), map.get('comments').toArray() // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const commentOrThread = type === 'thread' ? createThread(map.get('quote'), map.get('comments').toArray()
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   .map(innerComment => createComment(innerComment.get('content'), innerComment.get('author'), innerComment.get('id'), innerComment.get('timeStamp'), innerComment.get('deleted'))), id) : createComment(map.get('content'), map.get('author'), id, map.get('timeStamp'), map.get('deleted'));
-
                   this._withLocalTransaction(() => {
                     this.addComment(commentOrThread, parentThread, offset);
                   });
@@ -3170,11 +2795,9 @@ class CommentStore {
               } else if (typeof del === 'number') {
                 for (let d = 0; d < del; d++) {
                   const commentOrThread = parentThread === undefined || parentThread === false ? this._comments[offset] : parentThread.comments[offset];
-
                   this._withLocalTransaction(() => {
                     this.deleteCommentOrThread(commentOrThread, parentThread);
                   });
-
                   offset++;
                 }
               }
@@ -3183,11 +2806,9 @@ class CommentStore {
         }
       }
     };
-
     if (sharedCommentsArray === null) {
       return () => null;
     }
-
     sharedCommentsArray.observeDeep(onSharedCommentChanges);
     connect();
     return () => {
@@ -3196,7 +2817,6 @@ class CommentStore {
       this._collabProvider = null;
     };
   }
-
 }
 function useCommentStore(commentStore) {
   const [comments, setComments] = React.useState(commentStore.getComments());
@@ -3317,7 +2937,8 @@ var baseTheme = theme$2;
  * LICENSE file in the root directory of this source tree.
  *
  */
-const theme$1 = { ...baseTheme,
+const theme$1 = {
+  ...baseTheme,
   paragraph: 'CommentEditorTheme__paragraph'
 };
 var CommentEditorTheme = theme$1;
@@ -3361,7 +2982,6 @@ function Placeholder({
  *
  */
 const INSERT_INLINE_COMMAND = lexical.createCommand('INSERT_INLINE_COMMAND');
-
 function AddCommentBox({
   anchorKey,
   editor,
@@ -3372,7 +2992,6 @@ function AddCommentBox({
     const boxElem = boxRef.current;
     const rootElement = editor.getRootElement();
     const anchorElement = editor.getElementByKey(anchorKey);
-
     if (boxElem !== null && rootElement !== null && anchorElement !== null) {
       const {
         right
@@ -3403,7 +3022,6 @@ function AddCommentBox({
     className: "icon add-comment"
   })));
 }
-
 function EditorRefPlugin({
   editorRef
 }) {
@@ -3416,7 +3034,6 @@ function EditorRefPlugin({
   }, [editor, editorRef]);
   return null;
 }
-
 function EscapeHandlerPlugin({
   onEscape
 }) {
@@ -3428,7 +3045,6 @@ function EscapeHandlerPlugin({
   }, [editor, onEscape]);
   return null;
 }
-
 function PlainTextEditor({
   className,
   autoFocus,
@@ -3463,7 +3079,6 @@ function PlainTextEditor({
     editorRef: editorRef
   })));
 }
-
 function useOnChange(setContent, setCanSubmit) {
   return React.useCallback((editorState, _editor) => {
     editorState.read(() => {
@@ -3472,7 +3087,6 @@ function useOnChange(setContent, setCanSubmit) {
     });
   }, [setCanSubmit, setContent]);
 }
-
 function CommentInputBox({
   editor,
   cancelAddComment,
@@ -3489,13 +3103,11 @@ function CommentInputBox({
   const updateLocation = React.useCallback(() => {
     editor.getEditorState().read(() => {
       const selection$1 = lexical.$getSelection();
-
       if (lexical.$isRangeSelection(selection$1)) {
         const anchor = selection$1.anchor;
         const focus = selection$1.focus;
         const range = selection.createDOMRange(editor, anchor.getNode(), anchor.offset, focus.getNode(), focus.offset);
         const boxElem = boxRef.current;
-
         if (range !== null && boxElem !== null) {
           const {
             left,
@@ -3504,11 +3116,9 @@ function CommentInputBox({
           } = range.getBoundingClientRect();
           const selectionRects = selection.createRectsFromDOMRange(editor, range);
           let correctedLeft = selectionRects.length === 1 ? left + width / 2 - 125 : left - 125;
-
           if (correctedLeft < 10) {
             correctedLeft = 10;
           }
-
           boxElem.style.left = `${correctedLeft}px`;
           boxElem.style.top = `${bottom + 20}px`;
           const selectionRectsLength = selectionRects.length;
@@ -3517,22 +3127,18 @@ function CommentInputBox({
           } = selectionState;
           const elements = selectionState.elements;
           const elementsLength = elements.length;
-
           for (let i = 0; i < selectionRectsLength; i++) {
             const selectionRect = selectionRects[i];
             let elem = elements[i];
-
             if (elem === undefined) {
               elem = document.createElement('span');
               elements[i] = elem;
               container.appendChild(elem);
             }
-
             const color = '255, 212, 0';
             const style = `position:absolute;top:${selectionRect.top}px;left:${selectionRect.left}px;height:${selectionRect.height}px;width:${selectionRect.width}px;background-color:rgba(${color}, 0.3);pointer-events:none;z-index:5;`;
             elem.style.cssText = style;
           }
-
           for (let i = elementsLength - 1; i >= selectionRectsLength; i--) {
             const elem = elements[i];
             container.removeChild(elem);
@@ -3546,7 +3152,6 @@ function CommentInputBox({
     updateLocation();
     const container = selectionState.container;
     const body = document.body;
-
     if (body !== null) {
       body.appendChild(container);
       return () => {
@@ -3560,28 +3165,23 @@ function CommentInputBox({
       window.removeEventListener('resize', updateLocation);
     };
   }, [updateLocation]);
-
   const onEscape = event => {
     event.preventDefault();
     cancelAddComment();
     return true;
   };
-
   const submitComment = () => {
     if (canSubmit) {
       let quote = editor.getEditorState().read(() => {
         const selection = lexical.$getSelection();
         return selection !== null ? selection.getTextContent() : '';
       });
-
       if (quote.length > 100) {
         quote = quote.slice(0, 99) + '…';
       }
-
       submitAddComment(createThread(quote, [createComment(content, author)]), true);
     }
   };
-
   const onChange = useOnChange(setContent, setCanSubmit);
   return /*#__PURE__*/React.createElement("div", {
     className: "CommentPlugin_CommentInputBox",
@@ -3601,7 +3201,6 @@ function CommentInputBox({
     className: "CommentPlugin_CommentInputBox_Button primary"
   }, "Comment")));
 }
-
 function CommentsComposer({
   submitAddComment,
   thread,
@@ -3612,18 +3211,15 @@ function CommentsComposer({
   const editorRef = React.useRef(null);
   const author = useCollabAuthorName();
   const onChange = useOnChange(setContent, setCanSubmit);
-
   const submitComment = () => {
     if (canSubmit) {
       submitAddComment(createComment(content, author), false, thread);
       const editor = editorRef.current;
-
       if (editor !== null) {
         editor.dispatchCommand(lexical.CLEAR_EDITOR_COMMAND, undefined);
       }
     }
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(PlainTextEditor, {
     className: "CommentPlugin_CommentsPanel_Editor",
     autoFocus: false,
@@ -3641,7 +3237,6 @@ function CommentsComposer({
     className: "send"
   })));
 }
-
 function ShowDeleteCommentOrThreadDialog({
   commentOrThread,
   deleteCommentOrThread,
@@ -3661,7 +3256,6 @@ function ShowDeleteCommentOrThreadDialog({
     }
   }, "Cancel")));
 }
-
 function CommentsPanelListComment({
   comment,
   deleteComment,
@@ -3695,7 +3289,6 @@ function CommentsPanelListComment({
     className: "delete"
   })), modal));
 }
-
 function CommentsPanelList({
   activeIDs,
   comments,
@@ -3726,19 +3319,16 @@ function CommentsPanelList({
     ref: listRef
   }, comments.map(commentOrThread => {
     const id = commentOrThread.id;
-
     if (commentOrThread.type === 'thread') {
       const handleClickThread = () => {
         const markNodeKeys = markNodeMap.get(id);
-
         if (markNodeKeys !== undefined && (activeIDs === null || activeIDs.indexOf(id) === -1)) {
-          const activeElement = document.activeElement; // Move selection to the start of the mark, so that we
+          const activeElement = document.activeElement;
+          // Move selection to the start of the mark, so that we
           // update the UI with the selected thread.
-
           editor.update(() => {
             const markNodeKey = Array.from(markNodeKeys)[0];
             const markNode = lexical.$getNodeByKey(markNodeKey);
-
             if (mark.$isMarkNode(markNode)) {
               markNode.selectStart();
             }
@@ -3749,11 +3339,9 @@ function CommentsPanelList({
                 activeElement.focus();
               }
             }
-
           });
         }
       };
-
       return (
         /*#__PURE__*/
         // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
@@ -3793,7 +3381,6 @@ function CommentsPanelList({
         })))
       );
     }
-
     return /*#__PURE__*/React.createElement(CommentsPanelListComment, {
       key: id,
       comment: commentOrThread,
@@ -3802,7 +3389,6 @@ function CommentsPanelList({
     });
   }));
 }
-
 function CommentsPanel({
   activeIDs,
   deleteCommentOrThread,
@@ -3827,7 +3413,6 @@ function CommentsPanel({
     markNodeMap: markNodeMap
   }));
 }
-
 function useCollabAuthorName() {
   const collabContext = LexicalCollaborationContext.useCollaborationContext();
   const {
@@ -3836,7 +3421,6 @@ function useCollabAuthorName() {
   } = collabContext;
   return yjsDocMap.has('comments') ? name : 'Playground User';
 }
-
 function CommentPlugin({
   providerFactory
 }) {
@@ -3862,8 +3446,8 @@ function CommentPlugin({
   }, [commentStore, providerFactory, yjsDocMap]);
   const cancelAddComment = React.useCallback(() => {
     editor.update(() => {
-      const selection = lexical.$getSelection(); // Restore selection
-
+      const selection = lexical.$getSelection();
+      // Restore selection
       if (selection !== null) {
         selection.dirty = true;
       }
@@ -3880,21 +3464,18 @@ function CommentPlugin({
       } = deletionInfo;
       commentStore.addComment(markedComment, thread, index);
     } else {
-      commentStore.deleteCommentOrThread(comment); // Remove ids from associated marks
-
+      commentStore.deleteCommentOrThread(comment);
+      // Remove ids from associated marks
       const id = thread !== undefined ? thread.id : comment.id;
       const markNodeKeys = markNodeMap.get(id);
-
       if (markNodeKeys !== undefined) {
         // Do async to avoid causing a React infinite loop
         setTimeout(() => {
           editor.update(() => {
             for (const key of markNodeKeys) {
               const node = lexical.$getNodeByKey(key);
-
               if (mark.$isMarkNode(node)) {
                 node.deleteID(id);
-
                 if (node.getIDs().length === 0) {
                   mark.$unwrapMarkNode(node);
                 }
@@ -3907,19 +3488,19 @@ function CommentPlugin({
   }, [commentStore, editor, markNodeMap]);
   const submitAddComment = React.useCallback((commentOrThread, isInlineComment, thread) => {
     commentStore.addComment(commentOrThread, thread);
-
     if (isInlineComment) {
       editor.update(() => {
         const selection = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection)) {
           const focus = selection.focus;
           const anchor = selection.anchor;
           const isBackward = selection.isBackward();
-          const id = commentOrThread.id; // Wrap content in a MarkNode
+          const id = commentOrThread.id;
 
-          mark.$wrapSelectionInMarkNode(selection, isBackward, id); // Make selection collapsed at the end
+          // Wrap content in a MarkNode
+          mark.$wrapSelectionInMarkNode(selection, isBackward, id);
 
+          // Make selection collapsed at the end
           if (isBackward) {
             focus.set(anchor.key, anchor.offset, anchor.type);
           } else {
@@ -3932,15 +3513,12 @@ function CommentPlugin({
   }, [commentStore, editor]);
   React.useEffect(() => {
     const changedElems = [];
-
     for (let i = 0; i < activeIDs.length; i++) {
       const id = activeIDs[i];
       const keys = markNodeMap.get(id);
-
       if (keys !== undefined) {
         for (const key of keys) {
           const elem = editor.getElementByKey(key);
-
           if (elem !== null) {
             elem.classList.add('selected');
             changedElems.push(elem);
@@ -3949,7 +3527,6 @@ function CommentPlugin({
         }
       }
     }
-
     return () => {
       for (let i = 0; i < changedElems.length; i++) {
         const changedElem = changedElems[i];
@@ -3972,22 +3549,18 @@ function CommentPlugin({
         for (const [key, mutation] of mutations) {
           const node = lexical.$getNodeByKey(key);
           let ids = [];
-
           if (mutation === 'destroyed') {
             ids = markNodeKeysToIDs.get(key) || [];
           } else if (mark.$isMarkNode(node)) {
             ids = node.getIDs();
           }
-
           for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
             let markNodeKeys = markNodeMap.get(id);
             markNodeKeysToIDs.set(key, ids);
-
             if (mutation === 'destroyed') {
               if (markNodeKeys !== undefined) {
                 markNodeKeys.delete(key);
-
                 if (markNodeKeys.size === 0) {
                   markNodeMap.delete(id);
                 }
@@ -3997,7 +3570,6 @@ function CommentPlugin({
                 markNodeKeys = new Set();
                 markNodeMap.set(id, markNodeKeys);
               }
-
               if (!markNodeKeys.has(key)) {
                 markNodeKeys.add(key);
               }
@@ -4013,62 +3585,51 @@ function CommentPlugin({
         const selection = lexical.$getSelection();
         let hasActiveIds = false;
         let hasAnchorKey = false;
-
         if (lexical.$isRangeSelection(selection)) {
           const anchorNode = selection.anchor.getNode();
-
           if (lexical.$isTextNode(anchorNode)) {
             const commentIDs = mark.$getMarkIDs(anchorNode, selection.anchor.offset);
-
             if (commentIDs !== null) {
               setActiveIDs(commentIDs);
               hasActiveIds = true;
             }
-
             if (!selection.isCollapsed()) {
               setActiveAnchorKey(anchorNode.getKey());
               hasAnchorKey = true;
             }
           }
         }
-
         if (!hasActiveIds) {
           setActiveIDs(_activeIds => _activeIds.length === 0 ? _activeIds : []);
         }
-
         if (!hasAnchorKey) {
           setActiveAnchorKey(null);
         }
       });
-
       if (!tags.has('collaboration')) {
         setShowCommentInput(false);
       }
     }), editor.registerCommand(INSERT_INLINE_COMMAND, () => {
       const domSelection = window.getSelection();
-
       if (domSelection !== null) {
         domSelection.removeAllRanges();
       }
-
       setShowCommentInput(true);
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR));
   }, [editor, markNodeMap]);
-
   const onAddComment = () => {
     editor.dispatchCommand(INSERT_INLINE_COMMAND, undefined);
   };
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null, showCommentInput && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(CommentInputBox, {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, showCommentInput && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(CommentInputBox, {
     editor: editor,
     cancelAddComment: cancelAddComment,
     submitAddComment: submitAddComment
-  }), document.body), activeAnchorKey !== null && activeAnchorKey !== undefined && !showCommentInput && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(AddCommentBox, {
+  }), document.body), activeAnchorKey !== null && activeAnchorKey !== undefined && !showCommentInput && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(AddCommentBox, {
     anchorKey: activeAnchorKey,
     editor: editor,
     onAddComment: onAddComment
-  }), document.body), showComments && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(CommentsPanel, {
+  }), document.body), showComments && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(CommentsPanel, {
     comments: comments,
     submitAddComment: submitAddComment,
     deleteCommentOrThread: deleteCommentOrThread,
@@ -4092,7 +3653,6 @@ function KatexRenderer({
   const katexElementRef = React.useRef(null);
   React.useEffect(() => {
     const katexElement = katexElementRef.current;
-
     if (katexElement !== null) {
       katex.render(equation, katexElement, {
         displayMode: !inline,
@@ -4266,9 +3826,7 @@ function TextInput({
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 const getDOMSelection = targetWindow => CAN_USE_DOM ? (targetWindow || window).getSelection() : null;
-
 const INSERT_IMAGE_COMMAND = lexical.createCommand('INSERT_IMAGE_COMMAND');
 function InsertImageUriDialogBody({
   onClick
@@ -4304,24 +3862,19 @@ function InsertImageUploadedDialogBody({
   const [src, setSrc] = React.useState('');
   const [altText, setAltText] = React.useState('');
   const isDisabled = file === undefined;
-
   const loadImage = files => {
     const reader = new FileReader();
-
     reader.onload = function () {
       if (typeof reader.result === 'string') {
         setSrc(reader.result);
       }
-
       return '';
     };
-
     if (files !== null && files[0]) {
       setFile(files[0]);
       reader.readAsDataURL(files[0]);
     }
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FileInput, {
     label: "Image Upload",
     onChange: loadImage,
@@ -4353,22 +3906,18 @@ function InsertImageDialog({
   const hasModifier = React.useRef(false);
   React.useEffect(() => {
     hasModifier.current = false;
-
     const handler = e => {
       hasModifier.current = e.altKey;
     };
-
     document.addEventListener('keydown', handler);
     return () => {
       document.removeEventListener('keydown', handler);
     };
   }, [activeEditor]);
-
   const onClick = payload => {
     activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
     onClose();
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, !mode && /*#__PURE__*/React.createElement(DialogButtonsList, null, /*#__PURE__*/React.createElement(Button, {
     "data-test-id": "image-modal-option-url",
     onClick: () => setMode('url')
@@ -4389,15 +3938,12 @@ function ImagesPlugin({
     if (!editor.hasNodes([ImageNode])) {
       throw new Error('ImagesPlugin: ImageNode not registered on editor');
     }
-
     return utils.mergeRegister(editor.registerCommand(INSERT_IMAGE_COMMAND, payload => {
       const imageNode = $createImageNode(payload);
       lexical.$insertNodes([imageNode]);
-
       if (lexical.$isRootOrShadowRoot(imageNode.getParentOrThrow())) {
         utils.$wrapNodeInElement(imageNode, lexical.$createParagraphNode).selectEnd();
       }
-
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR), editor.registerCommand(lexical.DRAGSTART_COMMAND, event => {
       return onDragStart(event);
@@ -4412,20 +3958,15 @@ function ImagesPlugin({
 const TRANSPARENT_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 const img = document.createElement('img');
 img.src = TRANSPARENT_IMAGE;
-
 function onDragStart(event) {
   const node = getImageNodeInSelection();
-
   if (!node) {
     return false;
   }
-
   const dataTransfer = event.dataTransfer;
-
   if (!dataTransfer) {
     return false;
   }
-
   dataTransfer.setData('text/plain', '_');
   dataTransfer.setDragImage(img, 0, 0);
   dataTransfer.setData('application/x-lexical-drag', JSON.stringify({
@@ -4443,94 +3984,70 @@ function onDragStart(event) {
   }));
   return true;
 }
-
 function onDragover(event) {
   const node = getImageNodeInSelection();
-
   if (!node) {
     return false;
   }
-
   if (!canDropImage(event)) {
     event.preventDefault();
   }
-
   return true;
 }
-
 function onDrop(event, editor) {
   const node = getImageNodeInSelection();
-
   if (!node) {
     return false;
   }
-
   const data = getDragImageData(event);
-
   if (!data) {
     return false;
   }
-
   event.preventDefault();
-
   if (canDropImage(event)) {
     const range = getDragSelection(event);
     node.remove();
     const rangeSelection = lexical.$createRangeSelection();
-
     if (range !== null && range !== undefined) {
       rangeSelection.applyDOMRange(range);
     }
-
     lexical.$setSelection(rangeSelection);
     editor.dispatchCommand(INSERT_IMAGE_COMMAND, data);
   }
-
   return true;
 }
-
 function getImageNodeInSelection() {
   const selection = lexical.$getSelection();
-
   if (!lexical.$isNodeSelection(selection)) {
     return null;
   }
-
   const nodes = selection.getNodes();
   const node = nodes[0];
   return $isImageNode(node) ? node : null;
 }
-
 function getDragImageData(event) {
   const dragData = event.dataTransfer?.getData('application/x-lexical-drag');
-
   if (!dragData) {
     return null;
   }
-
   const {
     type,
     data
   } = JSON.parse(dragData);
-
   if (type !== 'image') {
     return null;
   }
-
   return data;
 }
-
 function canDropImage(event) {
   const target = event.target;
   return !!(target && target instanceof HTMLElement && !target.closest('code, span.editor-image') && target.parentElement && target.parentElement.closest('div.ContentEditable__root'));
 }
-
 function getDragSelection(event) {
   let range;
   const target = event.target;
   const targetWindow = target == null ? null : target.nodeType === 9 ? target.defaultView : target.ownerDocument.defaultView;
   const domSelection = getDOMSelection(targetWindow);
-
   if (document.caretRangeFromPoint) {
     range = document.caretRangeFromPoint(event.clientX, event.clientY);
   } else if (event.rangeParent && domSelection !== null) {
@@ -4539,17 +4056,15 @@ function getDragSelection(event) {
   } else {
     throw Error(`Cannot get the selection when dragging`);
   }
-
   return range;
 }
 
-const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+const PollComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
 () => Promise.resolve().then(function () { return PollComponent$1; }));
-
 function createUID$1() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
-
 function createPollOption(text = '') {
   return {
     text,
@@ -4557,7 +4072,6 @@ function createPollOption(text = '') {
     votes: []
   };
 }
-
 function cloneOption(option, text, votes) {
   return {
     text,
@@ -4565,46 +4079,35 @@ function cloneOption(option, text, votes) {
     votes: votes || Array.from(option.votes)
   };
 }
-
 function convertPollElement(domNode) {
   const question = domNode.getAttribute('data-lexical-poll-question');
-
   if (question !== null) {
     const node = $createPollNode(question);
     return {
       node
     };
   }
-
   return null;
 }
-
 class PollNode extends lexical.DecoratorNode {
   static getType() {
     return 'poll';
   }
-
   static clone(node) {
     return new PollNode(node.__question, node.__options, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createPollNode(serializedNode.question);
     serializedNode.options.forEach(node.addOption);
     return node;
   }
-
   constructor(question, options, key) {
     super(key);
-
     _defineProperty(this, "__question", void 0);
-
     _defineProperty(this, "__options", void 0);
-
     this.__question = question;
     this.__options = options || [createPollOption(), createPollOption()];
   }
-
   exportJSON() {
     return {
       options: this.__options,
@@ -4613,14 +4116,12 @@ class PollNode extends lexical.DecoratorNode {
       version: 1
     };
   }
-
   addOption(option) {
     const self = this.getWritable();
     const options = Array.from(self.__options);
     options.push(option);
     self.__options = options;
   }
-
   deleteOption(option) {
     const self = this.getWritable();
     const options = Array.from(self.__options);
@@ -4628,7 +4129,6 @@ class PollNode extends lexical.DecoratorNode {
     options.splice(index, 1);
     self.__options = options;
   }
-
   setOptionText(option, text) {
     const self = this.getWritable();
     const clonedOption = cloneOption(option, text);
@@ -4637,33 +4137,28 @@ class PollNode extends lexical.DecoratorNode {
     options[index] = clonedOption;
     self.__options = options;
   }
-
   toggleVote(option, clientID) {
     const self = this.getWritable();
     const votes = option.votes;
     const votesClone = Array.from(votes);
     const voteIndex = votes.indexOf(clientID);
-
     if (voteIndex === -1) {
       votesClone.push(clientID);
     } else {
       votesClone.splice(voteIndex, 1);
     }
-
     const clonedOption = cloneOption(option, option.text, votesClone);
     const options = Array.from(self.__options);
     const index = options.indexOf(option);
     options[index] = clonedOption;
     self.__options = options;
   }
-
   static importDOM() {
     return {
       span: domNode => {
         if (!domNode.hasAttribute('data-lexical-poll-question')) {
           return null;
         }
-
         return {
           conversion: convertPollElement,
           priority: 2
@@ -4671,7 +4166,6 @@ class PollNode extends lexical.DecoratorNode {
       }
     };
   }
-
   exportDOM() {
     const element = document.createElement('span');
     element.setAttribute('data-lexical-poll-question', this.__question);
@@ -4679,17 +4173,14 @@ class PollNode extends lexical.DecoratorNode {
       element
     };
   }
-
   createDOM() {
     const elem = document.createElement('span');
     elem.style.display = 'inline-block';
     return elem;
   }
-
   updateDOM() {
     return false;
   }
-
   decorate() {
     return /*#__PURE__*/React.createElement(React.Suspense, {
       fallback: null
@@ -4699,7 +4190,6 @@ class PollNode extends lexical.DecoratorNode {
       nodeKey: this.__key
     }));
   }
-
 }
 function $createPollNode(question) {
   return new PollNode(question);
@@ -4721,12 +4211,10 @@ function InsertPollDialog({
   onClose
 }) {
   const [question, setQuestion] = React.useState('');
-
   const onClick = () => {
     activeEditor.dispatchCommand(INSERT_POLL_COMMAND, question);
     onClose();
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
     label: "Question",
     onChange: setQuestion,
@@ -4742,15 +4230,12 @@ function PollPlugin() {
     if (!editor.hasNodes([PollNode])) {
       throw new Error('PollPlugin: PollNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
       const pollNode = $createPollNode(payload);
       lexical.$insertNodes([pollNode]);
-
       if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
         utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
       }
-
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR);
   }, [editor]);
@@ -4760,15 +4245,13 @@ function PollPlugin() {
 const cellHTMLCache = new Map();
 const cellTextContentCache = new Map();
 const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-
 const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":${text},"type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
-
-const TableComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+const TableComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
 () => Promise.resolve().then(function () { return TableComponent$1; }));
 function createUID() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
-
 function createCell(type) {
   return {
     colSpan: 1,
@@ -4778,7 +4261,6 @@ function createCell(type) {
     width: null
   };
 }
-
 function createRow() {
   return {
     cells: [],
@@ -4789,17 +4271,13 @@ function createRow() {
 function extractRowsFromHTML(tableElem) {
   const rowElems = tableElem.querySelectorAll('tr');
   const rows = [];
-
   for (let y = 0; y < rowElems.length; y++) {
     const rowElem = rowElems[y];
     const cellElems = rowElem.querySelectorAll('td,th');
-
     if (!cellElems || cellElems.length === 0) {
       continue;
     }
-
     const cells = [];
-
     for (let x = 0; x < cellElems.length; x++) {
       const cellElem = cellElems[x];
       const isHeader = cellElem.nodeName === 'TH';
@@ -4807,34 +4285,25 @@ function extractRowsFromHTML(tableElem) {
       cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
       cells.push(cell);
     }
-
     const row = createRow();
     row.cells = cells;
     rows.push(row);
   }
-
   return rows;
 }
-
 function convertTableElement(domNode) {
   const rowElems = domNode.querySelectorAll('tr');
-
   if (!rowElems || rowElems.length === 0) {
     return null;
   }
-
   const rows = [];
-
   for (let y = 0; y < rowElems.length; y++) {
     const rowElem = rowElems[y];
     const cellElems = rowElem.querySelectorAll('td,th');
-
     if (!cellElems || cellElems.length === 0) {
       continue;
     }
-
     const cells = [];
-
     for (let x = 0; x < cellElems.length; x++) {
       const cellElem = cellElems[x];
       const isHeader = cellElem.nodeName === 'TH';
@@ -4842,43 +4311,35 @@ function convertTableElement(domNode) {
       cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
       cells.push(cell);
     }
-
     const row = createRow();
     row.cells = cells;
     rows.push(row);
   }
-
   return {
     node: $createTableNode(rows)
   };
 }
-
 function exportTableCellsToHTML(rows, rect) {
   const table = document.createElement('table');
   const colGroup = document.createElement('colgroup');
   const tBody = document.createElement('tbody');
   const firstRow = rows[0];
-
   for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : firstRow.cells.length); x++) {
     const col = document.createElement('col');
     colGroup.append(col);
   }
-
   for (let y = rect != null ? rect.startY : 0; y < (rect != null ? rect.endY + 1 : rows.length); y++) {
     const row = rows[y];
     const cells = row.cells;
     const rowElem = document.createElement('tr');
-
     for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : cells.length); x++) {
       const cell = cells[x];
       const cellElem = document.createElement(cell.type === 'header' ? 'th' : 'td');
       cellElem.innerHTML = cellHTMLCache.get(cell.json) || '';
       rowElem.appendChild(cellElem);
     }
-
     tBody.appendChild(rowElem);
   }
-
   table.appendChild(colGroup);
   table.appendChild(tBody);
   return table;
@@ -4887,15 +4348,12 @@ class TableNode extends lexical.DecoratorNode {
   static getType() {
     return 'tablesheet';
   }
-
   static clone(node) {
     return new TableNode(Array.from(node.__rows), node.__key);
   }
-
   static importJSON(serializedNode) {
     return $createTableNode(serializedNode.rows);
   }
-
   exportJSON() {
     return {
       rows: this.__rows,
@@ -4903,7 +4361,6 @@ class TableNode extends lexical.DecoratorNode {
       version: 1
     };
   }
-
   static importDOM() {
     return {
       table: _node => ({
@@ -4912,59 +4369,50 @@ class TableNode extends lexical.DecoratorNode {
       })
     };
   }
-
   exportDOM() {
     return {
       element: exportTableCellsToHTML(this.__rows)
     };
   }
-
   constructor(rows, key) {
     super(key);
-
     _defineProperty(this, "__rows", void 0);
-
     this.__rows = rows || [];
   }
-
   createDOM() {
     return document.createElement('div');
   }
-
   updateDOM() {
     return false;
   }
-
   mergeRows(startX, startY, mergeRows) {
     const self = this.getWritable();
     const rows = self.__rows;
     const endY = Math.min(rows.length, startY + mergeRows.length);
-
     for (let y = startY; y < endY; y++) {
       const row = rows[y];
       const mergeRow = mergeRows[y - startY];
       const cells = row.cells;
       const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
+      const rowClone = {
+        ...row,
         cells: cellsClone
       };
       const mergeCells = mergeRow.cells;
       const endX = Math.min(cells.length, startX + mergeCells.length);
-
       for (let x = startX; x < endX; x++) {
         const cell = cells[x];
         const mergeCell = mergeCells[x - startX];
-        const cellClone = { ...cell,
+        const cellClone = {
+          ...cell,
           json: mergeCell.json,
           type: mergeCell.type
         };
         cellsClone[x] = cellClone;
       }
-
       rows[y] = rowClone;
     }
   }
-
   updateCellJSON(x, y, json) {
     const self = this.getWritable();
     const rows = self.__rows;
@@ -4972,16 +4420,17 @@ class TableNode extends lexical.DecoratorNode {
     const cells = row.cells;
     const cell = cells[x];
     const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
+    const cellClone = {
+      ...cell,
       json
     };
-    const rowClone = { ...row,
+    const rowClone = {
+      ...row,
       cells: cellsClone
     };
     cellsClone[x] = cellClone;
     rows[y] = rowClone;
   }
-
   updateCellType(x, y, type) {
     const self = this.getWritable();
     const rows = self.__rows;
@@ -4989,25 +4438,26 @@ class TableNode extends lexical.DecoratorNode {
     const cells = row.cells;
     const cell = cells[x];
     const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
+    const cellClone = {
+      ...cell,
       type
     };
-    const rowClone = { ...row,
+    const rowClone = {
+      ...row,
       cells: cellsClone
     };
     cellsClone[x] = cellClone;
     rows[y] = rowClone;
   }
-
   insertColumnAt(x) {
     const self = this.getWritable();
     const rows = self.__rows;
-
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y];
       const cells = row.cells;
       const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
+      const rowClone = {
+        ...row,
         cells: cellsClone
       };
       const type = (cells[x] || cells[x - 1]).type;
@@ -5015,99 +4465,85 @@ class TableNode extends lexical.DecoratorNode {
       rows[y] = rowClone;
     }
   }
-
   deleteColumnAt(x) {
     const self = this.getWritable();
     const rows = self.__rows;
-
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y];
       const cells = row.cells;
       const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
+      const rowClone = {
+        ...row,
         cells: cellsClone
       };
       cellsClone.splice(x, 1);
       rows[y] = rowClone;
     }
   }
-
   addColumns(count) {
     const self = this.getWritable();
     const rows = self.__rows;
-
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y];
       const cells = row.cells;
       const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
+      const rowClone = {
+        ...row,
         cells: cellsClone
       };
       const type = cells[cells.length - 1].type;
-
       for (let x = 0; x < count; x++) {
         cellsClone.push(createCell(type));
       }
-
       rows[y] = rowClone;
     }
   }
-
   insertRowAt(y) {
     const self = this.getWritable();
     const rows = self.__rows;
     const prevRow = rows[y] || rows[y - 1];
     const cellCount = prevRow.cells.length;
     const row = createRow();
-
     for (let x = 0; x < cellCount; x++) {
       const cell = createCell(prevRow.cells[x].type);
       row.cells.push(cell);
     }
-
     rows.splice(y, 0, row);
   }
-
   deleteRowAt(y) {
     const self = this.getWritable();
     const rows = self.__rows;
     rows.splice(y, 1);
   }
-
   addRows(count) {
     const self = this.getWritable();
     const rows = self.__rows;
     const prevRow = rows[rows.length - 1];
     const cellCount = prevRow.cells.length;
-
     for (let y = 0; y < count; y++) {
       const row = createRow();
-
       for (let x = 0; x < cellCount; x++) {
         const cell = createCell(prevRow.cells[x].type);
         row.cells.push(cell);
       }
-
       rows.push(row);
     }
   }
-
   updateColumnWidth(x, width) {
     const self = this.getWritable();
     const rows = self.__rows;
-
     for (let y = 0; y < rows.length; y++) {
       const row = rows[y];
       const cells = row.cells;
       const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
+      const rowClone = {
+        ...row,
         cells: cellsClone
       };
       cellsClone[x].width = width;
       rows[y] = rowClone;
     }
   }
-
   decorate(_, config) {
     return /*#__PURE__*/React.createElement(React.Suspense, null, /*#__PURE__*/React.createElement(TableComponent$2, {
       nodeKey: this.__key,
@@ -5115,11 +4551,9 @@ class TableNode extends lexical.DecoratorNode {
       rows: this.__rows
     }));
   }
-
   isInline() {
     return false;
   }
-
 }
 function $isTableNode(node) {
   return node instanceof TableNode;
@@ -5139,7 +4573,8 @@ const INSERT_NEW_TABLE_COMMAND = lexical.createCommand('INSERT_NEW_TABLE_COMMAND
 const CellContext = /*#__PURE__*/React.createContext({
   cellEditorConfig: null,
   cellEditorPlugins: null,
-  set: () => {// Empty
+  set: () => {
+    // Empty
   }
 });
 function InsertTableDialog({
@@ -5148,7 +4583,6 @@ function InsertTableDialog({
 }) {
   const [rows, setRows] = React.useState('5');
   const [columns, setColumns] = React.useState('5');
-
   const onClick = () => {
     activeEditor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
       columns,
@@ -5156,7 +4590,6 @@ function InsertTableDialog({
     });
     onClose();
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
     label: "No of rows",
     onChange: setRows,
@@ -5177,7 +4610,6 @@ function InsertNewTableDialog({
 }) {
   const [rows, setRows] = React.useState('5');
   const [columns, setColumns] = React.useState('5');
-
   const onClick = () => {
     activeEditor.dispatchCommand(INSERT_NEW_TABLE_COMMAND, {
       columns,
@@ -5185,7 +4617,6 @@ function InsertNewTableDialog({
     });
     onClose();
   };
-
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
     label: "No of rows",
     onChange: setRows,
@@ -5203,32 +4634,29 @@ function InsertNewTableDialog({
 
 class ComponentPickerOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
   // What shows up in the editor
+
   // Icon for display
+
   // For extra searching.
+
   // TBD
+
   // What happens when you select this option?
+
   constructor(title, options) {
     super(title);
-
     _defineProperty(this, "title", void 0);
-
     _defineProperty(this, "icon", void 0);
-
     _defineProperty(this, "keywords", void 0);
-
     _defineProperty(this, "keyboardShortcut", void 0);
-
     _defineProperty(this, "onSelect", void 0);
-
     this.title = title;
     this.keywords = options.keywords || [];
     this.icon = options.icon;
     this.keyboardShortcut = options.keyboardShortcut;
     this.onSelect = options.onSelect.bind(this);
   }
-
 }
-
 function ComponentPickerMenuItem({
   index,
   isSelected,
@@ -5237,11 +4665,9 @@ function ComponentPickerMenuItem({
   option
 }) {
   let className = 'item';
-
   if (isSelected) {
     className += ' selected';
   }
-
   return /*#__PURE__*/React.createElement("li", {
     key: option.key,
     tabIndex: -1,
@@ -5256,7 +4682,6 @@ function ComponentPickerMenuItem({
     className: "text"
   }, option.title));
 }
-
 function ComponentPickerMenuPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [modal, showModal] = useModal();
@@ -5266,16 +4691,13 @@ function ComponentPickerMenuPlugin() {
   });
   const getDynamicOptions = React.useCallback(() => {
     const options = [];
-
     if (queryString == null) {
       return options;
     }
-
     const fullTableRegex = new RegExp(/^([1-9]|10)x([1-9]|10)$/);
     const partialTableRegex = new RegExp(/^([1-9]|10)x?$/);
     const fullTableMatch = fullTableRegex.exec(queryString);
     const partialTableMatch = partialTableRegex.exec(queryString);
-
     if (fullTableMatch) {
       const [rows, columns] = fullTableMatch[0].split('x').map(n => parseInt(n, 10));
       options.push(new ComponentPickerOption(`${rows}x${columns} Table`, {
@@ -5283,7 +4705,8 @@ function ComponentPickerMenuPlugin() {
           className: "icon table"
         }),
         keywords: ['table'],
-        onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
+        onSelect: () =>
+        // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
         editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
           columns,
           rows
@@ -5298,14 +4721,14 @@ function ComponentPickerMenuPlugin() {
           className: "icon table"
         }),
         keywords: ['table'],
-        onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
+        onSelect: () =>
+        // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
         editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
           columns,
           rows
         })
       })));
     }
-
     return options;
   }, [editor, queryString]);
   const options = React.useMemo(() => {
@@ -5316,7 +4739,6 @@ function ComponentPickerMenuPlugin() {
       keywords: ['normal', 'paragraph', 'p', 'text'],
       onSelect: () => editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1)) {
           selection.$setBlocksType_experimental(selection$1, () => lexical.$createParagraphNode());
         }
@@ -5330,9 +4752,9 @@ function ComponentPickerMenuPlugin() {
       keywords: ['heading', 'header', `h${n}`],
       onSelect: () => editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1)) {
-          selection.$setBlocksType_experimental(selection$1, () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
+          selection.$setBlocksType_experimental(selection$1, () =>
+          // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
           richText.$createHeadingNode(`h${n}`));
         }
       })
@@ -5379,7 +4801,6 @@ function ComponentPickerMenuPlugin() {
       keywords: ['block quote'],
       onSelect: () => editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1)) {
           selection.$setBlocksType_experimental(selection$1, () => richText.$createQuoteNode());
         }
@@ -5391,7 +4812,6 @@ function ComponentPickerMenuPlugin() {
       keywords: ['javascript', 'python', 'js', 'codeblock'],
       onSelect: () => editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1)) {
           if (selection$1.isCollapsed()) {
             selection.$setBlocksType_experimental(selection$1, () => code.$createCodeNode());
@@ -5461,7 +4881,8 @@ function ComponentPickerMenuPlugin() {
         className: `icon ${alignment}-align`
       }),
       keywords: ['align', 'justify', alignment],
-      onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
+      onSelect: () =>
+      // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
       editor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, alignment)
     }))];
     const dynamicOptions = getDynamicOptions();
@@ -5474,7 +4895,6 @@ function ComponentPickerMenuPlugin() {
       if (nodeToRemove) {
         nodeToRemove.remove();
       }
-
       selectedOption.onSelect(matchingString);
       closeMenu();
     });
@@ -5488,7 +4908,7 @@ function ComponentPickerMenuPlugin() {
       selectedIndex,
       selectOptionAndCleanUp,
       setHighlightedIndex
-    }) => anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
+    }) => anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
       className: "typeahead-popover component-picker-menu"
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(ComponentPickerMenuItem, {
       index: i,
@@ -5520,7 +4940,6 @@ function DragDropPaste() {
     return editor.registerCommand(richText.DRAG_DROP_PASTE, files => {
       (async () => {
         const filesResult = await utils.mediaFileReader(files, [ACCEPTABLE_IMAGE_TYPES].flatMap(x => x));
-
         for (const {
           file,
           result
@@ -5534,7 +4953,6 @@ function DragDropPaste() {
           }
         }
       })();
-
       return true;
     }, lexical.COMMAND_PRIORITY_LOW);
   }, [editor]);
@@ -5562,52 +4980,41 @@ function isHTMLElement(x) {
 class Point {
   constructor(x, y) {
     _defineProperty(this, "_x", void 0);
-
     _defineProperty(this, "_y", void 0);
-
     this._x = x;
     this._y = y;
   }
-
   get x() {
     return this._x;
   }
-
   get y() {
     return this._y;
   }
-
   equals({
     x,
     y
   }) {
     return this.x === x && this.y === y;
   }
-
   calcDeltaXTo({
     x
   }) {
     return this.x - x;
   }
-
   calcDeltaYTo({
     y
   }) {
     return this.y - y;
   }
-
   calcHorizontalDistanceTo(point) {
     return Math.abs(this.calcDeltaXTo(point));
   }
-
   calcVerticalDistance(point) {
     return Math.abs(this.calcDeltaYTo(point));
   }
-
   calcDistanceTo(point) {
     return Math.sqrt(Math.pow(this.calcDeltaXTo(point), 2) + Math.pow(this.calcDeltaYTo(point), 2));
   }
-
 }
 function isPoint(x) {
   return x instanceof Point;
@@ -5616,13 +5023,9 @@ function isPoint(x) {
 class Rect {
   constructor(left, top, right, bottom) {
     _defineProperty(this, "_left", void 0);
-
     _defineProperty(this, "_top", void 0);
-
     _defineProperty(this, "_right", void 0);
-
     _defineProperty(this, "_bottom", void 0);
-
     const [physicTop, physicBottom] = top <= bottom ? [top, bottom] : [bottom, top];
     const [physicLeft, physicRight] = left <= right ? [left, right] : [right, left];
     this._top = physicTop;
@@ -5630,31 +5033,24 @@ class Rect {
     this._left = physicLeft;
     this._bottom = physicBottom;
   }
-
   get top() {
     return this._top;
   }
-
   get right() {
     return this._right;
   }
-
   get bottom() {
     return this._bottom;
   }
-
   get left() {
     return this._left;
   }
-
   get width() {
     return Math.abs(this._left - this._right);
   }
-
   get height() {
     return Math.abs(this._bottom - this._top);
   }
-
   equals({
     top,
     left,
@@ -5663,7 +5059,6 @@ class Rect {
   }) {
     return top === this._top && bottom === this._bottom && left === this._left && right === this._right;
   }
-
   contains(target) {
     if (isPoint(target)) {
       const {
@@ -5694,7 +5089,6 @@ class Rect {
       return top >= this._top && top <= this._bottom && bottom >= this._top && bottom <= this._bottom && left >= this._left && left <= this._right && right >= this._left && right <= this._right;
     }
   }
-
   intersectsWith(rect) {
     const {
       left: x1,
@@ -5714,7 +5108,6 @@ class Rect {
     const minY = y1 <= y2 ? y1 : y2;
     return maxX - minX <= w1 + w2 && maxY - minY <= h1 + h2;
   }
-
   generateNewRect({
     left = this.left,
     top = this.top,
@@ -5723,15 +5116,12 @@ class Rect {
   }) {
     return new Rect(left, top, right, bottom);
   }
-
   static fromLTRB(left, top, right, bottom) {
     return new Rect(left, top, right, bottom);
   }
-
   static fromLWTH(left, width, top, height) {
     return new Rect(left, top, left + width, top + height);
   }
-
   static fromPoints(startPoint, endPoint) {
     const {
       y: top,
@@ -5743,7 +5133,6 @@ class Rect {
     } = endPoint;
     return Rect.fromLTRB(left, top, right, bottom);
   }
-
   static fromDOM(dom) {
     const {
       top,
@@ -5753,7 +5142,6 @@ class Rect {
     } = dom.getBoundingClientRect();
     return Rect.fromLWTH(left, width, top, height);
   }
-
 }
 
 /**
@@ -5772,23 +5160,18 @@ const Downward = 1;
 const Upward = -1;
 const Indeterminate = 0;
 let prevIndex = Infinity;
-
 function getCurrentIndex(keysLength) {
   if (keysLength === 0) {
     return Infinity;
   }
-
   if (prevIndex >= 0 && prevIndex < keysLength) {
     return prevIndex;
   }
-
   return Math.floor(keysLength / 2);
 }
-
 function getTopLevelNodeKeys(editor) {
   return editor.getEditorState().read(() => lexical.$getRoot().getChildrenKeys());
 }
-
 function getBlockElement(anchorElem, editor, event) {
   const anchorElementRect = anchorElem.getBoundingClientRect();
   const topLevelNodeKeys = getTopLevelNodeKeys(editor);
@@ -5796,15 +5179,12 @@ function getBlockElement(anchorElem, editor, event) {
   editor.getEditorState().read(() => {
     let index = getCurrentIndex(topLevelNodeKeys.length);
     let direction = Indeterminate;
-
     while (index >= 0 && index < topLevelNodeKeys.length) {
       const key = topLevelNodeKeys[index];
       const elem = editor.getElementByKey(key);
-
       if (elem === null) {
         break;
       }
-
       const point = new Point(event.x, event.y);
       const domRect = Rect.fromDOM(elem);
       const {
@@ -5824,13 +5204,11 @@ function getBlockElement(anchorElem, editor, event) {
           isOnBottomSide
         }
       } = rect.contains(point);
-
       if (result) {
         blockElem = elem;
         prevIndex = index;
         break;
       }
-
       if (direction === Indeterminate) {
         if (isOnTopSide) {
           direction = Upward;
@@ -5841,24 +5219,20 @@ function getBlockElement(anchorElem, editor, event) {
           direction = Infinity;
         }
       }
-
       index += direction;
     }
   });
   return blockElem;
 }
-
 function isOnMenu(element) {
   return !!element.closest(`.${DRAGGABLE_BLOCK_MENU_CLASSNAME}`);
 }
-
 function setMenuPosition(targetElem, floatingElem, anchorElem) {
   if (!targetElem) {
     floatingElem.style.opacity = '0';
     floatingElem.style.transform = 'translate(-10000px, -10000px)';
     return;
   }
-
   const targetRect = targetElem.getBoundingClientRect();
   const targetStyle = window.getComputedStyle(targetElem);
   const floatingElemRect = floatingElem.getBoundingClientRect();
@@ -5868,19 +5242,18 @@ function setMenuPosition(targetElem, floatingElem, anchorElem) {
   floatingElem.style.opacity = '1';
   floatingElem.style.transform = `translate(${left}px, ${top}px)`;
 }
-
 function setDragImage(dataTransfer, draggableBlockElem) {
   const {
     transform
-  } = draggableBlockElem.style; // Remove dragImage borders
+  } = draggableBlockElem.style;
 
+  // Remove dragImage borders
   draggableBlockElem.style.transform = 'translateZ(0)';
   dataTransfer.setDragImage(draggableBlockElem, 0, 0);
   setTimeout(() => {
     draggableBlockElem.style.transform = transform;
   });
 }
-
 function setTargetLine(targetLineElem, targetBlockElem, mouseY, anchorElem) {
   const targetStyle = window.getComputedStyle(targetBlockElem);
   const {
@@ -5891,28 +5264,25 @@ function setTargetLine(targetLineElem, targetBlockElem, mouseY, anchorElem) {
     top: anchorTop,
     width: anchorWidth
   } = anchorElem.getBoundingClientRect();
-  let lineTop = targetBlockElemTop; // At the bottom of the target
-
+  let lineTop = targetBlockElemTop;
+  // At the bottom of the target
   if (mouseY - targetBlockElemTop > targetBlockElemHeight / 2) {
     lineTop += targetBlockElemHeight + parseFloat(targetStyle.marginBottom);
   } else {
     lineTop -= parseFloat(targetStyle.marginTop);
   }
-
   const top = lineTop - anchorTop - TARGET_LINE_HALF_HEIGHT;
   const left = TEXT_BOX_HORIZONTAL_PADDING - SPACE;
   targetLineElem.style.transform = `translate(${left}px, ${top}px)`;
   targetLineElem.style.width = `${anchorWidth - (TEXT_BOX_HORIZONTAL_PADDING - SPACE) * 2}px`;
   targetLineElem.style.opacity = '.4';
 }
-
 function hideTargetLine(targetLineElem) {
   if (targetLineElem) {
     targetLineElem.style.opacity = '0';
     targetLineElem.style.transform = 'translate(-10000px, -10000px)';
   }
 }
-
 function useDraggableBlockMenu(editor, anchorElem, isEditable) {
   const scrollerElem = anchorElem.parentElement;
   const menuRef = React.useRef(null);
@@ -5921,25 +5291,19 @@ function useDraggableBlockMenu(editor, anchorElem, isEditable) {
   React.useEffect(() => {
     function onMouseMove(event) {
       const target = event.target;
-
       if (!isHTMLElement(target)) {
         setDraggableBlockElem(null);
         return;
       }
-
       if (isOnMenu(target)) {
         return;
       }
-
       const _draggableBlockElem = getBlockElement(anchorElem, editor, event);
-
       setDraggableBlockElem(_draggableBlockElem);
     }
-
     function onMouseLeave() {
       setDraggableBlockElem(null);
     }
-
     scrollerElem?.addEventListener('mousemove', onMouseMove);
     scrollerElem?.addEventListener('mouseleave', onMouseLeave);
     return () => {
@@ -5955,40 +5319,31 @@ function useDraggableBlockMenu(editor, anchorElem, isEditable) {
   React.useEffect(() => {
     function onDragover(event) {
       const [isFileTransfer] = richText.eventFiles(event);
-
       if (isFileTransfer) {
         return false;
       }
-
       const {
         pageY,
         target
       } = event;
-
       if (!isHTMLElement(target)) {
         return false;
       }
-
       const targetBlockElem = getBlockElement(anchorElem, editor, event);
       const targetLineElem = targetLineRef.current;
-
       if (targetBlockElem === null || targetLineElem === null) {
         return false;
       }
-
-      setTargetLine(targetLineElem, targetBlockElem, pageY, anchorElem); // Prevent default event to be able to trigger onDrop events
-
+      setTargetLine(targetLineElem, targetBlockElem, pageY, anchorElem);
+      // Prevent default event to be able to trigger onDrop events
       event.preventDefault();
       return true;
     }
-
     function onDrop(event) {
       const [isFileTransfer] = richText.eventFiles(event);
-
       if (isFileTransfer) {
         return false;
       }
-
       const {
         target,
         dataTransfer,
@@ -5996,78 +5351,61 @@ function useDraggableBlockMenu(editor, anchorElem, isEditable) {
       } = event;
       const dragData = dataTransfer?.getData(DRAG_DATA_FORMAT) || '';
       const draggedNode = lexical.$getNodeByKey(dragData);
-
       if (!draggedNode) {
         return false;
       }
-
       if (!isHTMLElement(target)) {
         return false;
       }
-
       const targetBlockElem = getBlockElement(anchorElem, editor, event);
-
       if (!targetBlockElem) {
         return false;
       }
-
       const targetNode = lexical.$getNearestNodeFromDOMNode(targetBlockElem);
-
       if (!targetNode) {
         return false;
       }
-
       if (targetNode === draggedNode) {
         return true;
       }
-
       const {
         top,
         height
       } = targetBlockElem.getBoundingClientRect();
       const shouldInsertAfter = pageY - top > height / 2;
-
       if (shouldInsertAfter) {
         targetNode.insertAfter(draggedNode);
       } else {
         targetNode.insertBefore(draggedNode);
       }
-
       setDraggableBlockElem(null);
       return true;
     }
-
     return utils.mergeRegister(editor.registerCommand(lexical.DRAGOVER_COMMAND, event => {
       return onDragover(event);
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.DROP_COMMAND, event => {
       return onDrop(event);
     }, lexical.COMMAND_PRIORITY_HIGH));
   }, [anchorElem, editor]);
-
   function onDragStart(event) {
     const dataTransfer = event.dataTransfer;
-
     if (!dataTransfer || !draggableBlockElem) {
       return;
     }
-
     setDragImage(dataTransfer, draggableBlockElem);
     let nodeKey = '';
     editor.update(() => {
       const node = lexical.$getNearestNodeFromDOMNode(draggableBlockElem);
-
       if (node) {
         nodeKey = node.getKey();
       }
     });
     dataTransfer.setData(DRAG_DATA_FORMAT, nodeKey);
   }
-
   function onDragEnd() {
     hideTargetLine(targetLineRef.current);
   }
-
-  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "icon draggable-block-menu",
     ref: menuRef,
     draggable: true,
@@ -6080,7 +5418,6 @@ function useDraggableBlockMenu(editor, anchorElem, isEditable) {
     ref: targetLineRef
   })), anchorElem);
 }
-
 function DraggableBlockPlugin({
   anchorElem = document.body
 }) {
@@ -6091,20 +5428,14 @@ function DraggableBlockPlugin({
 class EmojiOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
   constructor(title, emoji, options) {
     super(title);
-
     _defineProperty(this, "title", void 0);
-
     _defineProperty(this, "emoji", void 0);
-
     _defineProperty(this, "keywords", void 0);
-
     this.title = title;
     this.emoji = emoji;
     this.keywords = options.keywords || [];
   }
-
 }
-
 function EmojiMenuItem({
   index,
   isSelected,
@@ -6113,11 +5444,9 @@ function EmojiMenuItem({
   option
 }) {
   let className = 'item';
-
   if (isSelected) {
     className += ' selected';
   }
-
   return /*#__PURE__*/React.createElement("li", {
     key: option.key,
     tabIndex: -1,
@@ -6132,7 +5461,6 @@ function EmojiMenuItem({
     className: "text"
   }, option.emoji, " ", option.title));
 }
-
 const MAX_EMOJI_SUGGESTION_COUNT = 10;
 function EmojiPickerPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
@@ -6160,15 +5488,12 @@ function EmojiPickerPlugin() {
   const onSelectOption = React.useCallback((selectedOption, nodeToRemove, closeMenu) => {
     editor.update(() => {
       const selection = lexical.$getSelection();
-
       if (!lexical.$isRangeSelection(selection) || selectedOption == null) {
         return;
       }
-
       if (nodeToRemove) {
         nodeToRemove.remove();
       }
-
       selection.insertNodes([lexical.$createTextNode(selectedOption.emoji)]);
       closeMenu();
     });
@@ -6186,8 +5511,7 @@ function EmojiPickerPlugin() {
       if (anchorElementRef.current == null || options.length === 0) {
         return null;
       }
-
-      return anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
+      return anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
         className: "typeahead-popover emoji-menu"
       }, /*#__PURE__*/React.createElement("ul", null, options.map((option, index) => /*#__PURE__*/React.createElement("div", {
         key: option.key
@@ -6211,19 +5535,14 @@ class EmojiNode extends lexical.TextNode {
   static getType() {
     return 'emoji';
   }
-
   static clone(node) {
     return new EmojiNode(node.__className, node.__text, node.__key);
   }
-
   constructor(className, text, key) {
     super(text, key);
-
     _defineProperty(this, "__className", void 0);
-
     this.__className = className;
   }
-
   createDOM(config) {
     const dom = document.createElement('span');
     const inner = super.createDOM(config);
@@ -6232,18 +5551,14 @@ class EmojiNode extends lexical.TextNode {
     dom.appendChild(inner);
     return dom;
   }
-
   updateDOM(prevNode, dom, config) {
     const inner = dom.firstChild;
-
     if (inner === null) {
       return true;
     }
-
     super.updateDOM(prevNode, inner, config);
     return false;
   }
-
   static importJSON(serializedNode) {
     const node = $createEmojiNode(serializedNode.className, serializedNode.text);
     node.setFormat(serializedNode.format);
@@ -6252,19 +5567,17 @@ class EmojiNode extends lexical.TextNode {
     node.setStyle(serializedNode.style);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       className: this.getClassName(),
       type: 'emoji'
     };
   }
-
   getClassName() {
     const self = this.getLatest();
     return self.__className;
   }
-
 }
 function $createEmojiNode(className, emojiText) {
   const node = new EmojiNode(className, emojiText).setMode('token');
@@ -6279,54 +5592,42 @@ function $createEmojiNode(className, emojiText) {
  *
  */
 const emojis = new Map([[':)', ['emoji happysmile', '🙂']], [':D', ['emoji veryhappysmile', '😀']], [':(', ['emoji unhappysmile', '🙁']], ['<3', ['emoji heart', '❤']], ['🙂', ['emoji happysmile', '🙂']], ['😀', ['emoji veryhappysmile', '😀']], ['🙁', ['emoji unhappysmile', '🙁']], ['❤', ['emoji heart', '❤']]]);
-
 function findAndTransformEmoji(node) {
   const text = node.getTextContent();
-
   for (let i = 0; i < text.length; i++) {
     const emojiData = emojis.get(text[i]) || emojis.get(text.slice(i, i + 2));
-
     if (emojiData !== undefined) {
       const [emojiStyle, emojiText] = emojiData;
       let targetNode;
-
       if (i === 0) {
         [targetNode] = node.splitText(i + 2);
       } else {
         [, targetNode] = node.splitText(i, i + 2);
       }
-
       const emojiNode = $createEmojiNode(emojiStyle, emojiText);
       targetNode.replace(emojiNode);
       return emojiNode;
     }
   }
-
   return null;
 }
-
 function textNodeTransform(node) {
   let targetNode = node;
-
   while (targetNode !== null) {
     if (!targetNode.isSimpleText()) {
       return;
     }
-
     targetNode = findAndTransformEmoji(targetNode);
   }
 }
-
 function useEmojis(editor) {
   React.useEffect(() => {
     if (!editor.hasNodes([EmojiNode])) {
       throw new Error('EmojisPlugin: EmojiNode not registered on editor');
     }
-
     return editor.registerNodeTransform(lexical.TextNode, textNodeTransform);
   }, [editor]);
 }
-
 function EmojisPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   useEmojis(editor);
@@ -6336,16 +5637,13 @@ function EmojisPlugin() {
 // Cached responses or running request promises
 const PREVIEW_CACHE = {};
 const URL_MATCHER = /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
-
 function useSuspenseRequest(url) {
   let cached = PREVIEW_CACHE[url];
-
   if (!url.match(URL_MATCHER)) {
     return {
       preview: null
     };
   }
-
   if (!cached) {
     cached = PREVIEW_CACHE[url] = fetch(`/api/link-preview?url=${encodeURI(url)}`).then(response => response.json()).then(preview => {
       PREVIEW_CACHE[url] = preview;
@@ -6356,25 +5654,20 @@ function useSuspenseRequest(url) {
       };
     });
   }
-
   if (cached instanceof Promise) {
     throw cached;
   }
-
   return cached;
 }
-
 function LinkPreviewContent({
   url
 }) {
   const {
     preview
   } = useSuspenseRequest(url);
-
   if (preview === null) {
     return null;
   }
-
   return /*#__PURE__*/React.createElement("div", {
     className: "LinkPreview__container"
   }, preview.img && /*#__PURE__*/React.createElement("div", {
@@ -6391,7 +5684,6 @@ function LinkPreviewContent({
     className: "LinkPreview__description"
   }, preview.description));
 }
-
 function Glimmer(props) {
   return /*#__PURE__*/React.createElement("div", _extends({
     className: "LinkPreview__glimmer"
@@ -6402,7 +5694,6 @@ function Glimmer(props) {
     }
   }));
 }
-
 function LinkPreview({
   url
 }) {
@@ -6440,13 +5731,10 @@ function getSelectedNode(selection$1) {
   const focus = selection$1.focus;
   const anchorNode = selection$1.anchor.getNode();
   const focusNode = selection$1.focus.getNode();
-
   if (anchorNode === focusNode) {
     return anchorNode;
   }
-
   const isBackward = selection$1.isBackward();
-
   if (isBackward) {
     return selection.$isAtNodeEnd(focus) ? anchorNode : focusNode;
   } else {
@@ -6465,27 +5753,22 @@ const VERTICAL_GAP = 10;
 const HORIZONTAL_OFFSET = 5;
 function setFloatingElemPosition(targetRect, floatingElem, anchorElem, verticalGap = VERTICAL_GAP, horizontalOffset = HORIZONTAL_OFFSET) {
   const scrollerElem = anchorElem.parentElement;
-
   if (targetRect === null || !scrollerElem) {
     floatingElem.style.opacity = '0';
     floatingElem.style.transform = 'translate(-10000px, -10000px)';
     return;
   }
-
   const floatingElemRect = floatingElem.getBoundingClientRect();
   const anchorElementRect = anchorElem.getBoundingClientRect();
   const editorScrollerRect = scrollerElem.getBoundingClientRect();
   let top = targetRect.top - floatingElemRect.height - verticalGap;
   let left = targetRect.left - horizontalOffset;
-
   if (top < editorScrollerRect.top) {
     top += floatingElemRect.height + targetRect.height + verticalGap * 2;
   }
-
   if (left + floatingElemRect.width > editorScrollerRect.right) {
     left = editorScrollerRect.right - floatingElemRect.width - horizontalOffset;
   }
-
   top -= anchorElementRect.top;
   left -= anchorElementRect.left;
   floatingElem.style.opacity = '1';
@@ -6499,17 +5782,19 @@ function setFloatingElemPosition(targetRect, floatingElem, anchorElem, verticalG
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 function sanitizeUrl(url) {
   /** A pattern that matches safe  URLs. */
   const SAFE_URL_PATTERN = /^(?:(?:https?|mailto|ftp|tel|file|sms):|[^&:/?#]*(?:[/?#]|$))/gi;
-  /** A pattern that matches safe data URLs. */
 
+  /** A pattern that matches safe data URLs. */
   const DATA_URL_PATTERN = /^data:(?:image\/(?:bmp|gif|jpeg|jpg|png|tiff|webp)|video\/(?:mpeg|mp4|ogg|webm)|audio\/(?:mp3|oga|ogg|opus));base64,[a-z0-9+/]+=*$/i;
   url = String(url).trim();
   if (url.match(SAFE_URL_PATTERN) || url.match(DATA_URL_PATTERN)) return url;
   return 'https://';
-} // Source: https://stackoverflow.com/a/8234912/2013580
+}
 
+// Source: https://stackoverflow.com/a/8234912/2013580
 const urlRegExp = new RegExp(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/);
 function validateUrl(url) {
   // TODO Fix UI for link insertion; it should never default to an invalid URL such as https://.
@@ -6524,7 +5809,6 @@ function validateUrl(url) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function FloatingLinkEditor({
   editor,
   isLink,
@@ -6538,11 +5822,9 @@ function FloatingLinkEditor({
   const [lastSelection, setLastSelection] = React.useState(null);
   const updateLinkEditor = React.useCallback(() => {
     const selection = lexical.$getSelection();
-
     if (lexical.$isRangeSelection(selection)) {
       const node = getSelectedNode(selection);
       const parent = node.getParent();
-
       if (link.$isLinkNode(parent)) {
         setLinkUrl(parent.getURL());
       } else if (link.$isLinkNode(node)) {
@@ -6551,65 +5833,50 @@ function FloatingLinkEditor({
         setLinkUrl('');
       }
     }
-
     const editorElem = editorRef.current;
     const nativeSelection = window.getSelection();
     const activeElement = document.activeElement;
-
     if (editorElem === null) {
       return;
     }
-
     const rootElement = editor.getRootElement();
-
     if (selection !== null && nativeSelection !== null && rootElement !== null && rootElement.contains(nativeSelection.anchorNode) && editor.isEditable()) {
       const domRange = nativeSelection.getRangeAt(0);
       let rect;
-
       if (nativeSelection.anchorNode === rootElement) {
         let inner = rootElement;
-
         while (inner.firstElementChild != null) {
           inner = inner.firstElementChild;
         }
-
         rect = inner.getBoundingClientRect();
       } else {
         rect = domRange.getBoundingClientRect();
       }
-
       setFloatingElemPosition(rect, editorElem, anchorElem);
       setLastSelection(selection);
     } else if (!activeElement || activeElement.className !== 'link-input') {
       if (rootElement !== null) {
         setFloatingElemPosition(null, editorElem, anchorElem);
       }
-
       setLastSelection(null);
       setEditMode(false);
       setLinkUrl('');
     }
-
     return true;
   }, [anchorElem, editor]);
   React.useEffect(() => {
     const scrollerElem = anchorElem.parentElement;
-
     const update = () => {
       editor.getEditorState().read(() => {
         updateLinkEditor();
       });
     };
-
     window.addEventListener('resize', update);
-
     if (scrollerElem) {
       scrollerElem.addEventListener('scroll', update);
     }
-
     return () => {
       window.removeEventListener('resize', update);
-
       if (scrollerElem) {
         scrollerElem.removeEventListener('scroll', update);
       }
@@ -6630,7 +5897,6 @@ function FloatingLinkEditor({
         setIsLink(false);
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_HIGH));
   }, [editor, updateLinkEditor, setIsLink, isLink]);
@@ -6657,12 +5923,10 @@ function FloatingLinkEditor({
     onKeyDown: event => {
       if (event.key === 'Enter' || event.key === 'Escape') {
         event.preventDefault();
-
         if (lastSelection !== null) {
           if (linkUrl !== '') {
             editor.dispatchCommand(link.TOGGLE_LINK_COMMAND, sanitizeUrl(linkUrl));
           }
-
           setEditMode(false);
         }
       }
@@ -6685,18 +5949,17 @@ function FloatingLinkEditor({
     url: linkUrl
   })));
 }
-
 function useFloatingLinkEditorToolbar(editor, anchorElem) {
   const [activeEditor, setActiveEditor] = React.useState(editor);
   const [isLink, setIsLink] = React.useState(false);
   const updateToolbar = React.useCallback(() => {
     const selection = lexical.$getSelection();
-
     if (lexical.$isRangeSelection(selection)) {
       const node = getSelectedNode(selection);
       const linkParent = utils.$findMatchingParent(node, link.$isLinkNode);
-      const autoLinkParent = utils.$findMatchingParent(node, link.$isAutoLinkNode); // We don't want this menu to open for auto links.
+      const autoLinkParent = utils.$findMatchingParent(node, link.$isAutoLinkNode);
 
+      // We don't want this menu to open for auto links.
       if (linkParent != null && autoLinkParent == null) {
         setIsLink(true);
       } else {
@@ -6717,14 +5980,13 @@ function useFloatingLinkEditorToolbar(editor, anchorElem) {
       return false;
     }, lexical.COMMAND_PRIORITY_CRITICAL));
   }, [editor, updateToolbar]);
-  return isLink ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(FloatingLinkEditor, {
+  return isLink ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(FloatingLinkEditor, {
     editor: activeEditor,
     isLink: isLink,
     anchorElem: anchorElem,
     setIsLink: setIsLink
   }), anchorElem) : null;
 }
-
 function FloatingLinkEditorPlugin({
   anchorElem = document.body
 }) {
@@ -6742,19 +6004,15 @@ function FloatingLinkEditorPlugin({
 function getDOMRangeRect(nativeSelection, rootElement) {
   const domRange = nativeSelection.getRangeAt(0);
   let rect;
-
   if (nativeSelection.anchorNode === rootElement) {
     let inner = rootElement;
-
     while (inner.firstElementChild != null) {
       inner = inner.firstElementChild;
     }
-
     rect = inner.getBoundingClientRect();
   } else {
     rect = domRange.getBoundingClientRect();
   }
-
   return rect;
 }
 
@@ -6765,7 +6023,6 @@ function getDOMRangeRect(nativeSelection, rootElement) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function TextFormatFloatingToolbar({
   editor,
   anchorElem,
@@ -6791,13 +6048,10 @@ function TextFormatFloatingToolbar({
     const selection = lexical.$getSelection();
     const popupCharStylesEditorElem = popupCharStylesEditorRef.current;
     const nativeSelection = window.getSelection();
-
     if (popupCharStylesEditorElem === null) {
       return;
     }
-
     const rootElement = editor.getRootElement();
-
     if (selection !== null && nativeSelection !== null && !nativeSelection.isCollapsed && rootElement !== null && rootElement.contains(nativeSelection.anchorNode)) {
       const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem);
@@ -6805,22 +6059,17 @@ function TextFormatFloatingToolbar({
   }, [editor, anchorElem]);
   React.useEffect(() => {
     const scrollerElem = anchorElem.parentElement;
-
     const update = () => {
       editor.getEditorState().read(() => {
         updateTextFormatFloatingToolbar();
       });
     };
-
     window.addEventListener('resize', update);
-
     if (scrollerElem) {
       scrollerElem.addEventListener('scroll', update);
     }
-
     return () => {
       window.removeEventListener('resize', update);
-
       if (scrollerElem) {
         scrollerElem.removeEventListener('scroll', update);
       }
@@ -6910,7 +6159,6 @@ function TextFormatFloatingToolbar({
     className: "format link"
   })));
 }
-
 function useFloatingTextFormatToolbar(editor, anchorElem, config) {
   const [isText, setIsText] = React.useState(false);
   const [isLink, setIsLink] = React.useState(false);
@@ -6927,38 +6175,34 @@ function useFloatingTextFormatToolbar(editor, anchorElem, config) {
       if (editor.isComposing()) {
         return;
       }
-
       const selection = lexical.$getSelection();
       const nativeSelection = window.getSelection();
       const rootElement = editor.getRootElement();
-
       if (nativeSelection !== null && (!lexical.$isRangeSelection(selection) || rootElement === null || !rootElement.contains(nativeSelection.anchorNode))) {
         setIsText(false);
         return;
       }
-
       if (!lexical.$isRangeSelection(selection)) {
         return;
       }
+      const node = getSelectedNode(selection);
 
-      const node = getSelectedNode(selection); // Update text format
-
+      // Update text format
       setIsBold(selection.hasFormat('bold'));
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
       setIsStrikethrough(selection.hasFormat('strikethrough'));
       setIsSubscript(selection.hasFormat('subscript'));
       setIsSuperscript(selection.hasFormat('superscript'));
-      setIsCode(selection.hasFormat('code')); // Update links
+      setIsCode(selection.hasFormat('code'));
 
+      // Update links
       const parent = node.getParent();
-
       if (link.$isLinkNode(parent) || link.$isLinkNode(node)) {
         setIsLink(true);
       } else {
         setIsLink(false);
       }
-
       if (!code.$isCodeHighlightNode(selection.anchor.getNode()) && selection.getTextContent() !== '') {
         setIsText(lexical.$isTextNode(node));
       } else {
@@ -6981,12 +6225,10 @@ function useFloatingTextFormatToolbar(editor, anchorElem, config) {
       }
     }));
   }, [editor, updatePopup]);
-
   if (!isText || isLink) {
     return null;
   }
-
-  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(TextFormatFloatingToolbar, {
+  return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(TextFormatFloatingToolbar, {
     config: config,
     editor: editor,
     anchorElem: anchorElem,
@@ -7000,7 +6242,6 @@ function useFloatingTextFormatToolbar(editor, anchorElem, config) {
     isCode: isCode
   }), anchorElem);
 }
-
 function TextFormatFloatingToolbarPlugin({
   anchorElem = document.body,
   config
@@ -7020,11 +6261,9 @@ class KeywordNode extends lexical.TextNode {
   static getType() {
     return 'keyword';
   }
-
   static clone(node) {
     return new KeywordNode(node.__text, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createKeywordNode(serializedNode.text);
     node.setFormat(serializedNode.format);
@@ -7033,33 +6272,28 @@ class KeywordNode extends lexical.TextNode {
     node.setStyle(serializedNode.style);
     return node;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       type: 'keyword',
       version: 1
     };
   }
-
   createDOM(config) {
     const dom = super.createDOM(config);
     dom.style.cursor = 'default';
     dom.className = 'keyword';
     return dom;
   }
-
   canInsertTextBefore() {
     return false;
   }
-
   canInsertTextAfter() {
     return false;
   }
-
   isTextEntity() {
     return true;
   }
-
 }
 function $createKeywordNode(keyword) {
   return new KeywordNode(keyword);
@@ -7085,11 +6319,9 @@ function KeywordsPlugin() {
   }, []);
   const getKeywordMatch = React.useCallback(text => {
     const matchArr = KEYWORDS_REGEX.exec(text);
-
     if (matchArr === null) {
       return null;
     }
-
     const hashtagLength = matchArr[2].length;
     const startOffset = matchArr.index + matchArr[1].length;
     const endOffset = startOffset + hashtagLength;
@@ -7122,44 +6354,33 @@ function LinkPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function getElementNodesInSelection(selection) {
   const nodesInSelection = selection.getNodes();
-
   if (nodesInSelection.length === 0) {
     return new Set([selection.anchor.getNode().getParentOrThrow(), selection.focus.getNode().getParentOrThrow()]);
   }
-
   return new Set(nodesInSelection.map(n => lexical.$isElementNode(n) ? n : n.getParentOrThrow()));
 }
-
 function isIndentPermitted(maxDepth) {
   const selection = lexical.$getSelection();
-
   if (!lexical.$isRangeSelection(selection)) {
     return false;
   }
-
   const elementNodesInSelection = getElementNodesInSelection(selection);
   let totalDepth = 0;
-
   for (const elementNode of elementNodesInSelection) {
     if (list.$isListNode(elementNode)) {
       totalDepth = Math.max(list.$getListDepth(elementNode) + 1, totalDepth);
     } else if (list.$isListItemNode(elementNode)) {
       const parent = elementNode.getParent();
-
       if (!list.$isListNode(parent)) {
         throw new Error('ListMaxIndentLevelPlugin: A ListItemNode must have a ListNode for a parent.');
       }
-
       totalDepth = Math.max(list.$getListDepth(parent) + 1, totalDepth);
     }
   }
-
   return totalDepth <= maxDepth;
 }
-
 function ListMaxIndentLevelPlugin({
   maxDepth
 }) {
@@ -7199,20 +6420,16 @@ function MaxLengthPlugin({
     let lastRestoredEditorState = null;
     return editor.registerNodeTransform(lexical.RootNode, rootNode => {
       const selection$1 = lexical.$getSelection();
-
       if (!lexical.$isRangeSelection(selection$1) || !selection$1.isCollapsed()) {
         return;
       }
-
       const prevEditorState = editor.getEditorState();
       const prevTextContent = prevEditorState.read(() => rootNode.getTextContent());
       const textContent = rootNode.getTextContent();
-
       if (prevTextContent !== textContent) {
         const textLength = textContent.length;
         const delCount = textLength - maxLength;
         const anchor = selection$1.anchor;
-
         if (delCount > 0) {
           // Restore the old editor state instead if the last
           // text content was already at the limit.
@@ -7231,27 +6448,22 @@ function MaxLengthPlugin({
 
 function convertMentionElement(domNode) {
   const textContent = domNode.textContent;
-
   if (textContent !== null) {
     const node = $createMentionNode(textContent);
     return {
       node
     };
   }
-
   return null;
 }
-
 const mentionStyle = 'background-color: rgba(24, 119, 232, 0.2)';
 class MentionNode extends lexical.TextNode {
   static getType() {
     return 'mention';
   }
-
   static clone(node) {
     return new MentionNode(node.__mention, node.__text, node.__key);
   }
-
   static importJSON(serializedNode) {
     const node = $createMentionNode(serializedNode.mentionName);
     node.setTextContent(serializedNode.text);
@@ -7261,30 +6473,25 @@ class MentionNode extends lexical.TextNode {
     node.setStyle(serializedNode.style);
     return node;
   }
-
   constructor(mentionName, text, key) {
     super(text ?? mentionName, key);
-
     _defineProperty(this, "__mention", void 0);
-
     this.__mention = mentionName;
   }
-
   exportJSON() {
-    return { ...super.exportJSON(),
+    return {
+      ...super.exportJSON(),
       mentionName: this.__mention,
       type: 'mention',
       version: 1
     };
   }
-
   createDOM(config) {
     const dom = super.createDOM(config);
     dom.style.cssText = mentionStyle;
     dom.className = 'mention';
     return dom;
   }
-
   exportDOM() {
     const element = document.createElement('span');
     element.setAttribute('data-lexical-mention', 'true');
@@ -7293,14 +6500,12 @@ class MentionNode extends lexical.TextNode {
       element
     };
   }
-
   static importDOM() {
     return {
       span: domNode => {
         if (!domNode.hasAttribute('data-lexical-mention')) {
           return null;
         }
-
         return {
           conversion: convertMentionElement,
           priority: 1
@@ -7308,11 +6513,9 @@ class MentionNode extends lexical.TextNode {
       }
     };
   }
-
   isTextEntity() {
     return true;
   }
-
 }
 function $createMentionNode(mentionName) {
   const mentionNode = new MentionNode(mentionName);
@@ -7328,22 +6531,30 @@ const DocumentMentionsRegex = {
 };
 const CapitalizedNameMentionsRegex = new RegExp('(^|[^#])((?:' + DocumentMentionsRegex.NAME + '{' + 1 + ',})$)');
 const PUNC = DocumentMentionsRegex.PUNCTUATION;
-const TRIGGERS = ['@'].join(''); // Chars we expect to see in a mention (non-space, non-punctuation).
+const TRIGGERS = ['@'].join('');
 
-const VALID_CHARS = '[^' + TRIGGERS + PUNC + '\\s]'; // Non-standard series of chars. Each series must be preceded and followed by
+// Chars we expect to see in a mention (non-space, non-punctuation).
+const VALID_CHARS = '[^' + TRIGGERS + PUNC + '\\s]';
+
+// Non-standard series of chars. Each series must be preceded and followed by
 // a valid char.
-
-const VALID_JOINS = '(?:' + '\\.[ |$]|' + // E.g. "r. " in "Mr. Smith"
-' |' + // E.g. " " in "Josh Duck"
-'[' + PUNC + ']|' + // E.g. "-' in "Salier-Hellendag"
+const VALID_JOINS = '(?:' + '\\.[ |$]|' +
+// E.g. "r. " in "Mr. Smith"
+' |' +
+// E.g. " " in "Josh Duck"
+'[' + PUNC + ']|' +
+// E.g. "-' in "Salier-Hellendag"
 ')';
 const LENGTH_LIMIT = 75;
-const AtSignMentionsRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + VALID_JOINS + '){0,' + LENGTH_LIMIT + '})' + ')$'); // 50 is the longest alias length limit.
+const AtSignMentionsRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + VALID_JOINS + '){0,' + LENGTH_LIMIT + '})' + ')$');
 
-const ALIAS_LENGTH_LIMIT = 50; // Regex used to match alias.
+// 50 is the longest alias length limit.
+const ALIAS_LENGTH_LIMIT = 50;
 
-const AtSignMentionsRegexAliasRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + '){0,' + ALIAS_LENGTH_LIMIT + '})' + ')$'); // At most, 5 suggestions are shown in the popup.
+// Regex used to match alias.
+const AtSignMentionsRegexAliasRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + '){0,' + ALIAS_LENGTH_LIMIT + '})' + ')$');
 
+// At most, 5 suggestions are shown in the popup.
 const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 const mentionsCache = new Map();
 const dummyMentionsData = ["Aagi Ajay", "Aakash Mehta", "Aatif Shekh", "Adil Kadiyawala", "Aditi Das", "Aditya Kaneriya", "Aditya Kumar Upadhyay", "Aditya Upadhyay", "Ajay Kori", "Ajit Thakor", "Akhil Lakhlani", "Akshar Vora", "Akshay Panchal", "Alok Kumar", "Alpesh Desai", "Amit Gosalia", "Amit Namdeo", "Anjan Aghera", "Ankit Gandhi", "Ankit Padiya", "Anoop Tamhaney", "Anshul Shukla", "Archana Patel", "Arjun Kurungot", "Arpan Patel", "Aslam Ansari", "Avani Thakkar", "Ayush Shah", "Bhakti Patel", "Bharat Panjwani", "Bhavik Panchal", "Bhavin Thumar", "Bhumit Patel", "Brijesh Makwana", "Brijesh Padsala", "Charmi Parikh", "Chetan Patel", "Chinmay Sahu", "Chintamani Bhosale", "Chintan Machhi", "Chintan Shah", "Chirag Bhoi", "Chirag Dhorajia", "Chirag Modi", "Darsh Modi", "Darshan Shah", "Deepshikha Makwana", "Devarshi Patel", "Dharm Solanki", "Dharmesh Patel", "Dharmik Maru", "Dharmik Patel", "Dhaval Patel", "Dhaval Travadi", "Dhiraj Jethwani", "Dhrumil Bhalala", "Dhrupad Patel", "Dhruv Kadia", "Dhruvin Patel", "Digesh Prajapati", "Dinesh Vasitha", "Dipak Chavda", "Dipak External", "Dipesh Shah", "Dipesh Shah", "Dipesh Shah(External)", "Divyesh Gol", "Dody Tank", "Drashti Mehta", "Durgesh Yadav", "Durgesh Yadav", "Farouk Susulan", "Fenil Panseriya", "Fulabhai Desai", "Gaurang Vyas", "Gauri Sabhadiya", "Ghanshyam Bhava", "Gopal Jaiswal", "Govind Rajput", "Gowtham Nagaraj", "Hardik Davariya", "Harikrushna Parmar", "Harsh Desai", "Harsh Patel", "Harshil Thakkar", "Harshvardhan Makwana", "Hemant Nandaniya", "Het Patel", "Hiten Barchha", "Hitesh Kava", "Hitesh Patel", "Honey Kawade", "Jahnavi Thakkar", "Jalpa Panchal", "Janmaya Pandya", "Jarna Prajapati", "Jay Jani", "Jay Kansara", "Jay Patel", "Jay Thakkar", "Jaydeep Ladva", "Jaydeep Modi", "Jaydevsinh Gohil", "Jaydip Patel", "Jayesh Chopda", "Jayesh Prajapati", "Jayram Nai", "Jigar Rami", "Jignesh Prajapati", "Jinal patel", "Jisha Patel", "Jitendra Yadav", "Jitendrasinh Bhadoriya", "Kadam", "Kalim Shaikh", "Kamalnayan Parmar", "Kamlesh Helaiya", "Kaushik Ambaliya", "Kaverimanian T", "Ketaki Brahmane", "Keyur Chokshi", "Khushi Kamat", "Khushi Kathrotia", "Kinshuk Sarabhai", "Kiran Chauhan", "Komal Prajapati", "Komal Raval", "Krupali Joshi", "Kruti Trivedi", "Kshama Parmar", "Kush Patel", "Kush Patel", "Kushal Shah", "Laksh Joshi", "Madhavesh Gohel", "Maitri Trivedi", "Malay Thakkar", "Manan Prajapati", "Manan Vadher", "Mansi Chavda", "Mansi Patel", "Manthan Bhanushali", "Margi Patel", "Maulik Lakhnotra", "Meet Boghani", "Meet Parikh", "Meet Patel", "Meet Rachhadiya", "Mehul Bukeliya", "Mehul Vishroliya", "Mihir Trivedi", "Milan Trivedi", "Miral Chauhan", "Mittal Shah", "N D Acharya", "N D Acharya", "Namrata Gosai", "Nandini Joshi", "Nayan Valmiya", "Neel Thakkar", "Nidhi Patel", "Nidhi Patel", "Nilay Patel", "Nilesh Dataniya", "Niraj Mamtora", "Nirali Maheshwari", "Nirali Patel", "Nirmal Bhavsar", "Nishant Goradiya", "Nishith Zaveri", "Niyati Raval", "Pankaj Bhatia", "Paras Pitroda", "Parth Kher", "Patel Vrushi", "Payal Patel", "Piyush Mehra", "Pooja Kolhe", "Pooja Patel", "Pooja Thakkar", "Poonam Shah", "Poonam Singh", "Poornima Meena", "Prakhar Gupta", "Prashant U", "Pratik Ahir", "Pratik Kelkar", "Pravin Ratanpara", "Princy Patel", "Priya Patel", "Priyam Gadhvi", "Priyesh Doshi", "Rahul Sharma", "Raj Cementwala", "Raj Chauhan", "Raj Patel", "Raj Shah", "Rajan Rajgor", "Rajendra Borisagar", "Rajesh Kumar", "Raju Makwana", "Ravi Sachaniya", "Ravishankar Patel", "Rohan Pansara", "Rohan Saraogi", "Ronak Pandya", "Rupal Manvar", "Rupal Patoliya", "Saharsh Modi", "Sakshi Shah", "Samir Parikh", "Sanjana Daki", "Sanjay Prajapati", "Sanket Patel", "Saurav Shailendra", "Savan Barbhaya", "Savan Pansuriya", "Sayma Masoom", "Setu Patel", "setu patel", "Sharda", "Shivani Joshi", "Shraddha Pathak", "Shrenik Shah", "Shubh Trivedi", "Siddharth Kundu", "Smit Patel", "Solomon Thirumurugan", "Sonia Shah", "Sourabh Gaonshindhe", "Sudhir Parmar", "Surabhi Kacha", "Surbhi Panchal", "Surojit Sarkar", "Swapna KS", "Tarak Kadiya", "Teja Satyanarayana", "Tinu Taral", "Ujjval Patdiya", "Umang Bhadja", "Umesh Tank", "Urvesh Joshi", "Utsav Kachchhi", "Uttam Sharma", "Vaibhavi Prajapati", "Vaishali maru", "Vaishnavi Dulala", "Varshil Patel", "Vatsal Shah", "Vignesh Kumar", "Vijay Prajapati", "Viral Patel", "Viram Shah", "Vishal Amipara", "Vishwa Kadivar", "Vishwas Bhimani", "Vrushi Patel", "Yash Bhide", "Yash Panchal", "Yash Thakar", "Yogesh Asanani", "Yogesh Panchani"];
@@ -7354,26 +6565,21 @@ const dummyLookupService = {
       callback(results);
     }, 500);
   }
-
 };
-
 function useMentionLookupService(mentionString) {
   const [results, setResults] = React.useState([]);
   React.useEffect(() => {
     const cachedResults = mentionsCache.get(mentionString);
-
     if (mentionString == null) {
       setResults([]);
       return;
     }
-
     if (cachedResults === null) {
       return;
     } else if (cachedResults !== undefined) {
       setResults(cachedResults);
       return;
     }
-
     mentionsCache.set(mentionString, null);
     dummyLookupService.search(mentionString, newResults => {
       mentionsCache.set(mentionString, newResults);
@@ -7382,16 +6588,13 @@ function useMentionLookupService(mentionString) {
   }, [mentionString]);
   return results;
 }
-
 function checkForCapitalizedNameMentions(text, minMatchLength) {
   const match = CapitalizedNameMentionsRegex.exec(text);
-
   if (match !== null) {
     // The strategy ignores leading whitespace but we need to know it's
     // length to add it to the leadOffset
     const maybeLeadingWhitespace = match[1];
     const matchingString = match[2];
-
     if (matchingString != null && matchingString.length >= minMatchLength) {
       return {
         leadOffset: match.index + maybeLeadingWhitespace.length,
@@ -7400,23 +6603,18 @@ function checkForCapitalizedNameMentions(text, minMatchLength) {
       };
     }
   }
-
   return null;
 }
-
 function checkForAtSignMentions(text, minMatchLength) {
   let match = AtSignMentionsRegex.exec(text);
-
   if (match === null) {
     match = AtSignMentionsRegexAliasRegex.exec(text);
   }
-
   if (match !== null) {
     // The strategy ignores leading whitespace but we need to know it's
     // length to add it to the leadOffset
     const maybeLeadingWhitespace = match[1];
     const matchingString = match[3];
-
     if (matchingString.length >= minMatchLength) {
       return {
         leadOffset: match.index + maybeLeadingWhitespace.length,
@@ -7425,29 +6623,21 @@ function checkForAtSignMentions(text, minMatchLength) {
       };
     }
   }
-
   return null;
 }
-
 function getPossibleQueryMatch(text) {
   const match = checkForAtSignMentions(text, 1);
   return match === null ? checkForCapitalizedNameMentions(text, 3) : match;
 }
-
 class MentionTypeaheadOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
   constructor(name, picture) {
     super(name);
-
     _defineProperty(this, "name", void 0);
-
     _defineProperty(this, "picture", void 0);
-
     this.name = name;
     this.picture = picture;
   }
-
 }
-
 function MentionsTypeaheadMenuItem({
   index,
   isSelected,
@@ -7456,11 +6646,9 @@ function MentionsTypeaheadMenuItem({
   option
 }) {
   let className = 'item';
-
   if (isSelected) {
     className += ' selected';
   }
-
   return /*#__PURE__*/React.createElement("li", {
     key: option.key,
     tabIndex: -1,
@@ -7475,7 +6663,6 @@ function MentionsTypeaheadMenuItem({
     className: "text"
   }, option.name));
 }
-
 function NewMentionsPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [queryString, setQueryString] = React.useState(null);
@@ -7489,11 +6676,9 @@ function NewMentionsPlugin() {
   const onSelectOption = React.useCallback((selectedOption, nodeToReplace, closeMenu) => {
     editor.update(() => {
       const mentionNode = $createMentionNode(selectedOption.name);
-
       if (nodeToReplace) {
         nodeToReplace.replace(mentionNode);
       }
-
       mentionNode.select();
       closeMenu();
     });
@@ -7512,7 +6697,7 @@ function NewMentionsPlugin() {
       selectedIndex,
       selectOptionAndCleanUp,
       setHighlightedIndex
-    }) => anchorElementRef.current && results.length ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement("div", {
+    }) => anchorElementRef.current && results.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
       className: "typeahead-popover mentions-menu"
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(MentionsTypeaheadMenuItem, {
       index: i,
@@ -7537,16 +6722,13 @@ function NewMentionsPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 const removeNode = (editor, node) => {
   try {
     editor.update(() => {
       node.remove();
     });
   } catch (e) {} // eslint-disable-line no-empty
-
 };
-
 function OnImageUploadPlugin({
   onUpload
 }) {
@@ -7558,28 +6740,23 @@ function OnImageUploadPlugin({
         if (mutation === 'created') {
           editor.getEditorState().read(() => {
             const imageNode = lexical.$getNodeByKey(nodeKey);
-
             if ($isImageNode(imageNode)) {
               const file = imageNode.getFile();
               const altText = imageNode.getAltText();
-
               if (file) {
                 (async () => {
                   try {
                     const imgUrl = await onUpload(file, altText);
                     const preloadImage = new Image();
-
                     preloadImage.onload = () => {
                       editor.update(() => {
                         imageNode.setFile(undefined);
                         imageNode.setSrc(imgUrl);
                       });
                     };
-
                     preloadImage.onerror = () => {
                       removeNode(editor, imageNode);
                     };
-
                     preloadImage.src = imgUrl;
                   } catch (e) {
                     removeNode(editor, imageNode);
@@ -7605,10 +6782,8 @@ function OnImageUploadPlugin({
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 const getElement = () => {
   let element = document.getElementById('report-container');
-
   if (element === null) {
     element = document.createElement('div');
     element.id = 'report-container';
@@ -7620,22 +6795,18 @@ const getElement = () => {
     element.style.padding = '20px';
     element.style.background = 'rgba(240, 240, 240, 0.4)';
     element.style.borderRadius = '20px';
-
     if (document.body) {
       document.body.appendChild(element);
     }
   }
-
   return element;
 };
-
 function useReport() {
   const timer = React.useRef(null);
   const cleanup = React.useCallback(() => {
     if (timer !== null) {
       clearTimeout(timer.current);
     }
-
     if (document.body) {
       document.body.removeChild(getElement());
     }
@@ -7680,11 +6851,11 @@ const VOICE_COMMANDS = {
   }
 };
 const SUPPORT_SPEECH_RECOGNITION = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
-
 function SpeechToTextPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [isEnabled, setIsEnabled] = React.useState(false);
-  const SpeechRecognition = // @ts-ignore
+  const SpeechRecognition =
+  // @ts-ignore
   window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = React.useRef(null);
   const report = useReport();
@@ -7699,17 +6870,13 @@ function SpeechToTextPlugin() {
           transcript
         } = resultItem.item(0);
         report(transcript);
-
         if (!resultItem.isFinal) {
           return;
         }
-
         editor.update(() => {
           const selection = lexical.$getSelection();
-
           if (lexical.$isRangeSelection(selection)) {
             const command = VOICE_COMMANDS[transcript.toLowerCase().trim()];
-
             if (command) {
               command({
                 editor,
@@ -7724,7 +6891,6 @@ function SpeechToTextPlugin() {
         });
       });
     }
-
     if (recognition.current) {
       if (isEnabled) {
         recognition.current.start();
@@ -7732,7 +6898,6 @@ function SpeechToTextPlugin() {
         recognition.current.stop();
       }
     }
-
     return () => {
       if (recognition.current !== null) {
         recognition.current.stop();
@@ -7747,7 +6912,6 @@ function SpeechToTextPlugin() {
   }, [editor]);
   return null;
 }
-
 var SpeechToTextPlugin$1 = SUPPORT_SPEECH_RECOGNITION ? SpeechToTextPlugin : () => null;
 
 /**
@@ -7761,7 +6925,6 @@ const COMMAND_PRIORITY_LOW = 1;
 const TAB_TO_FOCUS_INTERVAL = 100;
 let lastTabKeyDownTimestamp = 0;
 let hasRegisteredKeyDownListener = false;
-
 function registerKeyTimeStampTracker() {
   window.addEventListener('keydown', event => {
     // Tab
@@ -7770,7 +6933,6 @@ function registerKeyTimeStampTracker() {
     }
   }, true);
 }
-
 function TabFocusPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   React.useEffect(() => {
@@ -7778,16 +6940,13 @@ function TabFocusPlugin() {
       registerKeyTimeStampTracker();
       hasRegisteredKeyDownListener = true;
     }
-
     return editor.registerCommand(lexical.FOCUS_COMMAND, event => {
       const selection = lexical.$getSelection();
-
       if (lexical.$isRangeSelection(selection)) {
         if (lastTabKeyDownTimestamp + TAB_TO_FOCUS_INTERVAL > event.timeStamp) {
           lexical.$setSelection(selection.clone());
         }
       }
-
       return false;
     }, COMMAND_PRIORITY_LOW);
   }, [editor]);
@@ -7801,7 +6960,6 @@ function TabFocusPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function TableActionMenu$1({
   onClose,
   tableCellNode: _tableCellNode,
@@ -7818,7 +6976,6 @@ function TableActionMenu$1({
   React.useEffect(() => {
     return editor.registerMutationListener(table.TableCellNode, nodeMutations => {
       const nodeUpdated = nodeMutations.get(tableCellNode.getKey()) === 'updated';
-
       if (nodeUpdated) {
         editor.getEditorState().read(() => {
           updateTableCellNode(tableCellNode.getLatest());
@@ -7829,7 +6986,6 @@ function TableActionMenu$1({
   React.useEffect(() => {
     editor.getEditorState().read(() => {
       const selection = lexical.$getSelection();
-
       if (lexical.DEPRECATED_$isGridSelection(selection)) {
         const selectionShape = selection.getShape();
         updateSelectionCounts({
@@ -7842,7 +6998,6 @@ function TableActionMenu$1({
   React.useEffect(() => {
     const menuButtonElement = contextRef.current;
     const dropDownElement = dropDownRef.current;
-
     if (menuButtonElement != null && dropDownElement != null) {
       const menuButtonRect = menuButtonElement.getBoundingClientRect();
       dropDownElement.style.opacity = '1';
@@ -7856,7 +7011,6 @@ function TableActionMenu$1({
         setIsMenuOpen(false);
       }
     }
-
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
   }, [setIsMenuOpen, contextRef]);
@@ -7865,21 +7019,16 @@ function TableActionMenu$1({
       if (tableCellNode.isAttached()) {
         const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
         const tableElement = editor.getElementByKey(tableNode.getKey());
-
         if (!tableElement) {
           throw new Error('Expected to find tableElement in DOM');
         }
-
         const tableSelection = table.getTableSelectionFromTableElement(tableElement);
-
         if (tableSelection !== null) {
           tableSelection.clearHighlight();
         }
-
         tableNode.markDirty();
         updateTableCellNode(tableCellNode.getLatest());
       }
-
       const rootNode = lexical.$getRoot();
       rootNode.selectStart();
     });
@@ -7889,14 +7038,12 @@ function TableActionMenu$1({
       const selection = lexical.$getSelection();
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       let tableRowIndex;
-
       if (lexical.DEPRECATED_$isGridSelection(selection)) {
         const selectionShape = selection.getShape();
         tableRowIndex = shouldInsertAfter ? selectionShape.toY : selectionShape.fromY;
       } else {
         tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
       }
-
       const grid = table.$getElementGridForTableNode(editor, tableNode);
       table.$insertTableRow(tableNode, tableRowIndex, shouldInsertAfter, selectionCounts.rows, grid);
       clearTableSelection();
@@ -7908,14 +7055,12 @@ function TableActionMenu$1({
       const selection = lexical.$getSelection();
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       let tableColumnIndex;
-
       if (lexical.DEPRECATED_$isGridSelection(selection)) {
         const selectionShape = selection.getShape();
         tableColumnIndex = shouldInsertAfter ? selectionShape.toX : selectionShape.fromX;
       } else {
         tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
       }
-
       const grid = table.$getElementGridForTableNode(editor, tableNode);
       table.$insertTableColumn(tableNode, tableColumnIndex, shouldInsertAfter, selectionCounts.columns, grid);
       clearTableSelection();
@@ -7953,22 +7098,17 @@ function TableActionMenu$1({
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
-
       if (tableRowIndex >= tableRows.length || tableRowIndex < 0) {
         throw new Error('Expected table cell to be inside of table row.');
       }
-
       const tableRow = tableRows[tableRowIndex];
-
       if (!table.$isTableRowNode(tableRow)) {
         throw new Error('Expected table row');
       }
-
       tableRow.getChildren().forEach(tableCell => {
         if (!table.$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
-
         tableCell.toggleHeaderStyle(table.TableCellHeaderStates.ROW);
       });
       clearTableSelection();
@@ -7980,29 +7120,21 @@ function TableActionMenu$1({
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
-
       for (let r = 0; r < tableRows.length; r++) {
         const tableRow = tableRows[r];
-
         if (!table.$isTableRowNode(tableRow)) {
           throw new Error('Expected table row');
         }
-
         const tableCells = tableRow.getChildren();
-
         if (tableColumnIndex >= tableCells.length || tableColumnIndex < 0) {
           throw new Error('Expected table cell to be inside of table row.');
         }
-
         const tableCell = tableCells[tableColumnIndex];
-
         if (!table.$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
-
         tableCell.toggleHeaderStyle(table.TableCellHeaderStates.COLUMN);
       }
-
       clearTableSelection();
       onClose();
     });
@@ -8063,7 +7195,6 @@ function TableActionMenu$1({
     className: "text"
   }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))), document.body);
 }
-
 function TableCellActionMenuContainer({
   anchorElem
 }) {
@@ -8077,29 +7208,22 @@ function TableCellActionMenuContainer({
     const selection = lexical.$getSelection();
     const nativeSelection = window.getSelection();
     const activeElement = document.activeElement;
-
     if (selection == null || menu == null) {
       setTableMenuCellNode(null);
       return;
     }
-
     const rootElement = editor.getRootElement();
-
     if (lexical.$isRangeSelection(selection) && rootElement !== null && nativeSelection !== null && rootElement.contains(nativeSelection.anchorNode)) {
       const tableCellNodeFromSelection = table.$getTableCellNodeFromLexicalNode(selection.anchor.getNode());
-
       if (tableCellNodeFromSelection == null) {
         setTableMenuCellNode(null);
         return;
       }
-
       const tableCellParentNodeDOM = editor.getElementByKey(tableCellNodeFromSelection.getKey());
-
       if (tableCellParentNodeDOM == null) {
         setTableMenuCellNode(null);
         return;
       }
-
       setTableMenuCellNode(tableCellNodeFromSelection);
     } else if (!activeElement) {
       setTableMenuCellNode(null);
@@ -8114,10 +7238,8 @@ function TableCellActionMenuContainer({
   });
   React.useEffect(() => {
     const menuButtonDOM = menuButtonRef.current;
-
     if (menuButtonDOM != null && tableCellNode != null) {
       const tableCellNodeDOM = editor.getElementByKey(tableCellNode.getKey());
-
       if (tableCellNodeDOM != null) {
         const tableCellRect = tableCellNodeDOM.getBoundingClientRect();
         const menuRect = menuButtonDOM.getBoundingClientRect();
@@ -8137,7 +7259,6 @@ function TableCellActionMenuContainer({
     if (prevTableCellDOM.current !== tableCellNode) {
       setIsMenuOpen(false);
     }
-
     prevTableCellDOM.current = tableCellNode;
   }, [prevTableCellDOM, tableCellNode]);
   return /*#__PURE__*/React.createElement("div", {
@@ -8159,7 +7280,6 @@ function TableCellActionMenuContainer({
     tableCellNode: tableCellNode
   })));
 }
-
 function TableActionMenuPlugin({
   anchorElem = document.body
 }) {
@@ -8178,7 +7298,6 @@ function TableActionMenuPlugin({
  */
 const MIN_ROW_HEIGHT = 33;
 const MIN_COLUMN_WIDTH = 50;
-
 function TableCellResizer({
   editor
 }) {
@@ -8194,11 +7313,9 @@ function TableCellResizer({
     return editor.registerCommand(lexical.SELECTION_CHANGE_COMMAND, payload => {
       const selection = lexical.$getSelection();
       const isGridSelection = lexical.DEPRECATED_$isGridSelection(selection);
-
       if (isSelectingGrid !== isGridSelection) {
         updateIsSelectingGrid(isGridSelection);
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_HIGH);
   });
@@ -8213,7 +7330,6 @@ function TableCellResizer({
     const onMouseMove = event => {
       setTimeout(() => {
         const target = event.target;
-
         if (draggingDirection) {
           updateMouseCurrentPos({
             x: event.clientX,
@@ -8221,30 +7337,23 @@ function TableCellResizer({
           });
           return;
         }
-
         if (resizerRef.current && resizerRef.current.contains(target)) {
           return;
         }
-
         if (targetRef.current !== target) {
           targetRef.current = target;
           const cell = table.getCellFromTarget(target);
-
           if (cell && activeCell !== cell) {
             editor.update(() => {
               const tableCellNode = lexical.$getNearestNodeFromDOMNode(cell.elem);
-
               if (!tableCellNode) {
                 throw new Error('TableCellResizer: Table cell node not found.');
               }
-
               const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
               const tableElement = editor.getElementByKey(tableNode.getKey());
-
               if (!tableElement) {
                 throw new Error('TableCellResizer: Table element not found.');
               }
-
               targetRef.current = target;
               tableRectRef.current = tableElement.getBoundingClientRect();
               updateActiveCell(cell);
@@ -8255,44 +7364,34 @@ function TableCellResizer({
         }
       }, 0);
     };
-
     document.addEventListener('mousemove', onMouseMove);
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
     };
   }, [activeCell, draggingDirection, editor, resetState]);
-
   const isHeightChanging = direction => {
     if (direction === 'bottom') return true;
     return false;
   };
-
   const updateRowHeight = React.useCallback(newHeight => {
     if (!activeCell) {
       throw new Error('TableCellResizer: Expected active cell.');
     }
-
     editor.update(() => {
       const tableCellNode = lexical.$getNearestNodeFromDOMNode(activeCell.elem);
-
       if (!table.$isTableCellNode(tableCellNode)) {
         throw new Error('TableCellResizer: Table cell node not found.');
       }
-
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
-
       if (tableRowIndex >= tableRows.length || tableRowIndex < 0) {
         throw new Error('Expected table cell to be inside of table row.');
       }
-
       const tableRow = tableRows[tableRowIndex];
-
       if (!table.$isTableRowNode(tableRow)) {
         throw new Error('Expected table row');
       }
-
       tableRow.setHeight(newHeight);
     });
   }, [activeCell, editor]);
@@ -8300,37 +7399,27 @@ function TableCellResizer({
     if (!activeCell) {
       throw new Error('TableCellResizer: Expected active cell.');
     }
-
     editor.update(() => {
       const tableCellNode = lexical.$getNearestNodeFromDOMNode(activeCell.elem);
-
       if (!table.$isTableCellNode(tableCellNode)) {
         throw new Error('TableCellResizer: Table cell node not found.');
       }
-
       const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       const tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
-
       for (let r = 0; r < tableRows.length; r++) {
         const tableRow = tableRows[r];
-
         if (!table.$isTableRowNode(tableRow)) {
           throw new Error('Expected table row');
         }
-
         const tableCells = tableRow.getChildren();
-
         if (tableColumnIndex >= tableCells.length || tableColumnIndex < 0) {
           throw new Error('Expected table cell to be inside of table row.');
         }
-
         const tableCell = tableCells[tableColumnIndex];
-
         if (!table.$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
-
         tableCell.setWidth(newWidth);
       }
     });
@@ -8338,26 +7427,21 @@ function TableCellResizer({
   const toggleResize = React.useCallback(direction => event => {
     event.preventDefault();
     event.stopPropagation();
-
     if (!activeCell) {
       throw new Error('TableCellResizer: Expected active cell.');
     }
-
     if (draggingDirection === direction && mouseStartPosRef.current) {
       const {
         x,
         y
       } = mouseStartPosRef.current;
-
       if (activeCell === null) {
         return;
       }
-
       const {
         height,
         width
       } = activeCell.elem.getBoundingClientRect();
-
       if (isHeightChanging(direction)) {
         const heightChange = Math.abs(event.clientY - y);
         const isShrinking = direction === 'bottom' && y > event.clientY;
@@ -8367,7 +7451,6 @@ function TableCellResizer({
         const isShrinking = direction === 'right' && x > event.clientX;
         updateColumnWidth(Math.max(isShrinking ? width - widthChange : widthChange + width, MIN_COLUMN_WIDTH));
       }
-
       resetState();
     } else {
       mouseStartPosRef.current = {
@@ -8405,7 +7488,6 @@ function TableCellResizer({
         }
       };
       const tableRect = tableRectRef.current;
-
       if (draggingDirection && mouseCurrentPos && tableRect) {
         if (isHeightChanging(draggingDirection)) {
           styles[draggingDirection].left = `${window.pageXOffset + tableRect.left}px`;
@@ -8418,13 +7500,10 @@ function TableCellResizer({
           styles[draggingDirection].width = '3px';
           styles[draggingDirection].height = `${tableRect.height}px`;
         }
-
         styles[draggingDirection].backgroundColor = '#adf';
       }
-
       return styles;
     }
-
     return {
       bottom: null,
       left: null,
@@ -8447,11 +7526,10 @@ function TableCellResizer({
     onMouseUp: toggleResize('bottom')
   })));
 }
-
 function TableCellResizerPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const isEditable = useLexicalEditable();
-  return React.useMemo(() => isEditable ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(TableCellResizer, {
+  return React.useMemo(() => isEditable ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(TableCellResizer, {
     editor: editor
   }), document.body) : null, [editor, isEditable]);
 }
@@ -8465,7 +7543,6 @@ function TableCellResizerPlugin() {
  */
 const MARGIN_ABOVE_EDITOR = 624;
 const HEADING_WIDTH = 9;
-
 function indent(tagName) {
   if (tagName === 'h2') {
     return 'heading2';
@@ -8473,33 +7550,27 @@ function indent(tagName) {
     return 'heading3';
   }
 }
-
 function isHeadingAtTheTopOfThePage(element) {
   const elementYPosition = element?.getClientRects()[0].y;
   return elementYPosition >= MARGIN_ABOVE_EDITOR && elementYPosition <= MARGIN_ABOVE_EDITOR + HEADING_WIDTH;
 }
-
 function isHeadingAboveViewport(element) {
   const elementYPosition = element?.getClientRects()[0].y;
   return elementYPosition < MARGIN_ABOVE_EDITOR;
 }
-
 function isHeadingBelowTheTopOfThePage(element) {
   const elementYPosition = element?.getClientRects()[0].y;
   return elementYPosition >= MARGIN_ABOVE_EDITOR + HEADING_WIDTH;
 }
-
 function TableOfContentsList({
   tableOfContents
 }) {
   const [selectedKey, setSelectedKey] = React.useState('');
   const selectedIndex = React.useRef(0);
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
-
   function scrollToNode(key, currIndex) {
     editor.getEditorState().read(() => {
       const domElement = editor.getElementByKey(key);
-
       if (domElement !== null) {
         domElement.scrollIntoView();
         setSelectedKey(key);
@@ -8507,39 +7578,31 @@ function TableOfContentsList({
       }
     });
   }
-
   React.useEffect(() => {
     function scrollCallback() {
       if (tableOfContents.length !== 0 && selectedIndex.current < tableOfContents.length - 1) {
         let currentHeading = editor.getElementByKey(tableOfContents[selectedIndex.current][0]);
-
         if (currentHeading !== null) {
           if (isHeadingBelowTheTopOfThePage(currentHeading)) {
             //On natural scroll, user is scrolling up
             while (currentHeading !== null && isHeadingBelowTheTopOfThePage(currentHeading) && selectedIndex.current > 0) {
               const prevHeading = editor.getElementByKey(tableOfContents[selectedIndex.current - 1][0]);
-
               if (prevHeading !== null && (isHeadingAboveViewport(prevHeading) || isHeadingBelowTheTopOfThePage(prevHeading))) {
                 selectedIndex.current--;
               }
-
               currentHeading = prevHeading;
             }
-
             const prevHeadingKey = tableOfContents[selectedIndex.current][0];
             setSelectedKey(prevHeadingKey);
           } else if (isHeadingAboveViewport(currentHeading)) {
             //On natural scroll, user is scrolling down
             while (currentHeading !== null && isHeadingAboveViewport(currentHeading) && selectedIndex.current < tableOfContents.length - 1) {
               const nextHeading = editor.getElementByKey(tableOfContents[selectedIndex.current + 1][0]);
-
               if (nextHeading !== null && (isHeadingAtTheTopOfThePage(nextHeading) || isHeadingAboveViewport(nextHeading))) {
                 selectedIndex.current++;
               }
-
               currentHeading = nextHeading;
             }
-
             const nextHeadingKey = tableOfContents[selectedIndex.current][0];
             setSelectedKey(nextHeadingKey);
           }
@@ -8548,18 +7611,14 @@ function TableOfContentsList({
         selectedIndex.current = 0;
       }
     }
-
     let timerId;
-
     function debounceFunction(func, delay) {
       clearTimeout(timerId);
       timerId = setTimeout(func, delay);
     }
-
     function onScroll() {
       debounceFunction(scrollCallback, 10);
     }
-
     document.addEventListener('scroll', onScroll);
     return () => document.removeEventListener('scroll', onScroll);
   }, [tableOfContents, editor]);
@@ -8594,7 +7653,6 @@ function TableOfContentsList({
     }
   })));
 }
-
 function TableOfContentsPlugin() {
   return /*#__PURE__*/React.createElement(LexicalTableOfContents__EXPERIMENTAL, null, tableOfContents => {
     return /*#__PURE__*/React.createElement(TableOfContentsList, {
@@ -8615,54 +7673,46 @@ const IS_APPLE = CAN_USE_DOM && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 CAN_USE_DOM && /^(?!.*Seamonkey)(?=.*Firefox).*/i.test(navigator.userAgent);
 CAN_USE_DOM && 'InputEvent' in window && !documentMode ? 'getTargetRanges' in new window.InputEvent('input') : false;
 CAN_USE_DOM && /Version\/[\d.]+.*Safari/.test(navigator.userAgent);
-CAN_USE_DOM && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; // Keep these in case we need to use them in the future.
-// export const IS_WINDOWS: boolean = CAN_USE_DOM && /Win/.test(navigator.platform);
+CAN_USE_DOM && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-const IS_CHROME = CAN_USE_DOM && /^(?=.*Chrome).*/i.test(navigator.userAgent); // export const canUseTextInputEvent: boolean = CAN_USE_DOM && 'TextEvent' in window && !documentMode;
+// Keep these in case we need to use them in the future.
+// export const IS_WINDOWS: boolean = CAN_USE_DOM && /Win/.test(navigator.platform);
+const IS_CHROME = CAN_USE_DOM && /^(?=.*Chrome).*/i.test(navigator.userAgent);
+// export const canUseTextInputEvent: boolean = CAN_USE_DOM && 'TextEvent' in window && !documentMode;
 
 CAN_USE_DOM && /AppleWebKit\/[\d.]+/.test(navigator.userAgent) && !IS_CHROME;
 
-const StickyComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+const StickyComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
 () => Promise.resolve().then(function () { return StickyComponent$1; }));
 class StickyNode extends lexical.DecoratorNode {
   static getType() {
     return 'sticky';
   }
-
   static clone(node) {
     return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
   }
-
   static importJSON(serializedNode) {
     const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
     const caption = serializedNode.caption;
     const nestedEditor = stickyNode.__caption;
     const editorState = nestedEditor.parseEditorState(caption.editorState);
-
     if (!editorState.isEmpty()) {
       nestedEditor.setEditorState(editorState);
     }
-
     return stickyNode;
   }
-
   constructor(x, y, color, caption, key) {
     super(key);
-
     _defineProperty(this, "__x", void 0);
-
     _defineProperty(this, "__y", void 0);
-
     _defineProperty(this, "__color", void 0);
-
     _defineProperty(this, "__caption", void 0);
-
     this.__x = x;
     this.__y = y;
     this.__caption = caption || lexical.createEditor();
     this.__color = color;
   }
-
   exportJSON() {
     return {
       caption: this.__caption.toJSON(),
@@ -8673,31 +7723,26 @@ class StickyNode extends lexical.DecoratorNode {
       yOffset: this.__y
     };
   }
-
   createDOM(config) {
     const div = document.createElement('div');
     div.style.display = 'contents';
     return div;
   }
-
   updateDOM() {
     return false;
   }
-
   setPosition(x, y) {
     const writable = this.getWritable();
     writable.__x = x;
     writable.__y = y;
     lexical.$setSelection(null);
   }
-
   toggleColor() {
     const writable = this.getWritable();
     writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
   }
-
   decorate(editor, config) {
-    return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Suspense, {
+    return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Suspense, {
       fallback: null
     }, /*#__PURE__*/React.createElement(StickyComponent$2, {
       color: this.__color,
@@ -8707,11 +7752,9 @@ class StickyNode extends lexical.DecoratorNode {
       caption: this.__caption
     })), document.body);
   }
-
   isIsolated() {
     return true;
   }
-
 }
 function $isStickyNode(node) {
   return node instanceof StickyNode;
@@ -8736,11 +7779,9 @@ function DropDownItem({
 }) {
   const ref = React.useRef(null);
   const dropDownContext = React.useContext(DropDownContext);
-
   if (dropDownContext === null) {
     throw new Error('DropDownItem must be used within a DropDown');
   }
-
   const {
     registerItem
   } = dropDownContext;
@@ -8757,7 +7798,6 @@ function DropDownItem({
     type: "button"
   }, children);
 }
-
 function DropDownItems({
   children,
   dropDownRef,
@@ -8768,15 +7808,12 @@ function DropDownItems({
   const registerItem = React.useCallback(itemRef => {
     setItems(prev => prev ? [...prev, itemRef] : [itemRef]);
   }, [setItems]);
-
   const handleKeyDown = event => {
     if (!items) return;
     const key = event.key;
-
     if (['Escape', 'ArrowUp', 'ArrowDown', 'Tab'].includes(key)) {
       event.preventDefault();
     }
-
     if (key === 'Escape' || key === 'Tab') {
       onClose();
     } else if (key === 'ArrowUp') {
@@ -8792,7 +7829,6 @@ function DropDownItems({
       });
     }
   };
-
   const contextValue = React.useMemo(() => ({
     registerItem
   }), [registerItem]);
@@ -8800,7 +7836,6 @@ function DropDownItems({
     if (items && !highlightedItem) {
       setHighlightedItem(items[0]);
     }
-
     if (highlightedItem && highlightedItem.current) {
       highlightedItem.current.focus();
     }
@@ -8813,7 +7848,6 @@ function DropDownItems({
     onKeyDown: handleKeyDown
   }, children));
 }
-
 function DropDown({
   disabled = false,
   buttonLabel,
@@ -8826,19 +7860,15 @@ function DropDown({
   const dropDownRef = React.useRef(null);
   const buttonRef = React.useRef(null);
   const [showDropDown, setShowDropDown] = React.useState(false);
-
   const handleClose = () => {
     setShowDropDown(false);
-
     if (buttonRef && buttonRef.current) {
       buttonRef.current.focus();
     }
   };
-
   React.useEffect(() => {
     const button = buttonRef.current;
     const dropDown = dropDownRef.current;
-
     if (showDropDown && button !== null && dropDown !== null) {
       const {
         top,
@@ -8850,20 +7880,16 @@ function DropDown({
   }, [dropDownRef, buttonRef, showDropDown]);
   React.useEffect(() => {
     const button = buttonRef.current;
-
     if (button !== null && showDropDown) {
       const handle = event => {
         const target = event.target;
-
         if (stopCloseOnClickSelf) {
           if (dropDownRef.current && dropDownRef.current.contains(target)) return;
         }
-
         if (!button.contains(target)) {
           setShowDropDown(false);
         }
       };
-
       document.addEventListener('click', handle);
       return () => {
         document.removeEventListener('click', handle);
@@ -8882,7 +7908,7 @@ function DropDown({
     className: "text dropdown-button-text"
   }, buttonLabel), /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
-  })), showDropDown && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
+  })), showDropDown && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(DropDownItems, {
     dropDownRef: dropDownRef,
     onClose: handleClose
   }, children), document.body));
@@ -8908,21 +7934,19 @@ function ColorPicker({
   const huePosition = React.useMemo(() => ({
     x: selfColor.hsv.h / 360 * WIDTH
   }), [selfColor.hsv]);
-
   const onSetHex = hex => {
     setInputColor(hex);
-
     if (/^#[0-9A-Fa-f]{6}$/i.test(hex)) {
       const newColor = transformColor('hex', hex);
       setSelfColor(newColor);
     }
   };
-
   const onMoveSaturation = ({
     x,
     y
   }) => {
-    const newHsv = { ...selfColor.hsv,
+    const newHsv = {
+      ...selfColor.hsv,
       s: x / WIDTH * 100,
       v: 100 - y / HEIGHT * 100
     };
@@ -8930,18 +7954,17 @@ function ColorPicker({
     setSelfColor(newColor);
     setInputColor(newColor.hex);
   };
-
   const onMoveHue = ({
     x
   }) => {
-    const newHsv = { ...selfColor.hsv,
+    const newHsv = {
+      ...selfColor.hsv,
       h: x / WIDTH * 360
     };
     const newColor = transformColor('hsv', newHsv);
     setSelfColor(newColor);
     setInputColor(newColor.hex);
   };
-
   React.useEffect(() => {
     // Check if the dropdown is actually active
     if (innerDivRef.current !== null && onChange) {
@@ -9008,7 +8031,6 @@ function ColorPicker({
     }
   })), children);
 }
-
 function MoveWrapper({
   className,
   style,
@@ -9016,7 +8038,6 @@ function MoveWrapper({
   children
 }) {
   const divRef = React.useRef(null);
-
   const move = e => {
     if (divRef.current) {
       const {
@@ -9036,25 +8057,20 @@ function MoveWrapper({
       });
     }
   };
-
   const onMouseDown = e => {
     if (e.button !== 0) return;
     move(e);
-
     const onMouseMove = _e => {
       move(_e);
     };
-
     const onMouseUp = _e => {
       document.removeEventListener('mousemove', onMouseMove, false);
       document.removeEventListener('mouseup', onMouseUp, false);
       move(_e);
     };
-
     document.addEventListener('mousemove', onMouseMove, false);
     document.addEventListener('mouseup', onMouseUp, false);
   };
-
   return /*#__PURE__*/React.createElement("div", {
     ref: divRef,
     className: className,
@@ -9062,19 +8078,15 @@ function MoveWrapper({
     onMouseDown: onMouseDown
   }, children);
 }
-
 function clamp$1(value, max, min) {
   return value > max ? max : value < min ? min : value;
 }
-
 function toHex(value) {
   if (!value.startsWith('#')) {
     const ctx = document.createElement('canvas').getContext('2d');
-
     if (!ctx) {
       throw new Error('2d context not supported or canvas already initialized');
     }
-
     ctx.fillStyle = value;
     return ctx.fillStyle;
   } else if (value.length === 4 || value.length === 5) {
@@ -9083,10 +8095,8 @@ function toHex(value) {
   } else if (value.length === 7 || value.length === 9) {
     return value;
   }
-
   return '#000000';
 }
-
 function hex2rgb(hex) {
   const rbgArr = (hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b).substring(1).match(/.{2}/g) || []).map(x => parseInt(x, 16));
   return {
@@ -9095,7 +8105,6 @@ function hex2rgb(hex) {
     r: rbgArr[0]
   };
 }
-
 function rgb2hsv({
   r,
   g,
@@ -9115,7 +8124,6 @@ function rgb2hsv({
     v
   };
 }
-
 function hsv2rgb({
   h,
   s,
@@ -9138,7 +8146,6 @@ function hsv2rgb({
     r
   };
 }
-
 function rgb2hex({
   b,
   g,
@@ -9146,12 +8153,10 @@ function rgb2hex({
 }) {
   return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
-
 function transformColor(format, color) {
   let hex = toHex('#121212');
   let rgb = hex2rgb(hex);
   let hsv = rgb2hsv(rgb);
-
   if (format === 'hex') {
     const value = color;
     hex = toHex(value);
@@ -9168,7 +8173,6 @@ function transformColor(format, color) {
     rgb = hsv2rgb(hsv);
     hex = rgb2hex(rgb);
   }
-
   return {
     hex,
     hsv,
@@ -9197,25 +8201,19 @@ const blockTypeToBlockName = {
   paragraph: 'Normal',
   quote: 'Quote'
 };
-
 function getCodeLanguageOptions() {
   const options = [];
-
   for (const [lang, friendlyName] of Object.entries(code.CODE_LANGUAGE_FRIENDLY_NAME_MAP)) {
     options.push([lang, friendlyName]);
   }
-
   return options;
 }
-
 const CODE_LANGUAGE_OPTIONS = getCodeLanguageOptions();
 const FONT_FAMILY_OPTIONS = [['Arial', 'Arial'], ['Courier New', 'Courier New'], ['Georgia', 'Georgia'], ['Times New Roman', 'Times New Roman'], ['Trebuchet MS', 'Trebuchet MS'], ['Verdana', 'Verdana']];
 const FONT_SIZE_OPTIONS = [['10px', '10px'], ['11px', '11px'], ['12px', '12px'], ['13px', '13px'], ['14px', '14px'], ['15px', '15px'], ['16px', '16px'], ['17px', '17px'], ['18px', '18px'], ['19px', '19px'], ['20px', '20px']];
-
 function dropDownActiveClass(active) {
   if (active) return 'active dropdown-item-active';else return '';
 }
-
 function BlockFormatDropDown({
   editor,
   blockType,
@@ -9229,19 +8227,16 @@ function BlockFormatDropDown({
       });
     }
   };
-
   const formatHeading = headingSize => {
     if (blockType !== headingSize) {
       editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1) || lexical.DEPRECATED_$isGridSelection(selection$1)) {
           selection.$setBlocksType_experimental(selection$1, () => richText.$createHeadingNode(headingSize));
         }
       });
     }
   };
-
   const formatBulletList = () => {
     if (blockType !== 'bullet') {
       editor.dispatchCommand(list.INSERT_UNORDERED_LIST_COMMAND, undefined);
@@ -9249,7 +8244,6 @@ function BlockFormatDropDown({
       editor.dispatchCommand(list.REMOVE_LIST_COMMAND, undefined);
     }
   };
-
   const formatCheckList = () => {
     if (blockType !== 'check') {
       editor.dispatchCommand(list.INSERT_CHECK_LIST_COMMAND, undefined);
@@ -9257,7 +8251,6 @@ function BlockFormatDropDown({
       editor.dispatchCommand(list.REMOVE_LIST_COMMAND, undefined);
     }
   };
-
   const formatNumberedList = () => {
     if (blockType !== 'number') {
       editor.dispatchCommand(list.INSERT_ORDERED_LIST_COMMAND, undefined);
@@ -9265,24 +8258,20 @@ function BlockFormatDropDown({
       editor.dispatchCommand(list.REMOVE_LIST_COMMAND, undefined);
     }
   };
-
   const formatQuote = () => {
     if (blockType !== 'quote') {
       editor.update(() => {
         const selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1) || lexical.DEPRECATED_$isGridSelection(selection$1)) {
           selection.$setBlocksType_experimental(selection$1, () => richText.$createQuoteNode());
         }
       });
     }
   };
-
   const formatCode = () => {
     if (blockType !== 'code') {
       editor.update(() => {
         let selection$1 = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection$1) || lexical.DEPRECATED_$isGridSelection(selection$1)) {
           if (selection$1.isCollapsed()) {
             selection.$setBlocksType_experimental(selection$1, () => code.$createCodeNode());
@@ -9297,7 +8286,6 @@ function BlockFormatDropDown({
       });
     }
   };
-
   return /*#__PURE__*/React.createElement(DropDown, {
     disabled: disabled,
     buttonClassName: "toolbar-item block-controls",
@@ -9369,13 +8357,11 @@ function BlockFormatDropDown({
     className: "text"
   }, "Code Block")));
 }
-
 function Divider() {
   return /*#__PURE__*/React.createElement("div", {
     className: "divider"
   });
 }
-
 function FontDropDown({
   editor,
   value,
@@ -9386,7 +8372,6 @@ function FontDropDown({
   const handleClick = React.useCallback(option => {
     editor.update(() => {
       const selection$1 = lexical.$getSelection();
-
       if (lexical.$isRangeSelection(selection$1)) {
         selection.$patchStyleText(selection$1, {
           [style]: option
@@ -9409,7 +8394,6 @@ function FontDropDown({
     className: "text"
   }, text))));
 }
-
 function ToolbarPlugin({
   config
 }) {
@@ -9440,21 +8424,19 @@ function ToolbarPlugin({
   const editorContext = useEditorComposerContext();
   const updateToolbar = React.useCallback(() => {
     const selection$1 = lexical.$getSelection();
-
     if (lexical.$isRangeSelection(selection$1)) {
       const anchorNode = selection$1.anchor.getNode();
       let element = anchorNode.getKey() === 'root' ? anchorNode : utils.$findMatchingParent(anchorNode, e => {
         const parent = e.getParent();
         return parent !== null && lexical.$isRootOrShadowRoot(parent);
       });
-
       if (element === null) {
         element = anchorNode.getTopLevelElementOrThrow();
       }
-
       const elementKey = element.getKey();
-      const elementDOM = activeEditor.getElementByKey(elementKey); // Update text format
+      const elementDOM = activeEditor.getElementByKey(elementKey);
 
+      // Update text format
       setIsBold(selection$1.hasFormat('bold'));
       setIsItalic(selection$1.hasFormat('italic'));
       setIsUnderline(selection$1.hasFormat('underline'));
@@ -9462,40 +8444,35 @@ function ToolbarPlugin({
       setIsSubscript(selection$1.hasFormat('subscript'));
       setIsSuperscript(selection$1.hasFormat('superscript'));
       setIsCode(selection$1.hasFormat('code'));
-      setIsRTL(selection.$isParentElementRTL(selection$1)); // Update links
+      setIsRTL(selection.$isParentElementRTL(selection$1));
 
+      // Update links
       const node = getSelectedNode(selection$1);
       const parent = node.getParent();
-
       if (link.$isLinkNode(parent) || link.$isLinkNode(node)) {
         setIsLink(true);
       } else {
         setIsLink(false);
       }
-
       if (elementDOM !== null) {
         setSelectedElementKey(elementKey);
-
         if (list.$isListNode(element)) {
           const parentList = utils.$getNearestNodeOfType(anchorNode, list.ListNode);
           const type = parentList ? parentList.getListType() : element.getListType();
           setBlockType(type);
         } else {
           const type = richText.$isHeadingNode(element) ? element.getTag() : element.getType();
-
           if (type in blockTypeToBlockName) {
             setBlockType(type);
           }
-
           if (code.$isCodeNode(element)) {
             const language = element.getLanguage();
             setCodeLanguage(language ? code.CODE_LANGUAGE_MAP[language] || language : '');
             return;
           }
         }
-      } // Handle buttons
-
-
+      }
+      // Handle buttons
       setFontSize(selection.$getSelectionStyleValueForProperty(selection$1, 'font-size', '15px'));
       setFontColor(selection.$getSelectionStyleValueForProperty(selection$1, 'color', '#000'));
       setBgColor(selection.$getSelectionStyleValueForProperty(selection$1, 'background-color', '#fff'));
@@ -9529,7 +8506,6 @@ function ToolbarPlugin({
   const applyStyleText = React.useCallback(styles => {
     activeEditor.update(() => {
       const selection$1 = lexical.$getSelection();
-
       if (lexical.$isRangeSelection(selection$1)) {
         selection.$patchStyleText(selection$1, styles);
       }
@@ -9538,7 +8514,6 @@ function ToolbarPlugin({
   const clearFormatting = React.useCallback(() => {
     activeEditor.update(() => {
       const selection$1 = lexical.$getSelection();
-
       if (lexical.$isRangeSelection(selection$1)) {
         selection.$selectAll(selection$1);
         selection$1.getNodes().forEach(node => {
@@ -9547,7 +8522,6 @@ function ToolbarPlugin({
             node.setStyle('');
             utils.$getNearestBlockElementAncestorOrThrow(node).setFormat('');
           }
-
           if (LexicalDecoratorBlockNode.$isDecoratorBlockNode(node)) {
             node.setFormat('');
           }
@@ -9576,7 +8550,6 @@ function ToolbarPlugin({
     activeEditor.update(() => {
       if (selectedElementKey !== null) {
         const node = lexical.$getNodeByKey(selectedElementKey);
-
         if (code.$isCodeNode(node)) {
           node.setLanguage(value);
         }
@@ -9927,7 +8900,8 @@ function TreeViewPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const skipCollaborationInit = // @ts-ignore
+const skipCollaborationInit =
+// @ts-ignore
 window.parent != null && window.parent.frames.right === window;
 const defaultToolbarConfig = {
   align: true,
@@ -9967,26 +8941,23 @@ function Editor({
   const placeholder = /*#__PURE__*/React.createElement(Placeholder, null, text);
   const [floatingAnchorElem, setFloatingAnchorElem] = React.useState(null);
   const [isSmallWidthViewport, setIsSmallWidthViewport] = React.useState(false);
-
   const onRef = _floatingAnchorElem => {
     if (_floatingAnchorElem !== null) {
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
-
   const editorContext = useEditorComposerContext();
-  const normToolbarConfig = React.useMemo(() => ({ ...defaultToolbarConfig,
+  const normToolbarConfig = React.useMemo(() => ({
+    ...defaultToolbarConfig,
     ...toolbarConfig
   }), [toolbarConfig]);
   React.useEffect(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
-
       if (isNextSmallWidthViewport !== isSmallWidthViewport) {
         setIsSmallWidthViewport(isNextSmallWidthViewport);
       }
     };
-
     window.addEventListener('resize', updateViewPortWidth);
     return () => {
       window.removeEventListener('resize', updateViewPortWidth);
@@ -10104,7 +9075,6 @@ function EditorComposer({
 }
 
 /* eslint-disable header/header */
-
 const useSyncWithInputHtml = (html$1, {
   timeoutMs = 800
 } = {}) => {
@@ -10123,7 +9093,6 @@ const useSyncWithInputHtml = (html$1, {
         const dom = parser.parseFromString(normHtml ?? '', 'text/html');
         const nodes = html.$generateNodesFromDOM(editor, dom);
         const selection = lexical.$getSelection();
-
         if (lexical.$isRangeSelection(selection)) {
           selection.insertNodes(nodes);
         }
@@ -10131,19 +9100,15 @@ const useSyncWithInputHtml = (html$1, {
     });
   }, [normHtml]); // eslint-disable-line react-hooks/exhaustive-deps
 };
-
 var useSyncWithInputHtml$1 = useSyncWithInputHtml;
 
 /* eslint-disable header/header */
-
 const stringifyJsonState = json => {
   if (json && typeof json !== 'string') {
     return JSON.stringify(json);
   }
-
   return json;
 };
-
 const useSyncWithInputJson = (json, {
   timeoutMs = 800
 } = {}) => {
@@ -10153,7 +9118,6 @@ const useSyncWithInputJson = (json, {
   useLayoutEffect(() => {
     if (normJson) {
       const currState = editor.getEditorState();
-
       if (stringifyJsonState(normJson) !== JSON.stringify(currState)) {
         const newState = editor.parseEditorState(normJson);
         editor.setEditorState(newState);
@@ -10161,7 +9125,6 @@ const useSyncWithInputJson = (json, {
     }
   }, [normJson]); // eslint-disable-line react-hooks/exhaustive-deps
 };
-
 var useSyncWithInputJson$1 = useSyncWithInputJson;
 
 /**
@@ -10182,13 +9145,11 @@ function PasteLogPlugin() {
           clipboardData
         } = e;
         const allData = [];
-
         if (clipboardData && clipboardData.types) {
           clipboardData.types.forEach(type => {
             allData.push(type.toUpperCase(), clipboardData.getData(type));
           });
         }
-
         setLastClipboardData(allData.join('\n\n'));
         return false;
       }, lexical.COMMAND_PRIORITY_NORMAL);
@@ -10211,7 +9172,6 @@ function PasteLogPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 const copy = text => {
   const textArea = document.createElement('textarea');
   textArea.value = text || '';
@@ -10220,18 +9180,15 @@ const copy = text => {
   document.body?.appendChild(textArea);
   textArea.focus();
   textArea.select();
-
   try {
-    const result = document.execCommand('copy'); // eslint-disable-next-line no-console
-
+    const result = document.execCommand('copy');
+    // eslint-disable-next-line no-console
     console.log(result);
   } catch (error) {
     console.error(error);
   }
-
   document.body?.removeChild(textArea);
 };
-
 const download = (filename, text) => {
   const a = document.createElement('a');
   a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text || ''));
@@ -10241,7 +9198,6 @@ const download = (filename, text) => {
   a.click();
   document.body?.removeChild(a);
 };
-
 const formatStep = step => {
   const formatOneStep = (name, value) => {
     switch (name) {
@@ -10249,32 +9205,26 @@ const formatStep = step => {
         {
           return `      await page.mouse.click(${value.x}, ${value.y});`;
         }
-
       case 'press':
         {
           return `      await page.keyboard.press('${value}');`;
         }
-
       case 'keydown':
         {
           return `      await page.keyboard.keydown('${value}');`;
         }
-
       case 'keyup':
         {
           return `      await page.keyboard.keyup('${value}');`;
         }
-
       case 'type':
         {
           return `      await page.keyboard.type('${value}');`;
         }
-
       case 'selectAll':
         {
           return `      await selectAll(page);`;
         }
-
       case 'snapshot':
         {
           return `      await assertHTMLSnapshot(page);
@@ -10286,32 +9236,27 @@ const formatStep = step => {
       });
 `;
         }
-
       default:
         return ``;
     }
   };
-
   const formattedStep = formatOneStep(step.name, step.value);
-
   switch (step.count) {
     case 1:
       return formattedStep;
-
     case 2:
       return [formattedStep, formattedStep].join(`\n`);
-
     default:
       return `      await repeat(${step.count}, async () => {
   ${formattedStep}
       );`;
   }
 };
-
 function isSelectAll(event) {
   return event.keyCode === 65 && (IS_APPLE ? event.metaKey : event.ctrlKey);
-} // stolen from LexicalSelection-test
+}
 
+// stolen from LexicalSelection-test
 function sanitizeSelection(selection) {
   const {
     anchorNode,
@@ -10321,15 +9266,12 @@ function sanitizeSelection(selection) {
     anchorOffset,
     focusOffset
   } = selection;
-
   if (anchorOffset !== 0) {
     anchorOffset--;
   }
-
   if (focusOffset !== 0) {
     focusOffset--;
   }
-
   return {
     anchorNode,
     anchorOffset,
@@ -10337,24 +9279,18 @@ function sanitizeSelection(selection) {
     focusOffset
   };
 }
-
 function getPathFromNodeToEditor(node, rootElement) {
   let currentNode = node;
   const path = [];
-
   while (currentNode !== rootElement) {
     if (currentNode !== null && currentNode !== undefined) {
       path.unshift(Array.from(currentNode?.parentNode?.childNodes ?? []).indexOf(currentNode));
     }
-
     currentNode = currentNode?.parentNode;
   }
-
   return path;
 }
-
 const keyPresses = new Set(['Enter', 'Backspace', 'Delete', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
-
 function useTestRecorder(editor) {
   const [steps, setSteps] = React.useState([]);
   const [isRecording, setIsRecording] = React.useState(false);
@@ -10369,11 +9305,9 @@ function useTestRecorder(editor) {
   const generateTestContent = React.useCallback(() => {
     const rootElement = editor.getRootElement();
     const browserSelection = window.getSelection();
-
     if (rootElement == null || browserSelection == null || browserSelection.anchorNode == null || browserSelection.focusNode == null || !rootElement.contains(browserSelection.anchorNode) || !rootElement.contains(browserSelection.focusNode)) {
       return null;
     }
-
     return `
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -10403,34 +9337,35 @@ ${steps.map(formatStep).join(`\n`)}
     });
 });
     `;
-  }, [editor, steps]); // just a wrapper around inserting new actions so that we can
-  // coalesce some actions like insertText/moveNativeSelection
+  }, [editor, steps]);
 
+  // just a wrapper around inserting new actions so that we can
+  // coalesce some actions like insertText/moveNativeSelection
   const pushStep = React.useCallback((name, value) => {
     setSteps(currentSteps => {
       // trying to group steps
       const currentIndex = steps.length - 1;
       const lastStep = steps[currentIndex];
-
       if (lastStep) {
         if (lastStep.name === name) {
           if (name === 'type') {
             // for typing events we just append the text
-            return [...steps.slice(0, currentIndex), { ...lastStep,
+            return [...steps.slice(0, currentIndex), {
+              ...lastStep,
               value: lastStep.value + value
             }];
           } else {
             // for other events we bump the counter if their values are the same
             if (lastStep.value === value) {
-              return [...steps.slice(0, currentIndex), { ...lastStep,
+              return [...steps.slice(0, currentIndex), {
+                ...lastStep,
                 count: lastStep.count + 1
               }];
             }
           }
         }
-      } // could not group, just append a new one
-
-
+      }
+      // could not group, just append a new one
       return [...currentSteps, {
         count: 1,
         name,
@@ -10443,9 +9378,7 @@ ${steps.map(formatStep).join(`\n`)}
       if (!isRecording) {
         return;
       }
-
       const key = event.key;
-
       if (isSelectAll(event)) {
         pushStep('selectAll', '');
       } else if (keyPresses.has(key)) {
@@ -10456,25 +9389,20 @@ ${steps.map(formatStep).join(`\n`)}
         pushStep('type', event.key);
       }
     };
-
     const onKeyUp = event => {
       if (!isRecording) {
         return;
       }
-
       const key = event.key;
-
       if (!keyPresses.has(key) && [...key].length > 1) {
         pushStep('keyup', event.key);
       }
     };
-
     return editor.registerRootListener((rootElement, prevRootElement) => {
       if (prevRootElement !== null) {
         prevRootElement.removeEventListener('keydown', onKeyDown);
         prevRootElement.removeEventListener('keyup', onKeyUp);
       }
-
       if (rootElement !== null) {
         rootElement.addEventListener('keydown', onKeyDown);
         rootElement.addEventListener('keyup', onKeyUp);
@@ -10489,11 +9417,9 @@ ${steps.map(formatStep).join(`\n`)}
   React.useEffect(() => {
     if (steps) {
       const testContent = generateTestContent();
-
       if (testContent !== null) {
         setTemplatedTest(testContent);
       }
-
       if (preRef.current) {
         preRef.current.scrollTo(0, preRef.current.scrollHeight);
       }
@@ -10508,48 +9434,42 @@ ${steps.map(formatStep).join(`\n`)}
       if (!isRecording) {
         return;
       }
-
       const currentSelection = editorState._selection;
       const previousSelection = previousSelectionRef.current;
       const skipNextSelectionChange = skipNextSelectionChangeRef.current;
-
       if (previousSelection !== currentSelection) {
         if (dirtyLeaves.size === 0 && dirtyElements.size === 0 && !skipNextSelectionChange) {
           const browserSelection = window.getSelection();
-
           if (browserSelection && (browserSelection.anchorNode == null || browserSelection.focusNode == null)) {
             return;
           }
         }
-
         previousSelectionRef.current = currentSelection;
       }
-
       skipNextSelectionChangeRef.current = false;
       const testContent = generateTestContent();
-
       if (testContent !== null) {
         setTemplatedTest(testContent);
       }
     });
     return removeUpdateListener;
-  }, [editor, generateTestContent, isRecording, pushStep]); // save innerHTML
+  }, [editor, generateTestContent, isRecording, pushStep]);
 
+  // save innerHTML
   React.useEffect(() => {
     if (!isRecording) {
       return;
     }
-
     const removeUpdateListener = editor.registerUpdateListener(() => {
       const rootElement = editor.getRootElement();
-
       if (rootElement !== null) {
         setCurrentInnerHTML(rootElement?.innerHTML);
       }
     });
     return removeUpdateListener;
-  }, [editor, isRecording]); // clear editor and start recording
+  }, [editor, isRecording]);
 
+  // clear editor and start recording
   const toggleEditorSelection = React.useCallback(currentEditor => {
     if (!isRecording) {
       currentEditor.update(() => {
@@ -10561,20 +9481,16 @@ ${steps.map(formatStep).join(`\n`)}
       });
       setSteps([]);
     }
-
     setIsRecording(currentIsRecording => !currentIsRecording);
   }, [isRecording]);
   const onSnapshotClick = React.useCallback(() => {
     if (!isRecording) {
       return;
     }
-
     const browserSelection = window.getSelection();
-
     if (browserSelection === null || browserSelection.anchorNode == null || browserSelection.focusNode == null) {
       return;
     }
-
     const {
       anchorNode,
       anchorOffset,
@@ -10583,17 +9499,13 @@ ${steps.map(formatStep).join(`\n`)}
     } = sanitizeSelection(browserSelection);
     const rootElement = getCurrentEditor().getRootElement();
     let anchorPath;
-
     if (anchorNode !== null) {
       anchorPath = getPathFromNodeToEditor(anchorNode, rootElement);
     }
-
     let focusPath;
-
     if (focusNode !== null) {
       focusPath = getPathFromNodeToEditor(focusNode, rootElement);
     }
-
     pushStep('snapshot', {
       anchorNode,
       anchorOffset,
@@ -10640,7 +9552,6 @@ ${steps.map(formatStep).join(`\n`)}
   }, templatedTest)) : null;
   return [button, output];
 }
-
 function TestRecorderPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [testRecorderButton, testRecorderOutput] = useTestRecorder(editor);
@@ -10663,7 +9574,6 @@ function TypingPerfPlugin() {
     let keyPressTimerId;
     let log = [];
     let invalidatingEvent = false;
-
     const measureEventEnd = function logKeyPress() {
       if (keyPressTimerId != null) {
         if (invalidatingEvent) {
@@ -10671,58 +9581,49 @@ function TypingPerfPlugin() {
         } else {
           log.push(performance.now() - start);
         }
-
         clearTimeout(keyPressTimerId);
         keyPressTimerId = null;
       }
     };
-
     const measureEventStart = function measureEvent() {
       if (timerId != null) {
         clearTimeout(timerId);
         timerId = null;
-      } // We use a setTimeout(0) instead of requestAnimationFrame, due to
+      }
+
+      // We use a setTimeout(0) instead of requestAnimationFrame, due to
       // inconsistencies between the sequencing of rAF in different browsers.
-
-
-      keyPressTimerId = setTimeout(measureEventEnd, 0); // Schedule a timer to report the results.
-
+      keyPressTimerId = setTimeout(measureEventEnd, 0);
+      // Schedule a timer to report the results.
       timerId = setTimeout(() => {
         const total = log.reduce((a, b) => a + b, 0);
         const reportedText = 'Typing Perf: ' + Math.round(total / log.length * 100) / 100 + 'ms';
         report(reportedText);
         log = [];
-      }, 2000); // Make the time after we do the previous logic, so we don't measure the overhead
+      }, 2000);
+      // Make the time after we do the previous logic, so we don't measure the overhead
       // for it all.
-
       start = performance.now();
     };
-
     const beforeInputHandler = function beforeInputHandler(event) {
       if (!validInputTypes.has(event.inputType) || invalidatingEvent) {
         invalidatingEvent = false;
         return;
       }
-
       measureEventStart();
     };
-
     const keyDownHandler = function keyDownHandler(event) {
       const keyCode = event.keyCode;
-
       if (keyCode === 8 || keyCode === 13) {
         measureEventStart();
       }
     };
-
     const pasteHandler = function pasteHandler() {
       invalidatingEvent = true;
     };
-
     const cutHandler = function cutHandler() {
       invalidatingEvent = true;
     };
-
     window.addEventListener('keydown', keyDownHandler, true);
     window.addEventListener('selectionchange', measureEventEnd, true);
     window.addEventListener('beforeinput', beforeInputHandler, true);
@@ -10746,6 +9647,7 @@ function TypingPerfPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 const hostName = window.location.hostname;
 const isDevPlayground = hostName !== 'playground.lexical.dev' && hostName !== 'lexical-playground.vercel.app';
 const DEFAULT_SETTINGS = {
@@ -10787,11 +9689,9 @@ const useSettings = () => {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-
 const Direction = {
   east: 1 << 0,
   north: 1 << 3,
@@ -10825,23 +9725,20 @@ function ImageResizer({
     startX: 0,
     startY: 0
   });
-  const editorRootElement = editor.getRootElement(); // Find max width, accounting for editor padding.
-
+  const editorRootElement = editor.getRootElement();
+  // Find max width, accounting for editor padding.
   const maxWidthContainer = maxWidth ? maxWidth : editorRootElement !== null ? editorRootElement.getBoundingClientRect().width - 20 : 100;
   const maxHeightContainer = editorRootElement !== null ? editorRootElement.getBoundingClientRect().height - 20 : 100;
   const minWidth = 100;
   const minHeight = 100;
-
   const setStartCursor = direction => {
     const ew = direction === Direction.east || direction === Direction.west;
     const ns = direction === Direction.north || direction === Direction.south;
     const nwse = direction & Direction.north && direction & Direction.west || direction & Direction.south && direction & Direction.east;
     const cursorDir = ew ? 'ew' : ns ? 'ns' : nwse ? 'nwse' : 'nesw';
-
     if (editorRootElement !== null) {
       editorRootElement.style.setProperty('cursor', `${cursorDir}-resize`, 'important');
     }
-
     if (document.body !== null) {
       document.body.style.setProperty('cursor', `${cursorDir}-resize`, 'important');
       userSelect.current.value = document.body.style.getPropertyValue('-webkit-user-select');
@@ -10849,26 +9746,21 @@ function ImageResizer({
       document.body.style.setProperty('-webkit-user-select', `none`, 'important');
     }
   };
-
   const setEndCursor = () => {
     if (editorRootElement !== null) {
       editorRootElement.style.setProperty('cursor', 'default');
     }
-
     if (document.body !== null) {
       document.body.style.setProperty('cursor', 'default');
       document.body.style.setProperty('-webkit-user-select', userSelect.current.value, userSelect.current.priority);
     }
   };
-
   const handlePointerDown = (event, direction) => {
     if (!editor.isEditable()) {
       return;
     }
-
     const image = imageRef.current;
     const controlWrapper = controlWrapperRef.current;
-
     if (image !== null && controlWrapper !== null) {
       const {
         width,
@@ -10893,13 +9785,11 @@ function ImageResizer({
       document.addEventListener('pointerup', handlePointerUp);
     }
   };
-
   const handlePointerMove = event => {
     const image = imageRef.current;
     const positioning = positioningRef.current;
     const isHorizontal = positioning.direction & (Direction.east | Direction.west);
     const isVertical = positioning.direction & (Direction.south | Direction.north);
-
     if (image !== null && positioning.isResizing) {
       // Corner cursor
       if (isHorizontal && isVertical) {
@@ -10926,12 +9816,10 @@ function ImageResizer({
       }
     }
   };
-
   const handlePointerUp = () => {
     const image = imageRef.current;
     const positioning = positioningRef.current;
     const controlWrapper = controlWrapperRef.current;
-
     if (image !== null && controlWrapper !== null && positioning.isResizing) {
       const width = positioning.currentWidth;
       const height = positioning.currentHeight;
@@ -10950,7 +9838,6 @@ function ImageResizer({
       document.removeEventListener('pointerup', handlePointerUp);
     }
   };
-
   return /*#__PURE__*/React.createElement("div", {
     ref: controlWrapperRef
   }, !showCaption && captionsEnabled && /*#__PURE__*/React.createElement("button", {
@@ -11010,13 +9897,11 @@ function ImageResizer({
  *
  */
 const imageCache = new Set();
-
 function useSuspenseImage(src) {
   if (!imageCache.has(src)) {
     throw new Promise(resolve => {
       const img = new Image();
       img.src = src;
-
       img.onload = () => {
         imageCache.add(src);
         resolve(null);
@@ -11024,7 +9909,6 @@ function useSuspenseImage(src) {
     });
   }
 }
-
 function LazyImage({
   altText,
   className,
@@ -11048,7 +9932,6 @@ function LazyImage({
     draggable: "false"
   });
 }
-
 function ImageComponent({
   src,
   altText,
@@ -11076,20 +9959,16 @@ function ImageComponent({
       const event = payload;
       event.preventDefault();
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isImageNode(node)) {
         node.remove();
       }
-
       setSelected(false);
     }
-
     return false;
   }, [isSelected, nodeKey, setSelected]);
   const onEnter = React.useCallback(event => {
     const latestSelection = lexical.$getSelection();
     const buttonElem = buttonRef.current;
-
     if (isSelected && lexical.$isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
       if (showCaption) {
         // Move focus into nested editor
@@ -11103,7 +9982,6 @@ function ImageComponent({
         return true;
       }
     }
-
     return false;
   }, [caption, isSelected, showCaption]);
   const onEscape = React.useCallback(event => {
@@ -11112,14 +9990,12 @@ function ImageComponent({
       editor.update(() => {
         setSelected(true);
         const parentRootElement = editor.getRootElement();
-
         if (parentRootElement !== null) {
           parentRootElement.focus();
         }
       });
       return true;
     }
-
     return false;
   }, [caption, editor, setSelected]);
   React.useEffect(() => {
@@ -11135,11 +10011,9 @@ function ImageComponent({
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
       const event = payload;
-
       if (isResizing) {
         return true;
       }
-
       if (event.target === imageRef.current) {
         if (event.shiftKey) {
           setSelected(!isSelected);
@@ -11147,10 +10021,8 @@ function ImageComponent({
           clearSelection();
           setSelected(true);
         }
-
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.DRAGSTART_COMMAND, event => {
       if (event.target === imageRef.current) {
@@ -11159,7 +10031,6 @@ function ImageComponent({
         event.preventDefault();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ENTER_COMMAND, onEnter, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ESCAPE_COMMAND, onEscape, lexical.COMMAND_PRIORITY_LOW));
     return () => {
@@ -11167,17 +10038,14 @@ function ImageComponent({
       unregister();
     };
   }, [clearSelection, editor, isResizing, isSelected, nodeKey, onDelete, onEnter, onEscape, setSelected]);
-
   const setShowCaption = () => {
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isImageNode(node)) {
         node.setShowCaption(true);
       }
     });
   };
-
   const onResizeEnd = (nextWidth, nextHeight) => {
     // Delay hiding the resize bars for click case
     setTimeout(() => {
@@ -11185,17 +10053,14 @@ function ImageComponent({
     }, 200);
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isImageNode(node)) {
         node.setWidthAndHeight(nextWidth, nextHeight);
       }
     });
   };
-
   const onResizeStart = () => {
     setIsResizing(true);
   };
-
   const {
     historyState
   } = useSharedHistoryContext();
@@ -11261,13 +10126,11 @@ var ImageComponent$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function getTotalVotes(options) {
   return options.reduce((totalVotes, next) => {
     return totalVotes + next.votes.length;
   }, 0);
 }
-
 function PollOptionComponent({
   option,
   index,
@@ -11335,7 +10198,6 @@ function PollOptionComponent({
     }
   }));
 }
-
 function PollComponent({
   question,
   options,
@@ -11351,14 +10213,11 @@ function PollComponent({
       const event = payload;
       event.preventDefault();
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isPollNode(node)) {
         node.remove();
       }
-
       setSelected(false);
     }
-
     return false;
   }, [isSelected, nodeKey, setSelected]);
   React.useEffect(() => {
@@ -11368,24 +10227,19 @@ function PollComponent({
       setSelection(editorState.read(() => lexical.$getSelection()));
     }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
       const event = payload;
-
       if (event.target === ref.current) {
         if (!event.shiftKey) {
           clearSelection();
         }
-
         setSelected(!isSelected);
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
   }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
-
   const withPollNode = (cb, onUpdate) => {
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isPollNode(node)) {
         cb(node);
       }
@@ -11393,13 +10247,11 @@ function PollComponent({
       onUpdate
     });
   };
-
   const addOption = () => {
     withPollNode(node => {
       node.addOption(createPollOption());
     });
   };
-
   const isFocused = lexical.$isNodeSelection(selection) && isSelected;
   return /*#__PURE__*/React.createElement("div", {
     className: `PollNode__container ${isFocused ? 'focused' : ''}`,
@@ -11439,120 +10291,90 @@ var PollComponent$1 = {
  *
  */
 const NO_CELLS = [];
-
 function $createSelectAll() {
   const sel = lexical.$createRangeSelection();
   sel.focus.set('root', lexical.$getRoot().getChildrenSize(), 'element');
   return sel;
 }
-
 function createEmptyParagraphHTML(theme) {
   return `<p class="${theme.paragraph}"><br></p>`;
 }
-
 function focusCell(tableElem, id) {
   const cellElem = tableElem.querySelector(`[data-id=${id}]`);
-
   if (cellElem == null) {
     return;
   }
-
   cellElem.focus();
 }
-
 function isStartingResize(target) {
   return target.nodeType === 1 && target.hasAttribute('data-table-resize');
 }
-
 function generateHTMLFromJSON(editorStateJSON, cellEditor) {
   const editorState = cellEditor.parseEditorState(editorStateJSON);
   let html$1 = cellHTMLCache.get(editorStateJSON);
-
   if (html$1 === undefined) {
     html$1 = editorState.read(() => html.$generateHtmlFromNodes(cellEditor, null));
     const textContent = editorState.read(() => lexical.$getRoot().getTextContent());
     cellHTMLCache.set(editorStateJSON, html$1);
     cellTextContentCache.set(editorStateJSON, textContent);
   }
-
   return html$1;
 }
-
 function getCurrentDocument(editor) {
   const rootElement = editor.getRootElement();
   return rootElement !== null ? rootElement.ownerDocument : document;
 }
-
 function isCopy(keyCode, shiftKey, metaKey, ctrlKey) {
   if (shiftKey) {
     return false;
   }
-
   if (keyCode === 67) {
     return IS_APPLE ? metaKey : ctrlKey;
   }
-
   return false;
 }
-
 function isCut(keyCode, shiftKey, metaKey, ctrlKey) {
   if (shiftKey) {
     return false;
   }
-
   if (keyCode === 88) {
     return IS_APPLE ? metaKey : ctrlKey;
   }
-
   return false;
 }
-
 function isPaste(keyCode, shiftKey, metaKey, ctrlKey) {
   if (shiftKey) {
     return false;
   }
-
   if (keyCode === 86) {
     return IS_APPLE ? metaKey : ctrlKey;
   }
-
   return false;
 }
-
 function getCellID(domElement) {
   let node = domElement;
-
   while (node !== null) {
     const possibleID = node.getAttribute('data-id');
-
     if (possibleID != null) {
       return possibleID;
     }
-
     node = node.parentElement;
   }
-
   return null;
 }
-
 function getTableCellWidth(domElement) {
   let node = domElement;
-
   while (node !== null) {
     if (node.nodeName === 'TH' || node.nodeName === 'TD') {
       return node.getBoundingClientRect().width;
     }
-
     node = node.parentElement;
   }
-
   return 0;
 }
-
 function $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn) {
   for (const id of ids) {
     const cell = getCell(rows, id, cellCoordMap);
-
     if (cell !== null && cellEditor !== null) {
       const editorState = cellEditor.parseEditorState(cell.json);
       cellEditor._headless = true;
@@ -11570,31 +10392,23 @@ function $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn) 
     }
   }
 }
-
 function isTargetOnPossibleUIControl(target) {
   let node = target;
-
   while (node !== null) {
     const nodeName = node.nodeName;
-
     if (nodeName === 'BUTTON' || nodeName === 'INPUT' || nodeName === 'TEXTAREA') {
       return true;
     }
-
     node = node.parentElement;
   }
-
   return false;
 }
-
 function getSelectedRect(startID, endID, cellCoordMap) {
   const startCoords = cellCoordMap.get(startID);
   const endCoords = cellCoordMap.get(endID);
-
   if (startCoords === undefined || endCoords === undefined) {
     return null;
   }
-
   const startX = Math.min(startCoords[0], endCoords[0]);
   const endX = Math.max(startCoords[0], endCoords[0]);
   const startY = Math.min(startCoords[1], endCoords[1]);
@@ -11606,14 +10420,11 @@ function getSelectedRect(startID, endID, cellCoordMap) {
     startY
   };
 }
-
 function getSelectedIDs(rows, startID, endID, cellCoordMap) {
   const rect = getSelectedRect(startID, endID, cellCoordMap);
-
   if (rect === null) {
     return [];
   }
-
   const {
     startX,
     endY,
@@ -11621,16 +10432,13 @@ function getSelectedIDs(rows, startID, endID, cellCoordMap) {
     startY
   } = rect;
   const ids = [];
-
   for (let x = startX; x <= endX; x++) {
     for (let y = startY; y <= endY; y++) {
       ids.push(rows[y].cells[x].id);
     }
   }
-
   return ids;
 }
-
 function extractCellsFromRows(rows, rect) {
   const {
     startX,
@@ -11639,24 +10447,20 @@ function extractCellsFromRows(rows, rect) {
     startY
   } = rect;
   const newRows = [];
-
   for (let y = startY; y <= endY; y++) {
     const row = rows[y];
     const newRow = createRow();
-
     for (let x = startX; x <= endX; x++) {
-      const cellClone = { ...row.cells[x]
+      const cellClone = {
+        ...row.cells[x]
       };
       cellClone.id = createUID();
       newRow.cells.push(cellClone);
     }
-
     newRows.push(newRow);
   }
-
   return newRows;
 }
-
 function TableCellEditor({
   cellEditor
 }) {
@@ -11664,11 +10468,9 @@ function TableCellEditor({
     cellEditorConfig,
     cellEditorPlugins
   } = React.useContext(CellContext);
-
   if (cellEditorPlugins === null || cellEditorConfig === null) {
     return null;
   }
-
   return /*#__PURE__*/React.createElement(LexicalNestedComposer.LexicalNestedComposer, {
     initialEditor: cellEditor,
     initialTheme: cellEditorConfig.theme,
@@ -11676,19 +10478,15 @@ function TableCellEditor({
     skipCollabChecks: true
   }, cellEditorPlugins);
 }
-
 function getCell(rows, cellID, cellCoordMap) {
   const coords = cellCoordMap.get(cellID);
-
   if (coords === undefined) {
     return null;
   }
-
   const [x, y] = coords;
   const row = rows[y];
   return row.cells[x];
 }
-
 function TableActionMenu({
   cell,
   rows,
@@ -11703,7 +10501,6 @@ function TableActionMenu({
   const dropDownRef = React.useRef(null);
   React.useEffect(() => {
     const dropdownElem = dropDownRef.current;
-
     if (dropdownElem !== null) {
       const rect = menuElem.getBoundingClientRect();
       dropdownElem.style.top = `${rect.y}px`;
@@ -11713,21 +10510,17 @@ function TableActionMenu({
   React.useEffect(() => {
     const handleClickOutside = event => {
       const dropdownElem = dropDownRef.current;
-
       if (dropdownElem !== null && !dropdownElem.contains(event.target)) {
         event.stopPropagation();
       }
     };
-
     window.addEventListener('click', handleClickOutside);
     return () => window.removeEventListener('click', handleClickOutside);
   }, [onClose]);
   const coords = cellCoordMap.get(cell.id);
-
   if (coords === undefined) {
     return null;
   }
-
   const [x, y] = coords;
   return (
     /*#__PURE__*/
@@ -11881,7 +10674,6 @@ function TableActionMenu({
     }, "Delete table")))
   );
 }
-
 function TableCell({
   cell,
   cellCoordMap,
@@ -11939,7 +10731,7 @@ function TableCell({
     }
   }, /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
-  }))), showMenu && menuElem !== null && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(TableActionMenu, {
+  }))), showMenu && menuElem !== null && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(TableActionMenu, {
     cell: cell,
     menuElem: menuElem,
     updateCellsByID: updateCellsByID,
@@ -11953,7 +10745,6 @@ function TableCell({
     className: theme.tableCellSortedIndicator
   }));
 }
-
 function TableComponent({
   nodeKey,
   rows: rawRows,
@@ -11980,46 +10771,36 @@ function TableComponent({
   const tableRef = React.useRef(null);
   const cellCoordMap = React.useMemo(() => {
     const map = new Map();
-
     for (let y = 0; y < rawRows.length; y++) {
       const row = rawRows[y];
       const cells = row.cells;
-
       for (let x = 0; x < cells.length; x++) {
         const cell = cells[x];
         map.set(cell.id, [x, y]);
       }
     }
-
     return map;
   }, [rawRows]);
   const rows = React.useMemo(() => {
     if (sortingOptions === null) {
       return rawRows;
     }
-
     const _rows = rawRows.slice(1);
-
     _rows.sort((a, b) => {
       const aCells = a.cells;
       const bCells = b.cells;
       const x = sortingOptions.x;
       const aContent = cellTextContentCache.get(aCells[x].json) || '';
       const bContent = cellTextContentCache.get(bCells[x].json) || '';
-
       if (aContent === '' || bContent === '') {
         return 1;
       }
-
       if (sortingOptions.type === 'ascending') {
         return aContent.localeCompare(bContent);
       }
-
       return bContent.localeCompare(aContent);
     });
-
     _rows.unshift(rawRows[0]);
-
     return _rows;
   }, [rawRows, sortingOptions]);
   const [primarySelectedCellID, setPrimarySelectedCellID] = React.useState(null);
@@ -12027,21 +10808,18 @@ function TableComponent({
     if (cellEditorConfig === null) {
       return null;
     }
-
     const _cellEditor = lexical.createEditor({
       namespace: cellEditorConfig.namespace,
       nodes: cellEditorConfig.nodes,
       onError: error => cellEditorConfig.onError(error, _cellEditor),
       theme: cellEditorConfig.theme
     });
-
     return _cellEditor;
   }, [cellEditorConfig]);
   const [selectedCellIDs, setSelectedCellIDs] = React.useState([]);
   const selectedCellSet = React.useMemo(() => new Set(selectedCellIDs), [selectedCellIDs]);
   React.useEffect(() => {
     const tableElem = tableRef.current;
-
     if (isSelected && document.activeElement === document.body && tableElem !== null) {
       tableElem.focus();
     }
@@ -12049,31 +10827,26 @@ function TableComponent({
   const updateTableNode = React.useCallback(fn => {
     editor.update(() => {
       const tableNode = lexical.$getNodeByKey(nodeKey);
-
       if ($isTableNode(tableNode)) {
         fn(tableNode);
       }
     });
   }, [editor, nodeKey]);
-
   const addColumns = () => {
     updateTableNode(tableNode => {
       lexical.$addUpdateTag('history-push');
       tableNode.addColumns(1);
     });
   };
-
   const addRows = () => {
     updateTableNode(tableNode => {
       lexical.$addUpdateTag('history-push');
       tableNode.addRows(1);
     });
   };
-
   const modifySelectedCells = React.useCallback((x, y, extend) => {
     const id = rows[y].cells[x].id;
     lastCellIDRef.current = id;
-
     if (extend) {
       const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, id, cellCoordMap);
       setSelectedCellIDs(selectedIDs);
@@ -12088,11 +10861,9 @@ function TableComponent({
       const json = JSON.stringify(cellEditor.getEditorState());
       updateTableNode(tableNode => {
         const coords = cellCoordMap.get(primarySelectedCellID);
-
         if (coords === undefined) {
           return;
         }
-
         lexical.$addUpdateTag('history-push');
         const [x, y] = coords;
         tableNode.updateCellJSON(x, y, json);
@@ -12102,7 +10873,6 @@ function TableComponent({
   const selectTable = React.useCallback(() => {
     setTimeout(() => {
       const parentRootElement = editor.getRootElement();
-
       if (parentRootElement !== null) {
         parentRootElement.focus({
           preventScroll: true
@@ -12113,22 +10883,17 @@ function TableComponent({
   }, [editor]);
   React.useEffect(() => {
     const tableElem = tableRef.current;
-
     if (tableElem === null) {
       return;
     }
-
     const doc = getCurrentDocument(editor);
-
     const isAtEdgeOfTable = event => {
       const x = event.clientX - tableRect.x;
       const y = event.clientY - tableRect.y;
       return x < 5 || y < 5;
     };
-
     const handlePointerDown = event => {
       const possibleID = getCellID(event.target);
-
       if (possibleID !== null && editor.isEditable() && tableElem.contains(event.target)) {
         if (isAtEdgeOfTable(event)) {
           setSelected(true);
@@ -12136,9 +10901,7 @@ function TableComponent({
           selectTable();
           return;
         }
-
         setSelected(false);
-
         if (isStartingResize(event.target)) {
           setResizingID(possibleID);
           tableElem.style.userSelect = 'none';
@@ -12148,43 +10911,34 @@ function TableComponent({
           };
           return;
         }
-
         mouseDownRef.current = true;
-
         if (primarySelectedCellID !== possibleID) {
           if (isEditing) {
             saveEditorToJSON();
           }
-
           setPrimarySelectedCellID(possibleID);
           setIsEditing(false);
           lastCellIDRef.current = possibleID;
         } else {
           lastCellIDRef.current = null;
         }
-
         setSelectedCellIDs(NO_CELLS);
       } else if (primarySelectedCellID !== null && !isTargetOnPossibleUIControl(event.target)) {
         setSelected(false);
         mouseDownRef.current = false;
-
         if (isEditing) {
           saveEditorToJSON();
         }
-
         setPrimarySelectedCellID(null);
         setSelectedCellIDs(NO_CELLS);
         setIsEditing(false);
         lastCellIDRef.current = null;
       }
     };
-
     const tableRect = tableElem.getBoundingClientRect();
-
     const handlePointerMove = event => {
       if (resizingID !== null) {
         const tableResizerRulerElem = tableResizerRulerRef.current;
-
         if (tableResizerRulerElem !== null) {
           const {
             size,
@@ -12193,7 +10947,6 @@ function TableComponent({
           const diff = event.clientX - point;
           const newWidth = size + diff;
           let x = event.clientX - tableRect.x;
-
           if (x < 10) {
             x = 10;
           } else if (x > tableRect.width - 10) {
@@ -12201,13 +10954,10 @@ function TableComponent({
           } else if (newWidth < 20) {
             x = point - size + 20 - tableRect.x;
           }
-
           tableResizerRulerElem.style.left = `${x}px`;
         }
-
         return;
       }
-
       if (!isEditing) {
         const {
           clientX,
@@ -12224,30 +10974,23 @@ function TableComponent({
         const isOnBottomEdge = event.target === addRowsRef.current || clientY > y + height * 0.85 && clientY < y + height + 5 && !mouseDownRef.current;
         setShowAddRows(isOnBottomEdge);
       }
-
       if (isEditing || !mouseDownRef.current || primarySelectedCellID === null) {
         return;
       }
-
       const possibleID = getCellID(event.target);
-
       if (possibleID !== null && possibleID !== lastCellIDRef.current) {
         if (selectedCellIDs.length === 0) {
           tableElem.style.userSelect = 'none';
         }
-
         const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, possibleID, cellCoordMap);
-
         if (selectedIDs.length === 1) {
           setSelectedCellIDs(NO_CELLS);
         } else {
           setSelectedCellIDs(selectedIDs);
         }
-
         lastCellIDRef.current = possibleID;
       }
     };
-
     const handlePointerUp = event => {
       if (resizingID !== null) {
         const {
@@ -12256,11 +10999,9 @@ function TableComponent({
         } = resizeMeasureRef.current;
         const diff = event.clientX - point;
         let newWidth = size + diff;
-
         if (newWidth < 10) {
           newWidth = 10;
         }
-
         updateTableNode(tableNode => {
           const [x] = cellCoordMap.get(resizingID);
           lexical.$addUpdateTag('history-push');
@@ -12268,15 +11009,12 @@ function TableComponent({
         });
         setResizingID(null);
       }
-
       if (tableElem !== null && selectedCellIDs.length > 1 && mouseDownRef.current) {
         tableElem.style.userSelect = 'text';
         window.getSelection()?.removeAllRanges();
       }
-
       mouseDownRef.current = false;
     };
-
     doc.addEventListener('pointerdown', handlePointerDown);
     doc.addEventListener('pointermove', handlePointerMove);
     doc.addEventListener('pointerup', handlePointerUp);
@@ -12289,7 +11027,6 @@ function TableComponent({
   React.useEffect(() => {
     if (!isEditing && primarySelectedCellID !== null) {
       const doc = getCurrentDocument(editor);
-
       const loadContentIntoCell = cell => {
         if (cell !== null && cellEditor !== null) {
           const editorStateJSON = cell.json;
@@ -12297,10 +11034,8 @@ function TableComponent({
           cellEditor.setEditorState(editorState);
         }
       };
-
       const handleDblClick = event => {
         const possibleID = getCellID(event.target);
-
         if (possibleID === primarySelectedCellID && editor.isEditable()) {
           const cell = getCell(rows, possibleID, cellCoordMap);
           loadContentIntoCell(cell);
@@ -12308,46 +11043,37 @@ function TableComponent({
           setSelectedCellIDs(NO_CELLS);
         }
       };
-
       const handleKeyDown = event => {
         // Ignore arrow keys, escape or tab
         const keyCode = event.keyCode;
-
         if (keyCode === 16 || keyCode === 27 || keyCode === 9 || keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 || keyCode === 8 || keyCode === 46 || !editor.isEditable()) {
           return;
         }
-
         if (keyCode === 13) {
           event.preventDefault();
         }
-
         if (!isEditing && primarySelectedCellID !== null && editor.getEditorState().read(() => lexical.$getSelection() === null) && event.target.contentEditable !== 'true') {
           if (isCopy(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
             editor.dispatchCommand(lexical.COPY_COMMAND, event);
             return;
           }
-
           if (isCut(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
             editor.dispatchCommand(lexical.CUT_COMMAND, event);
             return;
           }
-
           if (isPaste(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
             editor.dispatchCommand(lexical.PASTE_COMMAND, event);
             return;
           }
         }
-
         if (event.metaKey || event.ctrlKey || event.altKey) {
           return;
         }
-
         const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
         loadContentIntoCell(cell);
         setIsEditing(true);
         setSelectedCellIDs(NO_CELLS);
       };
-
       doc.addEventListener('dblclick', handleDblClick);
       doc.addEventListener('keydown', handleKeyDown);
       return () => {
@@ -12374,27 +11100,22 @@ function TableComponent({
         tableNode.remove();
       });
     }
-
     return false;
   }, [isEditing, isSelected, primarySelectedCellID, selectedCellIDs, updateCellsByID, updateTableNode]);
   React.useEffect(() => {
     const tableElem = tableRef.current;
-
     if (tableElem === null) {
       return;
     }
-
     const copyDataToClipboard = (event, htmlString, lexicalString, plainTextString) => {
       const clipboardData = event instanceof KeyboardEvent ? null : event.clipboardData;
       event.preventDefault();
-
       if (clipboardData != null) {
         clipboardData.setData('text/html', htmlString);
         clipboardData.setData('text/plain', plainTextString);
         clipboardData.setData('application/x-lexical-editor', lexicalString);
       } else {
         const clipboard = navigator.clipboard;
-
         if (clipboard != null) {
           // Most browsers only support a single item in the clipboard at one time.
           // So we optimize by only putting in HTML.
@@ -12407,7 +11128,6 @@ function TableComponent({
         }
       }
     };
-
     const getTypeFromObject = async (clipboardData, type) => {
       try {
         return clipboardData instanceof DataTransfer ? clipboardData.getData(type) : clipboardData instanceof ClipboardItem ? await (await clipboardData.getType(type)).text() : '';
@@ -12415,27 +11135,22 @@ function TableComponent({
         return '';
       }
     };
-
     const pasteContent = async event => {
       let clipboardData = (event instanceof InputEvent ? null : event.clipboardData) || null;
-
       if (primarySelectedCellID !== null && cellEditor !== null) {
         event.preventDefault();
-
         if (clipboardData === null) {
           try {
             const items = await navigator.clipboard.read();
             clipboardData = items[0];
-          } catch {// NO-OP
+          } catch {
+            // NO-OP
           }
         }
-
         const lexicalString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'application/x-lexical-editor') : '';
-
         if (lexicalString) {
           try {
             const payload = JSON.parse(lexicalString);
-
             if (payload.namespace === editor._config.namespace && Array.isArray(payload.nodes)) {
               $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
                 const root = lexical.$getRoot();
@@ -12444,25 +11159,21 @@ function TableComponent({
                 root.selectEnd();
                 const nodes = clipboard.$generateNodesFromSerializedNodes(payload.nodes);
                 const sel = lexical.$getSelection();
-
                 if (lexical.$isRangeSelection(sel)) {
                   clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
                 }
               });
               return;
-            } // eslint-disable-next-line no-empty
-
+            }
+            // eslint-disable-next-line no-empty
           } catch {}
         }
-
         const htmlString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/html') : '';
-
         if (htmlString) {
           try {
             const parser = new DOMParser();
             const dom = parser.parseFromString(htmlString, 'text/html');
             const possibleTableElement = dom.querySelector('table');
-
             if (possibleTableElement != null) {
               const pasteRows = extractRowsFromHTML(possibleTableElement);
               updateTableNode(tableNode => {
@@ -12472,7 +11183,6 @@ function TableComponent({
               });
               return;
             }
-
             $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
               const root = lexical.$getRoot();
               root.clear();
@@ -12480,26 +11190,24 @@ function TableComponent({
               root.selectEnd();
               const nodes = html.$generateNodesFromDOM(editor, dom);
               const sel = lexical.$getSelection();
-
               if (lexical.$isRangeSelection(sel)) {
                 clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
               }
             });
-            return; // eslint-disable-next-line no-empty
+            return;
+            // eslint-disable-next-line no-empty
           } catch {}
-        } // Multi-line plain text in rich text mode pasted as separate paragraphs
+        }
+
+        // Multi-line plain text in rich text mode pasted as separate paragraphs
         // instead of single paragraph with linebreaks.
-
-
         const text = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/plain') : '';
-
         if (text != null) {
           $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
             const root = lexical.$getRoot();
             root.clear();
             root.selectEnd();
             const sel = lexical.$getSelection();
-
             if (sel !== null) {
               sel.insertRawText(text);
             }
@@ -12507,17 +11215,14 @@ function TableComponent({
         }
       }
     };
-
     const copyPrimaryCell = event => {
       if (primarySelectedCellID !== null && cellEditor !== null) {
         const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
         const json = cell.json;
         const htmlString = cellHTMLCache.get(json) || null;
-
         if (htmlString === null) {
           return;
         }
-
         const editorState = cellEditor.parseEditorState(json);
         const plainTextString = editorState.read(() => lexical.$getRoot().getTextContent());
         const lexicalString = editorState.read(() => {
@@ -12526,17 +11231,13 @@ function TableComponent({
         copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
       }
     };
-
     const copyCellRange = event => {
       const lastCellID = lastCellIDRef.current;
-
       if (primarySelectedCellID !== null && cellEditor !== null && lastCellID !== null) {
         const rect = getSelectedRect(primarySelectedCellID, lastCellID, cellCoordMap);
-
         if (rect === null) {
           return;
         }
-
         const dom = exportTableCellsToHTML(rows, rect);
         const htmlString = dom.outerHTML;
         const plainTextString = dom.outerText;
@@ -12553,50 +11254,39 @@ function TableComponent({
         copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
       }
     };
-
     const handlePaste = (event, activeEditor) => {
       const selection = lexical.$getSelection();
-
       if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
         pasteContent(event);
         mouseDownRef.current = false;
         setSelectedCellIDs(NO_CELLS);
         return true;
       }
-
       return false;
     };
-
     const handleCopy = (event, activeEditor) => {
       const selection = lexical.$getSelection();
-
       if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
         if (selectedCellIDs.length === 0) {
           copyPrimaryCell(event);
         } else {
           copyCellRange(event);
         }
-
         return true;
       }
-
       return false;
     };
-
     return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, payload => {
       const selection = lexical.$getSelection();
-
       if (lexical.$isNodeSelection(selection)) {
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.PASTE_COMMAND, handlePaste, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.COPY_COMMAND, handleCopy, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.CUT_COMMAND, (event, activeEditor) => {
       if (handleCopy(event, activeEditor)) {
         clearCellsCommand();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.FORMAT_TEXT_COMMAND, payload => {
       if (primarySelectedCellID !== null && !isEditing) {
@@ -12606,11 +11296,9 @@ function TableComponent({
         });
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ENTER_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (primarySelectedCellID === null && !isEditing && lexical.$isNodeSelection(selection) && selection.has(nodeKey) && selection.getNodes().length === 1 && targetEditor === editor) {
         const firstCellID = rows[0].cells[0].id;
         setPrimarySelectedCellID(firstCellID);
@@ -12620,18 +11308,15 @@ function TableComponent({
         clearSelection();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_TAB_COMMAND, event => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null && primarySelectedCellID !== null) {
         const isBackward = event.shiftKey;
         const [x, y] = cellCoordMap.get(primarySelectedCellID);
         event.preventDefault();
         let nextX = null;
         let nextY = null;
-
         if (x === 0 && isBackward) {
           if (y !== 0) {
             nextY = y - 1;
@@ -12649,161 +11334,126 @@ function TableComponent({
           nextX = x - 1;
           nextY = y;
         }
-
         if (nextX !== null && nextY !== null) {
           modifySelectedCells(nextX, nextY, false);
           return true;
         }
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_UP_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null) {
         const extend = event.shiftKey;
         const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
         if (cellID !== null) {
           const [x, y] = cellCoordMap.get(cellID);
-
           if (y !== 0) {
             modifySelectedCells(x, y - 1, extend);
             return true;
           }
         }
       }
-
       if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
         return false;
       }
-
       if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getPreviousSibling() === null) {
         event.preventDefault();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_DOWN_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null) {
         const extend = event.shiftKey;
         const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
         if (cellID !== null) {
           const [x, y] = cellCoordMap.get(cellID);
-
           if (y !== rows.length - 1) {
             modifySelectedCells(x, y + 1, extend);
             return true;
           }
         }
       }
-
       if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
         return false;
       }
-
       if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getNextSibling() === null) {
         event.preventDefault();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_LEFT_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null) {
         const extend = event.shiftKey;
         const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
         if (cellID !== null) {
           const [x, y] = cellCoordMap.get(cellID);
-
           if (x !== 0) {
             modifySelectedCells(x - 1, y, extend);
             return true;
           }
         }
       }
-
       if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
         return false;
       }
-
       if (selection.isCollapsed() && selection.anchor.offset === 0) {
         event.preventDefault();
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_RIGHT_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null) {
         const extend = event.shiftKey;
         const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
         if (cellID !== null) {
           const [x, y] = cellCoordMap.get(cellID);
-
           if (x !== rows[y].cells.length - 1) {
             modifySelectedCells(x + 1, y, extend);
             return true;
           }
         }
       }
-
       if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
         return false;
       }
-
       if (selection.isCollapsed()) {
         const anchor = selection.anchor;
-
         if (anchor.type === 'text' && anchor.offset === anchor.getNode().getTextContentSize() || anchor.type === 'element' && anchor.offset === anchor.getNode().getChildrenSize()) {
           event.preventDefault();
           return true;
         }
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ESCAPE_COMMAND, (event, targetEditor) => {
       const selection = lexical.$getSelection();
-
       if (!isEditing && selection === null && targetEditor === editor) {
         setSelected(true);
         setPrimarySelectedCellID(null);
         selectTable();
         return true;
       }
-
       if (!lexical.$isRangeSelection(selection)) {
         return false;
       }
-
       if (isEditing) {
         saveEditorToJSON();
         setIsEditing(false);
-
         if (primarySelectedCellID !== null) {
           setTimeout(() => {
             focusCell(tableElem, primarySelectedCellID);
           }, 20);
         }
-
         return true;
       }
-
       return false;
     }, lexical.COMMAND_PRIORITY_LOW));
   }, [cellCoordMap, cellEditor, clearCellsCommand, clearSelection, editor, isEditing, modifySelectedCells, nodeKey, primarySelectedCellID, rows, saveEditorToJSON, selectTable, selectedCellIDs, setSelected, updateTableNode]);
-
   if (cellEditor === null) {
     return;
   }
-
   return /*#__PURE__*/React.createElement("div", {
     style: {
       position: 'relative'
@@ -12861,8 +11511,10 @@ var TableComponent$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 // This list was sourced from Github (MIT License)
 // https://github.com/github/gemoji/blob/master/db/emoji.json
+
 var emojiList = [{
   description: 'grinning face',
   emoji: '😀',
@@ -27665,7 +26317,8 @@ var emojiList$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const theme = { ...baseTheme,
+const theme = {
+  ...baseTheme,
   paragraph: 'StickyEditorTheme__paragraph'
 };
 var StickyEditorTheme = theme;
@@ -27677,7 +26330,6 @@ var StickyEditorTheme = theme;
  * LICENSE file in the root directory of this source tree.
  *
  */
-
 function positionSticky(stickyElem, positioning) {
   const style = stickyElem.style;
   const rootElementRect = positioning.rootElementRect;
@@ -27686,7 +26338,6 @@ function positionSticky(stickyElem, positioning) {
   style.top = rectTop + positioning.y + 'px';
   style.left = rectLeft + positioning.x + 'px';
 }
-
 function StickyComponent({
   x,
   y,
@@ -27712,7 +26363,6 @@ function StickyComponent({
     position.x = x;
     position.y = y;
     const stickyContainer = stickyContainerRef.current;
-
     if (stickyContainer !== null) {
       positionSticky(stickyContainer, position);
     }
@@ -27727,7 +26377,6 @@ function StickyComponent({
         } = entry;
         position.rootElementRect = target.getBoundingClientRect();
         const stickyContainer = stickyContainerRef.current;
-
         if (stickyContainer !== null) {
           positionSticky(stickyContainer, position);
         }
@@ -27737,22 +26386,18 @@ function StickyComponent({
       if (prevRootElem !== null) {
         resizeObserver.unobserve(prevRootElem);
       }
-
       if (nextRootElem !== null) {
         resizeObserver.observe(nextRootElem);
       }
     });
-
     const handleWindowResize = () => {
       const rootElement = editor.getRootElement();
       const stickyContainer = stickyContainerRef.current;
-
       if (rootElement !== null && stickyContainer !== null) {
         position.rootElementRect = rootElement.getBoundingClientRect();
         positionSticky(stickyContainer, position);
       }
     };
-
     window.addEventListener('resize', handleWindowResize);
     return () => {
       window.removeEventListener('resize', handleWindowResize);
@@ -27761,7 +26406,6 @@ function StickyComponent({
   }, [editor]);
   React.useEffect(() => {
     const stickyContainer = stickyContainerRef.current;
-
     if (stickyContainer !== null) {
       // Delay adding transition so we don't trigger the
       // transition on load of the sticky.
@@ -27770,59 +26414,48 @@ function StickyComponent({
       }, 500);
     }
   }, []);
-
   const handlePointerMove = event => {
     const stickyContainer = stickyContainerRef.current;
     const positioning = positioningRef.current;
     const rootElementRect = positioning.rootElementRect;
-
     if (stickyContainer !== null && positioning.isDragging && rootElementRect !== null) {
       positioning.x = event.pageX - positioning.offsetX - rootElementRect.left;
       positioning.y = event.pageY - positioning.offsetY - rootElementRect.top;
       positionSticky(stickyContainer, positioning);
     }
   };
-
   const handlePointerUp = event => {
     const stickyContainer = stickyContainerRef.current;
     const positioning = positioningRef.current;
-
     if (stickyContainer !== null) {
       positioning.isDragging = false;
       stickyContainer.classList.remove('dragging');
       editor.update(() => {
         const node = lexical.$getNodeByKey(nodeKey);
-
         if ($isStickyNode(node)) {
           node.setPosition(positioning.x, positioning.y);
         }
       });
     }
-
     document.removeEventListener('pointermove', handlePointerMove);
     document.removeEventListener('pointerup', handlePointerUp);
   };
-
   const handleDelete = () => {
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isStickyNode(node)) {
         node.remove();
       }
     });
   };
-
   const handleColorChange = () => {
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isStickyNode(node)) {
         node.toggleColor();
       }
     });
   };
-
   const {
     historyState
   } = useSharedHistoryContext();
@@ -27833,15 +26466,12 @@ function StickyComponent({
     className: `sticky-note ${color}`,
     onPointerDown: event => {
       const stickyContainer = stickyContainerRef.current;
-
       if (stickyContainer == null || event.button === 2 || event.target !== stickyContainer.firstChild) {
         // Right click or click on editor should not work
         return;
       }
-
       const stickContainer = stickyContainer;
       const positioning = positioningRef.current;
-
       if (stickContainer !== null) {
         const {
           top,

@@ -7,90 +7,6 @@
  *
  */
 
-.ImageNode__contentEditable {
-  min-height: 20px;
-  border: 0px;
-  resize: none;
-  cursor: text;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0px;
-  padding: 10px;
-  user-select: text;
-  font-size: 12px;
-  width: calc(100% - 20px);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.ImageNode__placeholder {
-  font-size: 12px;
-  color: #888;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 10px;
-  left: 10px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
-}
-
-.image-control-wrapper--resizing {
-  touch-action: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-.StickyNode__contentEditable {
-  min-height: 20px;
-  border: 0;
-  resize: none;
-  cursor: text;
-  font-size: 24px;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0;
-  padding: 10px;
-  user-select: text;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.StickyNode__placeholder {
-  font-size: 24px;
-  color: #999;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 30px;
-  left: 20px;
-  width: 120px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-
 .PollNode__container {
   border: 1px solid #eee;
   background-color: #fcfcfc;
@@ -256,6 +172,90 @@
  *
  */
 
+.ImageNode__contentEditable {
+  min-height: 20px;
+  border: 0px;
+  resize: none;
+  cursor: text;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0px;
+  padding: 10px;
+  user-select: text;
+  font-size: 12px;
+  width: calc(100% - 20px);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ImageNode__placeholder {
+  font-size: 12px;
+  color: #888;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 10px;
+  left: 10px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.image-control-wrapper--resizing {
+  touch-action: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
+.StickyNode__contentEditable {
+  min-height: 20px;
+  border: 0;
+  resize: none;
+  cursor: text;
+  font-size: 24px;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 10px;
+  user-select: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.StickyNode__placeholder {
+  font-size: 24px;
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 30px;
+  left: 20px;
+  width: 120px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
+
 .StickyEditorTheme__paragraph {
   margin: 0;
   position: 'relative';
@@ -308,7 +308,7 @@
  *
  */
 
-.editor-shell {
+ .editor-shell {
   border-radius: 2px;
   color: #000;
   position: relative;
@@ -1979,6 +1979,88 @@ hr.selected {
   }
 }
 
+
+.theme-dark {
+  background-color: #1e2022;
+}
+
+.theme-dark .editor-shell .editor-container {
+  background-color: #25282a;
+  border-color: #677788;
+  color: #fff;
+}
+.theme-dark .editor-shell .toolbar,
+.theme-dark .dropdown,
+.theme-dark .editor-shell .link-editor,
+.theme-dark .editor-shell .editor-container .floating-text-format-popup {
+  background-color: #1e2022;
+  box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
+}
+
+.theme-dark .editor-shell .toolbar{
+  background-color: #1e2022;
+  box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
+}
+
+.theme-dark .editor-shell .floating-text-format-popup button.popup-item {
+  color: #fff;
+}
+.theme-dark .editor-shell .floating-text-format-popup button.popup-item i {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+.theme-dark .editor-shell .floating-text-format-popup button.popup-item:hover i{
+  filter: none;
+}
+.theme-dark .editor-shell .typeahead-popover {
+  background-color: #1e2022;
+  box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
+}
+.theme-dark .editor-shell .link-editor .link-input,
+.theme-dark .dropdown .item,
+.theme-dark .editor-shell .typeahead-popover li {
+  background-color: #1e2022; 
+  color: #fff;
+}
+.theme-dark .editor-shell .link-editor div.link-edit,
+.dropdown .item .icon,
+.theme-dark .editor-shell .typeahead-popover li .icon {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+.theme-dark .editor-shell .typeahead-popover li.selected,
+.theme-dark .editor-shell .typeahead-popover li:hover {
+  background-color: #2f3235;
+}
+
+.theme-dark .typeahead-popover {
+  background-color: #1e2022;
+  box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
+}
+.theme-dark  .link-editor .link-input,
+.theme-dark .dropdown .item,
+.theme-dark .typeahead-popover li {
+  background-color: #1e2022; 
+  color: #fff;
+}
+.theme-dark  .link-editor div.link-edit,
+.dropdown .item .icon,
+.theme-dark .typeahead-popover li .icon {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+.theme-dark  .typeahead-popover li.selected,
+.theme-dark  .typeahead-popover li:hover {
+  background-color: #2f3235;
+}
+
+.theme-dark .Modal__modal{
+  background-color: #1e2022;
+  box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
+}
+
+.theme-dark .editor-shell button.item i,
+.theme-dark .editor-shell .toolbar button.toolbar-item {
+  color: #fff; 
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

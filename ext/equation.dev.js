@@ -12,82 +12,72 @@ var lexical = require('lexical');
 var React = require('react');
 var katex = require('katex');
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: !0,
+    configurable: !0,
+    writable: !0
+  }) : e[r] = t, e;
 }
-
 function _extends() {
-  _extends = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
+  return _extends = Object.assign ? Object.assign.bind() : function (n) {
+    for (var e = 1; e < arguments.length; e++) {
+      var t = arguments[e];
+      for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
     }
-
-    return target;
-  };
-  return _extends.apply(this, arguments);
+    return n;
+  }, _extends.apply(null, arguments);
+}
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
 }
 
-const EquationComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+const EquationComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
 () => Promise.resolve().then(function () { return EquationComponent$1; }));
-
 function convertEquationElement(domNode) {
   let equation = domNode.getAttribute('data-lexical-equation');
-  const inline = domNode.getAttribute('data-lexical-inline') === 'true'; // Decode the equation from base64
-
+  const inline = domNode.getAttribute('data-lexical-inline') === 'true';
+  // Decode the equation from base64
   equation = atob(equation || '');
-
   if (equation) {
     const node = $createEquationNode(equation, inline);
     return {
       node
     };
   }
-
   return null;
 }
-
 class EquationNode extends lexical.DecoratorNode {
   static getType() {
     return 'equation';
   }
-
   static clone(node) {
     return new EquationNode(node.__equation, node.__inline, node.__key);
   }
-
   constructor(equation, inline, key) {
     super(key);
-
     _defineProperty(this, "__equation", void 0);
-
     _defineProperty(this, "__inline", void 0);
-
     this.__equation = equation;
     this.__inline = inline ?? false;
   }
-
   static importJSON(serializedNode) {
     const node = $createEquationNode(serializedNode.equation, serializedNode.inline);
     return node;
   }
-
   exportJSON() {
     return {
       equation: this.getEquation(),
@@ -96,14 +86,12 @@ class EquationNode extends lexical.DecoratorNode {
       version: 1
     };
   }
-
   createDOM(_config) {
     return document.createElement(this.__inline ? 'span' : 'div');
   }
-
   exportDOM() {
-    const element = document.createElement(this.__inline ? 'span' : 'div'); // Encode the equation as base64 to avoid issues with special characters
-
+    const element = document.createElement(this.__inline ? 'span' : 'div');
+    // Encode the equation as base64 to avoid issues with special characters
     const equation = btoa(this.__equation);
     element.setAttribute('data-lexical-equation', equation);
     element.setAttribute('data-lexical-inline', `${this.__inline}`);
@@ -120,14 +108,12 @@ class EquationNode extends lexical.DecoratorNode {
       element
     };
   }
-
   static importDOM() {
     return {
       div: domNode => {
         if (!domNode.hasAttribute('data-lexical-equation')) {
           return null;
         }
-
         return {
           conversion: convertEquationElement,
           priority: 2
@@ -137,7 +123,6 @@ class EquationNode extends lexical.DecoratorNode {
         if (!domNode.hasAttribute('data-lexical-equation')) {
           return null;
         }
-
         return {
           conversion: convertEquationElement,
           priority: 1
@@ -145,25 +130,20 @@ class EquationNode extends lexical.DecoratorNode {
       }
     };
   }
-
   updateDOM(prevNode) {
     // If the inline property changes, replace the element
     return this.__inline !== prevNode.__inline;
   }
-
   getTextContent() {
     return this.__equation;
   }
-
   getEquation() {
     return this.__equation;
   }
-
   setEquation(equation) {
     const writable = this.getWritable();
     writable.__equation = equation;
   }
-
   decorate() {
     return /*#__PURE__*/React.createElement(React.Suspense, {
       fallback: null
@@ -173,7 +153,6 @@ class EquationNode extends lexical.DecoratorNode {
       nodeKey: this.__key
     }));
   }
-
 }
 function $createEquationNode(equation = '', inline = false) {
   const equationNode = new EquationNode(equation, inline);
@@ -190,6 +169,7 @@ function $isEquationNode(node) {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 function joinClasses(...args) {
   return args.filter(Boolean).join(' ');
 }
@@ -229,7 +209,6 @@ function KatexRenderer({
   const katexElementRef = React.useRef(null);
   React.useEffect(() => {
     const katexElement = katexElementRef.current;
-
     if (katexElement !== null) {
       katex.render(equation, katexElement, {
         displayMode: !inline,
@@ -345,7 +324,6 @@ function EquationsPlugin() {
     if (!editor.hasNodes([EquationNode])) {
       throw new Error('EquationsPlugins: EquationsNode not registered on editor');
     }
-
     return editor.registerCommand(INSERT_EQUATION_COMMAND, payload => {
       const {
         equation,
@@ -353,11 +331,9 @@ function EquationsPlugin() {
       } = payload;
       const equationNode = $createEquationNode(equation, inline);
       lexical.$insertNodes([equationNode]);
-
       if (lexical.$isRootOrShadowRoot(equationNode.getParentOrThrow())) {
         utils.$wrapNodeInElement(equationNode, lexical.$createParagraphNode).selectEnd();
       }
-
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR);
   }, [editor]);
@@ -380,11 +356,9 @@ function DropDownItem({
 }) {
   const ref = React.useRef(null);
   const dropDownContext = React.useContext(DropDownContext);
-
   if (dropDownContext === null) {
     throw new Error('DropDownItem must be used within a DropDown');
   }
-
   const {
     registerItem
   } = dropDownContext;
@@ -456,7 +430,6 @@ const EQUATION = {
     if (!$isEquationNode(node)) {
       return null;
     }
-
     return `$${node.getEquation()}$`;
   },
   importRegExp: /\$([^$]+?)\$/,
@@ -488,7 +461,6 @@ function EquationEditor({
   const onChange = event => {
     setEquation(event.target.value);
   };
-
   const props = {
     equation,
     inputRef,
@@ -500,7 +472,6 @@ function EquationEditor({
     inputRef: inputRef
   }));
 }
-
 function InlineEquationEditor({
   equation,
   onChange,
@@ -520,7 +491,6 @@ function InlineEquationEditor({
     className: "EquationEditor_dollarSign"
   }, "$"));
 }
-
 function BlockEquationEditor({
   equation,
   onChange,
@@ -560,10 +530,8 @@ function EquationComponent({
     setShowEquationEditor(false);
     editor.update(() => {
       const node = lexical.$getNodeByKey(nodeKey);
-
       if ($isEquationNode(node)) {
         node.setEquation(equationValue);
-
         if (restoreSelection) {
           node.selectNext(0, 0);
         }
@@ -580,21 +548,17 @@ function EquationComponent({
       return utils.mergeRegister(editor.registerCommand(lexical.SELECTION_CHANGE_COMMAND, payload => {
         const activeElement = document.activeElement;
         const inputElem = inputRef.current;
-
         if (inputElem !== activeElement) {
           onHide();
         }
-
         return false;
       }, lexical.COMMAND_PRIORITY_HIGH), editor.registerCommand(lexical.KEY_ESCAPE_COMMAND, payload => {
         const activeElement = document.activeElement;
         const inputElem = inputRef.current;
-
         if (inputElem === activeElement) {
           onHide(true);
           return true;
         }
-
         return false;
       }, lexical.COMMAND_PRIORITY_HIGH));
     } else {
@@ -605,7 +569,6 @@ function EquationComponent({
           const selection = lexical.$getSelection();
           return lexical.$isNodeSelection(selection) && selection.has(nodeKey) && selection.getNodes().length === 1;
         });
-
         if (isSelected) {
           setShowEquationEditor(true);
         }
