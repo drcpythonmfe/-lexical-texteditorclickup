@@ -1,5 +1,13 @@
 
 
+## Dark Mode
+
+```
+<body class="theme-dark">  // Add  class name theme-dark
+
+</body>
+```
+
 
 ## HTML as formatHTMLData
 
