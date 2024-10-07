@@ -76,7 +76,7 @@ function formatHTMLData(data: string): string {
       span.textContent = link.textContent;
 
       const newAnchor = doc.createElement('a');
-      newAnchor.setAttribute('href', '#');
+      newAnchor.setAttribute('href', link.getAttribute('href'));
       newAnchor.setAttribute('rel', 'noopener');
       newAnchor.setAttribute('class', 'TextEditor__link TextEditor__ltr');
       newAnchor.appendChild(span);
