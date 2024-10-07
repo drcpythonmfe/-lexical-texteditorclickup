@@ -1,6 +1,123 @@
 
 
 
+## HTML as formatHTMLData
+
+```tsx
+function formatHTMLData(data: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(data, 'text/html');
+
+  function cleanNestedLists(element: Element): void {
+    const nestedUls = element.querySelectorAll('ul > ul');
+    nestedUls.forEach(ul => {
+      const parentLi = ul.parentNode as Element;
+      if (parentLi.tagName === 'LI') {
+        parentLi.parentNode?.insertBefore(ul, parentLi.nextSibling);
+      }
+    });
+  }
+
+  function removeEmptyElements(element: Element): void {
+    element.querySelectorAll('*').forEach(el => {
+      if (el.innerHTML.trim() === '' && !['img', 'br', 'hr'].includes(el.tagName.toLowerCase())) {
+        el.parentNode?.removeChild(el);
+      }
+    });
+  }
+
+  function wrapTextNodesInPTags(element: Element): void {
+    let textContent = '';
+    const childNodes = Array.from(element.childNodes);
+    for (let i = 0; i < childNodes.length; i++) {
+      const node = childNodes[i];
+      if (node.nodeType === Node.TEXT_NODE) {
+        textContent += node.textContent?.trim() || '';
+        element.removeChild(node);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (textContent) {
+          const p = doc.createElement('p');
+          p.textContent = textContent;
+          element.insertBefore(p, node);
+          textContent = '';
+        }
+        if (node.nodeName !== 'BR') {
+          wrapTextNodesInPTags(node as Element);
+        }
+      }
+    }
+    if (textContent) {
+      const p = doc.createElement('p');
+      p.textContent = textContent;
+      element.appendChild(p);
+    }
+  }
+
+  function correctTextPrimayClass(element: Element): void {
+    element.querySelectorAll('a.text-primay').forEach(el => {
+      el.classList.remove('text-primay');
+      el.classList.add('text-primary');
+    });
+  }
+
+  function replaceATagWithSpan(element: Element): void {
+    const links = element.querySelectorAll('a.text-primary');
+    links.forEach(link => {
+      const span = doc.createElement('span');
+      span.setAttribute('data-lexical-text', 'true');
+      span.textContent = link.textContent;
+
+      const newAnchor = doc.createElement('a');
+      newAnchor.setAttribute('href', '#');
+      newAnchor.setAttribute('rel', 'noopener');
+      newAnchor.setAttribute('class', 'TextEditor__link TextEditor__ltr');
+      newAnchor.appendChild(span);
+
+      const p = doc.createElement('p');
+      p.appendChild(newAnchor);
+
+      link.parentNode?.replaceChild(p, link);
+    });
+  }
+
+  const wrapper = doc.createElement('div');
+  while (doc.body.firstChild) {
+    wrapper.appendChild(doc.body.firstChild);
+  }
+
+  cleanNestedLists(wrapper);
+  removeEmptyElements(wrapper);
+  wrapTextNodesInPTags(wrapper);
+  correctTextPrimayClass(wrapper);
+  replaceATagWithSpan(wrapper);
+
+  wrapper.innerHTML = wrapper.innerHTML.replace(/&nbsp;/g, ' ').trim();
+
+  const prettyHTML = prettifyHTML(wrapper.innerHTML);
+  const cleanedString = prettyHTML.replace(/<br\s*\/?>/gi, '');
+  return cleanedString;
+}
+
+function prettifyHTML(html: string): string {
+  let indent = 0;
+  const tab = '    ';
+  let pretty = '';
+  html.split(/>\s*</).forEach(element => {
+    if (element.match(/^\/\w/)) {
+      indent = Math.max(0, indent - 1);
+    }
+    pretty += tab.repeat(indent) + '<' + element + '>\n';
+    if (element.match(/^<?\w[^>]*[^\/]$/) && !element.startsWith('input') && !element.startsWith('img') && !element.startsWith('br')) {
+      indent++;
+    }
+  });
+  return pretty.substring(1, pretty.length - 2);
+}
+```
+
+```tsx
+  const [html, setHtml] = useState(formatHTMLData(data3));
+```
 
 
 ### HTML as input/output
