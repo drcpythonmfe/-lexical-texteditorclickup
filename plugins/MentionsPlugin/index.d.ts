@@ -6,4 +6,4 @@
  *
  */
 /// <reference types="react" />
-export default function NewMentionsPlugin(): JSX.Element | null;
+export default function MentionsPlugin({ dummyMentionsDatas }: any): JSX.Element | null;

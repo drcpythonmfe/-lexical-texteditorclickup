@@ -24,6 +24,6 @@ export declare type EditorProps = {
     onUpload?: OnImageUpload;
     rootClassName?: string;
     containerClassName?: string;
-    userList?: string;
+    dummyMentionsDatas?: string[];
 };
-export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, toolbarConfig, rootClassName, containerClassName, userList }: EditorProps): JSX.Element;
+export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas }: EditorProps): JSX.Element;

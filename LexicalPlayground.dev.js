@@ -6557,17 +6557,16 @@ const AtSignMentionsRegexAliasRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS
 // At most, 5 suggestions are shown in the popup.
 const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 const mentionsCache = new Map();
-const dummyMentionsData = ["Aagi Ajay", "Aakash Mehta", "Aatif Shekh", "Adil Kadiyawala", "Aditi Das", "Aditya Kaneriya", "Aditya Kumar Upadhyay", "Aditya Upadhyay", "Ajay Kori", "Ajit Thakor", "Akhil Lakhlani", "Akshar Vora", "Akshay Panchal", "Alok Kumar", "Alpesh Desai", "Amit Gosalia", "Amit Namdeo", "Anjan Aghera", "Ankit Gandhi", "Ankit Padiya", "Anoop Tamhaney", "Anshul Shukla", "Archana Patel", "Arjun Kurungot", "Arpan Patel", "Aslam Ansari", "Avani Thakkar", "Ayush Shah", "Bhakti Patel", "Bharat Panjwani", "Bhavik Panchal", "Bhavin Thumar", "Bhumit Patel", "Brijesh Makwana", "Brijesh Padsala", "Charmi Parikh", "Chetan Patel", "Chinmay Sahu", "Chintamani Bhosale", "Chintan Machhi", "Chintan Shah", "Chirag Bhoi", "Chirag Dhorajia", "Chirag Modi", "Darsh Modi", "Darshan Shah", "Deepshikha Makwana", "Devarshi Patel", "Dharm Solanki", "Dharmesh Patel", "Dharmik Maru", "Dharmik Patel", "Dhaval Patel", "Dhaval Travadi", "Dhiraj Jethwani", "Dhrumil Bhalala", "Dhrupad Patel", "Dhruv Kadia", "Dhruvin Patel", "Digesh Prajapati", "Dinesh Vasitha", "Dipak Chavda", "Dipak External", "Dipesh Shah", "Dipesh Shah", "Dipesh Shah(External)", "Divyesh Gol", "Dody Tank", "Drashti Mehta", "Durgesh Yadav", "Durgesh Yadav", "Farouk Susulan", "Fenil Panseriya", "Fulabhai Desai", "Gaurang Vyas", "Gauri Sabhadiya", "Ghanshyam Bhava", "Gopal Jaiswal", "Govind Rajput", "Gowtham Nagaraj", "Hardik Davariya", "Harikrushna Parmar", "Harsh Desai", "Harsh Patel", "Harshil Thakkar", "Harshvardhan Makwana", "Hemant Nandaniya", "Het Patel", "Hiten Barchha", "Hitesh Kava", "Hitesh Patel", "Honey Kawade", "Jahnavi Thakkar", "Jalpa Panchal", "Janmaya Pandya", "Jarna Prajapati", "Jay Jani", "Jay Kansara", "Jay Patel", "Jay Thakkar", "Jaydeep Ladva", "Jaydeep Modi", "Jaydevsinh Gohil", "Jaydip Patel", "Jayesh Chopda", "Jayesh Prajapati", "Jayram Nai", "Jigar Rami", "Jignesh Prajapati", "Jinal patel", "Jisha Patel", "Jitendra Yadav", "Jitendrasinh Bhadoriya", "Kadam", "Kalim Shaikh", "Kamalnayan Parmar", "Kamlesh Helaiya", "Kaushik Ambaliya", "Kaverimanian T", "Ketaki Brahmane", "Keyur Chokshi", "Khushi Kamat", "Khushi Kathrotia", "Kinshuk Sarabhai", "Kiran Chauhan", "Komal Prajapati", "Komal Raval", "Krupali Joshi", "Kruti Trivedi", "Kshama Parmar", "Kush Patel", "Kush Patel", "Kushal Shah", "Laksh Joshi", "Madhavesh Gohel", "Maitri Trivedi", "Malay Thakkar", "Manan Prajapati", "Manan Vadher", "Mansi Chavda", "Mansi Patel", "Manthan Bhanushali", "Margi Patel", "Maulik Lakhnotra", "Meet Boghani", "Meet Parikh", "Meet Patel", "Meet Rachhadiya", "Mehul Bukeliya", "Mehul Vishroliya", "Mihir Trivedi", "Milan Trivedi", "Miral Chauhan", "Mittal Shah", "N D Acharya", "N D Acharya", "Namrata Gosai", "Nandini Joshi", "Nayan Valmiya", "Neel Thakkar", "Nidhi Patel", "Nidhi Patel", "Nilay Patel", "Nilesh Dataniya", "Niraj Mamtora", "Nirali Maheshwari", "Nirali Patel", "Nirmal Bhavsar", "Nishant Goradiya", "Nishith Zaveri", "Niyati Raval", "Pankaj Bhatia", "Paras Pitroda", "Parth Kher", "Patel Vrushi", "Payal Patel", "Piyush Mehra", "Pooja Kolhe", "Pooja Patel", "Pooja Thakkar", "Poonam Shah", "Poonam Singh", "Poornima Meena", "Prakhar Gupta", "Prashant U", "Pratik Ahir", "Pratik Kelkar", "Pravin Ratanpara", "Princy Patel", "Priya Patel", "Priyam Gadhvi", "Priyesh Doshi", "Rahul Sharma", "Raj Cementwala", "Raj Chauhan", "Raj Patel", "Raj Shah", "Rajan Rajgor", "Rajendra Borisagar", "Rajesh Kumar", "Raju Makwana", "Ravi Sachaniya", "Ravishankar Patel", "Rohan Pansara", "Rohan Saraogi", "Ronak Pandya", "Rupal Manvar", "Rupal Patoliya", "Saharsh Modi", "Sakshi Shah", "Samir Parikh", "Sanjana Daki", "Sanjay Prajapati", "Sanket Patel", "Saurav Shailendra", "Savan Barbhaya", "Savan Pansuriya", "Sayma Masoom", "Setu Patel", "setu patel", "Sharda", "Shivani Joshi", "Shraddha Pathak", "Shrenik Shah", "Shubh Trivedi", "Siddharth Kundu", "Smit Patel", "Solomon Thirumurugan", "Sonia Shah", "Sourabh Gaonshindhe", "Sudhir Parmar", "Surabhi Kacha", "Surbhi Panchal", "Surojit Sarkar", "Swapna KS", "Tarak Kadiya", "Teja Satyanarayana", "Tinu Taral", "Ujjval Patdiya", "Umang Bhadja", "Umesh Tank", "Urvesh Joshi", "Utsav Kachchhi", "Uttam Sharma", "Vaibhavi Prajapati", "Vaishali maru", "Vaishnavi Dulala", "Varshil Patel", "Vatsal Shah", "Vignesh Kumar", "Vijay Prajapati", "Viral Patel", "Viram Shah", "Vishal Amipara", "Vishwa Kadivar", "Vishwas Bhimani", "Vrushi Patel", "Yash Bhide", "Yash Panchal", "Yash Thakar", "Yogesh Asanani", "Yogesh Panchani"];
-const dummyLookupService = {
-  search(string, callback) {
-    setTimeout(() => {
-      const results = dummyMentionsData.filter(mention => mention.toLowerCase().includes(string.toLowerCase()));
-      callback(results);
-    }, 500);
-  }
-};
-function useMentionLookupService(mentionString) {
+function useMentionLookupService(dummyMentionsData, mentionString) {
   const [results, setResults] = React.useState([]);
+  const dummyLookupService = {
+    search(string, callback) {
+      setTimeout(() => {
+        const results = dummyMentionsData.filter(mention => mention.toLowerCase().includes(string.toLowerCase()));
+        callback(results);
+      }, 500);
+    }
+  };
   React.useEffect(() => {
     const cachedResults = mentionsCache.get(mentionString);
     if (mentionString == null) {
@@ -6663,10 +6662,13 @@ function MentionsTypeaheadMenuItem({
     className: "text"
   }, option.name));
 }
-function NewMentionsPlugin() {
+function MentionsPlugin({
+  dummyMentionsDatas
+}) {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [queryString, setQueryString] = React.useState(null);
-  const results = useMentionLookupService(queryString);
+  const [userData, setUserData] = React.useState([]);
+  const results = useMentionLookupService(userData, queryString);
   const checkForSlashTriggerMatch = LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch('/', {
     minLength: 0
   });
@@ -6688,6 +6690,9 @@ function NewMentionsPlugin() {
     const slashMatch = checkForSlashTriggerMatch(text, editor);
     return !slashMatch && mentionMatch ? mentionMatch : null;
   }, [checkForSlashTriggerMatch, editor]);
+  React.useEffect(() => {
+    setUserData(dummyMentionsDatas || []);
+  }, []);
   return /*#__PURE__*/React.createElement(LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
@@ -8932,7 +8937,7 @@ function Editor({
   toolbarConfig,
   rootClassName,
   containerClassName,
-  userList
+  dummyMentionsDatas
 }) {
   const {
     historyState
@@ -8969,7 +8974,9 @@ function Editor({
     className: `editor-container ${containerClassName ?? ''} ${showTreeView ? 'tree-view' : ''} ${!isRichText ? 'plain-text' : ''}`
   }, isMaxLength && /*#__PURE__*/React.createElement(MaxLengthPlugin, {
     maxLength: 30
-  }), /*#__PURE__*/React.createElement(DragDropPaste, null), /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalClearEditorPlugin.ClearEditorPlugin, null), /*#__PURE__*/React.createElement(CommentPlugin, null), /*#__PURE__*/React.createElement(ComponentPickerMenuPlugin, null), /*#__PURE__*/React.createElement(EmojiPickerPlugin, null), /*#__PURE__*/React.createElement(AutoEmbedPlugin, null), /*#__PURE__*/React.createElement(NewMentionsPlugin, null), /*#__PURE__*/React.createElement(EmojisPlugin, null), /*#__PURE__*/React.createElement(LexicalHashtagPlugin.HashtagPlugin, null), /*#__PURE__*/React.createElement(KeywordsPlugin, null), /*#__PURE__*/React.createElement(SpeechToTextPlugin$1, null), /*#__PURE__*/React.createElement(LexicalAutoLinkPlugin, null), onChange && /*#__PURE__*/React.createElement(LexicalOnChangePlugin.OnChangePlugin, {
+  }), /*#__PURE__*/React.createElement(DragDropPaste, null), /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalClearEditorPlugin.ClearEditorPlugin, null), /*#__PURE__*/React.createElement(CommentPlugin, null), /*#__PURE__*/React.createElement(ComponentPickerMenuPlugin, null), /*#__PURE__*/React.createElement(EmojiPickerPlugin, null), /*#__PURE__*/React.createElement(AutoEmbedPlugin, null), /*#__PURE__*/React.createElement(MentionsPlugin, {
+    dummyMentionsDatas: dummyMentionsDatas
+  }), /*#__PURE__*/React.createElement(EmojisPlugin, null), /*#__PURE__*/React.createElement(LexicalHashtagPlugin.HashtagPlugin, null), /*#__PURE__*/React.createElement(KeywordsPlugin, null), /*#__PURE__*/React.createElement(SpeechToTextPlugin$1, null), /*#__PURE__*/React.createElement(LexicalAutoLinkPlugin, null), onChange && /*#__PURE__*/React.createElement(LexicalOnChangePlugin.OnChangePlugin, {
     onChange: (editorState, editor) => {
       if (onChangeMode === 'html') {
         editor.update(() => {
@@ -10087,7 +10094,7 @@ function ImageComponent({
     className: "image-caption-container"
   }, /*#__PURE__*/React.createElement(LexicalNestedComposer.LexicalNestedComposer, {
     initialEditor: caption
-  }, /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(NewMentionsPlugin, null), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(EmojisPlugin, null), /*#__PURE__*/React.createElement(LexicalHashtagPlugin.HashtagPlugin, null), /*#__PURE__*/React.createElement(KeywordsPlugin, null), isCollabActive ? /*#__PURE__*/React.createElement(LexicalCollaborationPlugin.CollaborationPlugin, {
+  }, /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(MentionsPlugin, null), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(EmojisPlugin, null), /*#__PURE__*/React.createElement(LexicalHashtagPlugin.HashtagPlugin, null), /*#__PURE__*/React.createElement(KeywordsPlugin, null), isCollabActive ? /*#__PURE__*/React.createElement(LexicalCollaborationPlugin.CollaborationPlugin, {
     id: caption.getKey(),
     providerFactory: createWebsocketProvider,
     shouldBootstrap: true

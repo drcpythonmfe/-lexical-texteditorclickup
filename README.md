@@ -1,5 +1,58 @@
 
 
+## dummyMentionsData 
+```tsx
+const dummyMentionsData = [
+  'Aayla Secura',
+  'Adi Gallia',
+  'Admiral Dodd Rancit',
+  'Admiral Firmus Piett',
+  'Admiral Gial Ackbar',
+  'Admiral Ozzel',
+  'Admiral Raddus',
+  'Admiral Terrinald Screed',
+  'Admiral Trench',
+  'Walrus Man',
+  'Warok',
+  'Wat Tambor',
+  'Watto',
+  'Wedge Antilles',
+  'Wes Janson',
+  'Wicket W. Warrick',
+  'Wilhuff Tarkin',
+];
+
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+
+const uploadImg = async (file: File, altText: string) => {
+  console.log("file",file)
+  await delay(500);
+  return `https://placehold.co/300x300?text=${altText}`;
+};
+
+function App({
+  html,
+  setHtml,
+  dummyMentionsData
+}: {
+  html: string;
+  setHtml: (newHtml: string) => void;
+  dummyMentionsData:any;
+}): JSX.Element {
+  useSyncWithInputHtml(html);
+
+  return (
+    <Editor
+      isRichText={true}
+      onChange={setHtml}
+      onUpload={uploadImg}
+      onChangeMode="html"
+      dummyMentionsDatas={dummyMentionsData || []}
+    />
+  );
+}
+```
+
 ## Dark Mode
 
 ```
