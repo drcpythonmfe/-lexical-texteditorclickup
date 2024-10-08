@@ -549,6 +549,7 @@ function Button({
   title
 }) {
   return /*#__PURE__*/React.createElement("button", _extends({
+    type: "button",
     disabled: disabled,
     className: joinClasses('Button__root', disabled && 'Button__disabled', small && 'Button__small', className),
     onClick: onClick,

@@ -7,6 +7,90 @@
  *
  */
 
+.ImageNode__contentEditable {
+  min-height: 20px;
+  border: 0px;
+  resize: none;
+  cursor: text;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0px;
+  padding: 10px;
+  user-select: text;
+  font-size: 12px;
+  width: calc(100% - 20px);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ImageNode__placeholder {
+  font-size: 12px;
+  color: #888;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 10px;
+  left: 10px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.image-control-wrapper--resizing {
+  touch-action: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
+.StickyNode__contentEditable {
+  min-height: 20px;
+  border: 0;
+  resize: none;
+  cursor: text;
+  font-size: 24px;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 10px;
+  user-select: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.StickyNode__placeholder {
+  font-size: 24px;
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 30px;
+  left: 20px;
+  width: 120px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
+
 .PollNode__container {
   border: 1px solid #eee;
   background-color: #fcfcfc;
@@ -161,90 +245,6 @@
 .PollNode__footer {
   display: flex;
   justify-content: center;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-
-.ImageNode__contentEditable {
-  min-height: 20px;
-  border: 0px;
-  resize: none;
-  cursor: text;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0px;
-  padding: 10px;
-  user-select: text;
-  font-size: 12px;
-  width: calc(100% - 20px);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.ImageNode__placeholder {
-  font-size: 12px;
-  color: #888;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 10px;
-  left: 10px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
-}
-
-.image-control-wrapper--resizing {
-  touch-action: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-.StickyNode__contentEditable {
-  min-height: 20px;
-  border: 0;
-  resize: none;
-  cursor: text;
-  font-size: 24px;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0;
-  padding: 10px;
-  user-select: text;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.StickyNode__placeholder {
-  font-size: 24px;
-  color: #999;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 30px;
-  left: 20px;
-  width: 120px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
 }
 
 /**
@@ -987,7 +987,7 @@ i.prettier-error {
 }
 
 .dropdown {
-  z-index: 10;
+  z-index: 10000000000000000000000000000;
   display: block;
   position: fixed;
   /* box-shadow: 0 12px 28px 0 rgba(0, 0, 0, 0.2), 0 2px 4px 0 rgba(0, 0, 0, 0.1),

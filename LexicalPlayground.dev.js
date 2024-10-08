@@ -303,6 +303,7 @@ function Button({
   title
 }) {
   return /*#__PURE__*/React.createElement("button", _extends({
+    type: "button",
     disabled: disabled,
     className: joinClasses('Button__root', disabled && 'Button__disabled', small && 'Button__small', className),
     onClick: onClick,
@@ -2982,46 +2983,6 @@ function Placeholder({
  *
  */
 const INSERT_INLINE_COMMAND = lexical.createCommand('INSERT_INLINE_COMMAND');
-function AddCommentBox({
-  anchorKey,
-  editor,
-  onAddComment
-}) {
-  const boxRef = React.useRef(null);
-  const updatePosition = React.useCallback(() => {
-    const boxElem = boxRef.current;
-    const rootElement = editor.getRootElement();
-    const anchorElement = editor.getElementByKey(anchorKey);
-    if (boxElem !== null && rootElement !== null && anchorElement !== null) {
-      const {
-        right
-      } = rootElement.getBoundingClientRect();
-      const {
-        top
-      } = anchorElement.getBoundingClientRect();
-      boxElem.style.left = `${right - 20}px`;
-      boxElem.style.top = `${top - 30}px`;
-    }
-  }, [anchorKey, editor]);
-  React.useEffect(() => {
-    window.addEventListener('resize', updatePosition);
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-    };
-  }, [editor, updatePosition]);
-  useLayoutEffect(() => {
-    updatePosition();
-  }, [anchorKey, editor, updatePosition]);
-  return /*#__PURE__*/React.createElement("div", {
-    className: "CommentPlugin_AddCommentBox",
-    ref: boxRef
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "CommentPlugin_AddCommentBox_button",
-    onClick: onAddComment
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon add-comment"
-  })));
-}
 function EditorRefPlugin({
   editorRef
 }) {
@@ -3618,17 +3579,10 @@ function CommentPlugin({
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR));
   }, [editor, markNodeMap]);
-  const onAddComment = () => {
-    editor.dispatchCommand(INSERT_INLINE_COMMAND, undefined);
-  };
   return /*#__PURE__*/React.createElement(React.Fragment, null, showCommentInput && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(CommentInputBox, {
     editor: editor,
     cancelAddComment: cancelAddComment,
     submitAddComment: submitAddComment
-  }), document.body), activeAnchorKey !== null && activeAnchorKey !== undefined && !showCommentInput && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(AddCommentBox, {
-    anchorKey: activeAnchorKey,
-    editor: editor,
-    onAddComment: onAddComment
   }), document.body), showComments && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(CommentsPanel, {
     comments: comments,
     submitAddComment: submitAddComment,
@@ -6094,6 +6048,7 @@ function TextFormatFloatingToolbar({
     ref: popupCharStylesEditorRef,
     className: "floating-text-format-popup"
   }, config.biu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
     },
@@ -6102,6 +6057,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format bold"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'italic');
     },
@@ -6110,6 +6066,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format italic"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'underline');
     },
@@ -6118,6 +6075,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format underline"
   }))), config.formatTextOptions && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
     },
@@ -6126,6 +6084,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format strikethrough"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'subscript');
     },
@@ -6135,6 +6094,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format subscript"
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'superscript');
     },
@@ -6144,6 +6104,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format superscript"
   }))), config.codeBlock && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => {
       editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'code');
     },
@@ -6152,6 +6113,7 @@ function TextFormatFloatingToolbar({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format code"
   })), config.link && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: insertLink,
     className: 'popup-item spaced ' + (isLink ? 'active' : ''),
     "aria-label": "Insert link"
