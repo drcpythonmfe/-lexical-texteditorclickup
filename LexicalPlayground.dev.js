@@ -7110,7 +7110,7 @@ function TableActionMenu$1({
   /*#__PURE__*/
   // eslint-disable-next-line jsx-a11y/no-static-element-interactions
   React.createElement("div", {
-    className: "dropdown",
+    className: "dropdown dropdown1",
     ref: dropDownRef,
     onClick: e => {
       e.stopPropagation();
@@ -7810,7 +7810,7 @@ function DropDownItems({
   return /*#__PURE__*/React.createElement(DropDownContext.Provider, {
     value: contextValue
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dropdown",
+    className: "dropdown all_dropdown",
     ref: dropDownRef,
     onKeyDown: handleKeyDown
   }, children));
@@ -10496,7 +10496,7 @@ function TableActionMenu({
     /*#__PURE__*/
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     React.createElement("div", {
-      className: "dropdown",
+      className: "dropdown Tabledropdown",
       ref: dropDownRef,
       onPointerMove: e => {
         e.stopPropagation();
