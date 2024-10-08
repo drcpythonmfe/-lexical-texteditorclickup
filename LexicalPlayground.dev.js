@@ -7905,6 +7905,7 @@ function DropDown({
     disabled: disabled,
     "aria-label": buttonAriaLabel || buttonLabel,
     className: buttonClassName,
+    type: "button",
     onClick: () => setShowDropDown(!showDropDown),
     ref: buttonRef
   }, buttonIconClassName && /*#__PURE__*/React.createElement("span", {
