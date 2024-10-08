@@ -941,12 +941,14 @@ function ActionsPlugin({
     className: "actions"
   }, /*#__PURE__*/React.createElement("button", {
     className: "action-button",
+    type: "button",
     onClick: handleMarkdownToggle,
     title: "Convert From Markdown",
     "aria-label": "Convert from markdown"
   }, /*#__PURE__*/React.createElement("i", {
     className: "markdown"
   })), isCollabActive && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "action-button connect",
     onClick: () => {
       editor.dispatchCommand(yjs$1.TOGGLE_CONNECT_COMMAND, !connected);
@@ -7116,46 +7118,55 @@ function TableActionMenu$1({
       e.stopPropagation();
     }
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => insertTableRowAtSelection(false)
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "above")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => insertTableRowAtSelection(true)
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => insertTableColumnAtSelection(false)
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "left")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => insertTableColumnAtSelection(true)
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "right")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => deleteTableColumnAtSelection()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Delete column")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => deleteTableRowAtSelection()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Delete row")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => deleteTableAtSelection()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Delete table")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => toggleTableRowIsHeader()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "item",
     onClick: () => toggleTableColumnIsHeader()
   }, /*#__PURE__*/React.createElement("span", {
@@ -7232,6 +7243,7 @@ function TableCellActionMenuContainer({
     className: "table-cell-action-button-container",
     ref: menuButtonRef
   }, tableCellNode != null && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     className: "table-cell-action-button chevron-down",
     onClick: e => {
       e.stopPropagation();
