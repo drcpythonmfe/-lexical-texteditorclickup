@@ -155,7 +155,7 @@ function formatHTMLData(data: string): string {
   wrapper.innerHTML = wrapper.innerHTML.replace(/&nbsp;/g, ' ').trim();
 
   const prettyHTML = prettifyHTML(wrapper.innerHTML);
-  const cleanedString = prettyHTML.replace(/<br\s*\/?>/gi, '');
+  const cleanedString = prettyHTML.replace(/<br\s*\/?>/gi, "").replace(/<p class="TextEditor__paragraph"><br><\/p>\s*/g, '');
   return cleanedString;
 }
 

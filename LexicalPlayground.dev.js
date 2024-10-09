@@ -7856,6 +7856,20 @@ function DropDown({
       dropDown.style.top = `${top + 40}px`;
       dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
     }
+    const handleScroll = () => {
+      if (showDropDown && button !== null && dropDown !== null) {
+        const {
+          top,
+          left
+        } = button.getBoundingClientRect();
+        dropDown.style.top = `${top + 40}px`;
+        dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [dropDownRef, buttonRef, showDropDown]);
   React.useEffect(() => {
     const button = buttonRef.current;
