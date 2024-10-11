@@ -1682,7 +1682,7 @@ function AutoEmbedMenu({
   onOptionMouseEnter
 }) {
   return /*#__PURE__*/React.createElement("div", {
-    className: "typeahead-popover"
+    className: "typeahead-popovers"
   }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(AutoEmbedMenuItem, {
     index: i,
     isSelected: selectedItemIndex === i,
@@ -1774,7 +1774,7 @@ function AutoEmbedPlugin() {
       selectOptionAndCleanUp,
       setHighlightedIndex
     }) => anchorElementRef.current ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-      className: "typeahead-popover auto-embed-menu",
+      className: "typeahead-popovers auto-embed-menu",
       style: {
         marginLeft: anchorElementRef.current.style.width,
         width: 200
@@ -4483,7 +4483,7 @@ function ComponentPickerMenuPlugin() {
       selectOptionAndCleanUp,
       setHighlightedIndex
     }) => anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-      className: "typeahead-popover component-picker-menu"
+      className: "typeahead-popovers component-picker-menu"
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(ComponentPickerMenuItem, {
       index: i,
       isSelected: selectedIndex === i,
@@ -5086,7 +5086,7 @@ function EmojiPickerPlugin() {
         return null;
       }
       return anchorElementRef.current && options.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-        className: "typeahead-popover emoji-menu"
+        className: "typeahead-popovers emoji-menu"
       }, /*#__PURE__*/React.createElement("ul", null, options.map((option, index) => /*#__PURE__*/React.createElement("div", {
         key: option.key
       }, /*#__PURE__*/React.createElement(EmojiMenuItem, {
@@ -5486,7 +5486,7 @@ function FloatingLinkEditor({
   }, [isEditMode]);
   return /*#__PURE__*/React.createElement("div", {
     ref: editorRef,
-    className: "link-editor"
+    className: "link-editors"
   }, isEditMode ? /*#__PURE__*/React.createElement("input", {
     ref: inputRef,
     className: "link-input",
@@ -6285,7 +6285,7 @@ function MentionsPlugin({
       selectOptionAndCleanUp,
       setHighlightedIndex
     }) => anchorElementRef.current && results.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-      className: "typeahead-popover mentions-menu"
+      className: "typeahead-popovers mentions-menu"
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(MentionsTypeaheadMenuItem, {
       index: i,
       isSelected: selectedIndex === i,
@@ -6895,7 +6895,7 @@ function TableActionMenu$1({
   /*#__PURE__*/
   // eslint-disable-next-line jsx-a11y/no-static-element-interactions
   React.createElement("div", {
-    className: "dropdown dropdown1",
+    className: "dropdowns dropdown1",
     ref: dropDownRef,
     onClick: e => {
       e.stopPropagation();
@@ -7524,7 +7524,7 @@ function DropDownItems({
   return /*#__PURE__*/React.createElement(DropDownContext.Provider, {
     value: contextValue
   }, /*#__PURE__*/React.createElement("div", {
-    className: "dropdown all_dropdown",
+    className: "dropdowns all_dropdown",
     ref: dropDownRef,
     onKeyDown: handleKeyDown
   }, children));
@@ -7601,7 +7601,7 @@ function DropDown({
   }, buttonIconClassName && /*#__PURE__*/React.createElement("span", {
     className: buttonIconClassName
   }), buttonLabel && /*#__PURE__*/React.createElement("span", {
-    className: "text dropdown-button-text"
+    className: "text dropdowns-button-text"
   }, buttonLabel), /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
   })), showDropDown && /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(DropDownItems, {
@@ -7662,7 +7662,7 @@ function ColorPicker({
     setInputColor(newColor.hex);
   };
   React.useEffect(() => {
-    // Check if the dropdown is actually active
+    // Check if the dropdowns is actually active
     if (innerDivRef.current !== null && onChange) {
       onChange(selfColor.hex);
       setInputColor(selfColor.hex);
@@ -7908,7 +7908,7 @@ const CODE_LANGUAGE_OPTIONS = getCodeLanguageOptions();
 const FONT_FAMILY_OPTIONS = [['Arial', 'Arial'], ['Courier New', 'Courier New'], ['Georgia', 'Georgia'], ['Times New Roman', 'Times New Roman'], ['Trebuchet MS', 'Trebuchet MS'], ['Verdana', 'Verdana']];
 const FONT_SIZE_OPTIONS = [['10px', '10px'], ['11px', '11px'], ['12px', '12px'], ['13px', '13px'], ['14px', '14px'], ['15px', '15px'], ['16px', '16px'], ['17px', '17px'], ['18px', '18px'], ['19px', '19px'], ['20px', '20px']];
 function dropDownActiveClass(active) {
-  if (active) return 'active dropdown-item-active';else return '';
+  if (active) return 'active dropdowns-item-active';else return '';
 }
 function BlockFormatDropDown({
   editor,
@@ -7984,7 +7984,7 @@ function BlockFormatDropDown({
   };
   return /*#__PURE__*/React.createElement(DropDown, {
     disabled: disabled,
-    buttonClassName: "toolbar-item block-controls",
+    buttonClassName: "toolbar-item blocks-controls",
     buttonIconClassName: 'icon block-type ' + blockType,
     buttonLabel: blockTypeToBlockName[blockType],
     buttonAriaLabel: "Formatting options for text style"
@@ -8379,7 +8379,7 @@ function ToolbarPlugin({
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "",
     buttonAriaLabel: "Formatting options for additional text styles",
-    buttonIconClassName: "icon dropdown-more"
+    buttonIconClassName: "icon dropdowns-more"
   }, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
@@ -8662,7 +8662,7 @@ function Editor({
     contentEditable: /*#__PURE__*/React.createElement("div", {
       className: "editor-scroller"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "editor",
+      className: "editor themeeditor",
       ref: onRef
     }, /*#__PURE__*/React.createElement(LexicalContentEditable, null))),
     placeholder: placeholder,
@@ -8907,8 +8907,8 @@ function PasteLogPlugin() {
     }
   }, [editor, isActive]);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
-    id: "paste-log-button",
-    className: `editor-dev-button ${isActive ? 'active' : ''}`,
+    id: "paste-log-buttons",
+    className: `editor-dev-buttons ${isActive ? 'active' : ''}`,
     onClick: () => {
       setIsActive(!isActive);
     },
@@ -9273,28 +9273,28 @@ ${steps.map(formatStep).join(`\n`)}
     download('test.js', generateTestContent());
   }, [generateTestContent]);
   const button = /*#__PURE__*/React.createElement("button", {
-    id: "test-recorder-button",
-    className: `editor-dev-button ${isRecording ? 'active' : ''}`,
+    id: "test-recorder-buttons",
+    className: `editor-dev-buttons ${isRecording ? 'active' : ''}`,
     onClick: () => toggleEditorSelection(getCurrentEditor()),
     title: isRecording ? 'Disable test recorder' : 'Enable test recorder'
   });
   const output = isRecording ? /*#__PURE__*/React.createElement("div", {
     className: "test-recorder-output"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "test-recorder-toolbar"
+    className: "test-recorder-toolbars"
   }, /*#__PURE__*/React.createElement("button", {
-    className: "test-recorder-button",
-    id: "test-recorder-button-snapshot",
+    className: "test-recorder-buttons",
+    id: "test-recorder-buttons-snapshot",
     title: "Insert snapshot",
     onClick: onSnapshotClick
   }), /*#__PURE__*/React.createElement("button", {
-    className: "test-recorder-button",
-    id: "test-recorder-button-copy",
+    className: "test-recorder-buttons",
+    id: "test-recorder-buttons-copy",
     title: "Copy to clipboard",
     onClick: onCopyClick
   }), /*#__PURE__*/React.createElement("button", {
-    className: "test-recorder-button",
-    id: "test-recorder-button-download",
+    className: "test-recorder-buttons",
+    id: "test-recorder-buttons-download",
     title: "Download as a file",
     onClick: onDownloadClick
   })), /*#__PURE__*/React.createElement("pre", {
@@ -10113,7 +10113,7 @@ function TableActionMenu({
     /*#__PURE__*/
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     React.createElement("div", {
-      className: "dropdown Tabledropdown",
+      className: "dropdowns Tabledropdown",
       ref: dropDownRef,
       onPointerMove: e => {
         e.stopPropagation();
