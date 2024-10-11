@@ -47,7 +47,6 @@ var yjs = require('yjs');
 var list = require('@lexical/list');
 var LexicalTypeaheadMenuPlugin = require('@lexical/react/LexicalTypeaheadMenuPlugin');
 var richText = require('@lexical/rich-text');
-var katex = require('katex');
 var LexicalMarkdownShortcutPlugin = require('@lexical/react/LexicalMarkdownShortcutPlugin');
 var useLexicalEditable = require('@lexical/react/useLexicalEditable');
 var LexicalTableOfContents__EXPERIMENTAL = require('@lexical/react/LexicalTableOfContents__EXPERIMENTAL');
@@ -1646,57 +1645,11 @@ const YoutubeEmbedConfig = {
   },
   type: 'youtube-video'
 };
-const TwitterEmbedConfig = {
-  // e.g. Tweet or Google Map.
-  contentName: 'Tweet',
-  exampleUrl: 'https://twitter.com/jack/status/20',
-  // Icon for display.
-  icon: /*#__PURE__*/React.createElement("i", {
-    className: "icon tweet"
-  }),
-  // Create the Lexical embed node from the url data.
-  insertNode: (editor, result) => {
-    editor.dispatchCommand(INSERT_TWEET_COMMAND, result.id);
-  },
-  // For extra searching.
-  keywords: ['tweet', 'twitter'],
-  // Determine if a given URL is a match and return url data.
-  parseUrl: text => {
-    const match = /^https:\/\/twitter\.com\/(#!\/)?(\w+)\/status(es)*\/(\d+)$/.exec(text);
-    if (match != null) {
-      return {
-        id: match[4],
-        url: match[0]
-      };
-    }
-    return null;
-  },
-  type: 'tweet'
-};
-const FigmaEmbedConfig = {
-  contentName: 'Figma Document',
-  exampleUrl: 'https://www.figma.com/file/LKQ4FJ4bTnCSjedbRpk931/Sample-File',
-  icon: /*#__PURE__*/React.createElement("i", {
-    className: "icon figma"
-  }),
-  insertNode: (editor, result) => {
-    editor.dispatchCommand(INSERT_FIGMA_COMMAND, result.id);
-  },
-  keywords: ['figma', 'figma.com', 'mock-up'],
-  // Determine if a given URL is a match and return url data.
-  parseUrl: text => {
-    const match = /https:\/\/([\w.-]+\.)?figma.com\/(file|proto)\/([0-9a-zA-Z]{22,128})(?:\/.*)?$/.exec(text);
-    if (match != null) {
-      return {
-        id: match[3],
-        url: match[0]
-      };
-    }
-    return null;
-  },
-  type: 'figma'
-};
-const EmbedConfigs = [TwitterEmbedConfig, YoutubeEmbedConfig, FigmaEmbedConfig];
+const EmbedConfigs = [
+// TwitterEmbedConfig,
+YoutubeEmbedConfig
+// FigmaEmbedConfig,
+];
 function AutoEmbedMenuItem({
   index,
   isSelected,
@@ -3601,131 +3554,6 @@ function CommentPlugin({
  * LICENSE file in the root directory of this source tree.
  *
  */
-function KatexRenderer({
-  equation,
-  inline,
-  onClick
-}) {
-  const katexElementRef = React.useRef(null);
-  React.useEffect(() => {
-    const katexElement = katexElementRef.current;
-    if (katexElement !== null) {
-      katex.render(equation, katexElement, {
-        displayMode: !inline,
-        // true === block display //
-        errorColor: '#cc0000',
-        output: 'html',
-        strict: 'warn',
-        throwOnError: false,
-        trust: false
-      });
-    }
-  }, [equation, inline]);
-  return (
-    /*#__PURE__*/
-    // We use spacers either side to ensure Android doesn't try and compose from the
-    // inner text from Katex. There didn't seem to be any other way of making this work,
-    // without having a physical space.
-    React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-      className: "spacer"
-    }, " "), /*#__PURE__*/React.createElement("span", {
-      role: "button",
-      tabIndex: -1,
-      onClick: onClick,
-      ref: katexElementRef
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "spacer"
-    }, " "))
-  );
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-function KatexEquationAlterer({
-  onConfirm,
-  initialEquation = ''
-}) {
-  const [equation, setEquation] = React.useState(initialEquation);
-  const [inline, setInline] = React.useState(true);
-  const onClick = React.useCallback(() => {
-    onConfirm(equation, inline);
-  }, [onConfirm, equation, inline]);
-  const onCheckboxChange = React.useCallback(() => {
-    setInline(!inline);
-  }, [setInline, inline]);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_defaultRow"
-  }, "Inline", /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: inline,
-    onChange: onCheckboxChange
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_defaultRow"
-  }, "Equation "), /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_centerRow"
-  }, inline ? /*#__PURE__*/React.createElement("input", {
-    onChange: event => {
-      setEquation(event.target.value);
-    },
-    value: equation,
-    className: "KatexEquationAlterer_textArea"
-  }) : /*#__PURE__*/React.createElement("textarea", {
-    onChange: event => {
-      setEquation(event.target.value);
-    },
-    value: equation,
-    className: "KatexEquationAlterer_textArea"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_defaultRow"
-  }, "Visualization "), /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_centerRow"
-  }, /*#__PURE__*/React.createElement(KatexRenderer, {
-    equation: equation,
-    inline: false,
-    onClick: () => null
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "KatexEquationAlterer_dialogActions"
-  }, /*#__PURE__*/React.createElement(Button, {
-    onClick: onClick
-  }, "Confirm")));
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_EQUATION_COMMAND = lexical.createCommand('INSERT_EQUATION_COMMAND');
-function InsertEquationDialog({
-  activeEditor,
-  onClose
-}) {
-  const onEquationConfirm = React.useCallback((equation, inline) => {
-    activeEditor.dispatchCommand(INSERT_EQUATION_COMMAND, {
-      equation,
-      inline
-    });
-    onClose();
-  }, [activeEditor, onClose]);
-  return /*#__PURE__*/React.createElement(KatexEquationAlterer, {
-    onConfirm: onEquationConfirm
-  });
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 function FileInput({
   accept,
   label,
@@ -4015,189 +3843,6 @@ function getDragSelection(event) {
   return range;
 }
 
-const PollComponent$2 = /*#__PURE__*/React.lazy(
-// @ts-ignore
-() => Promise.resolve().then(function () { return PollComponent$1; }));
-function createUID$1() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-}
-function createPollOption(text = '') {
-  return {
-    text,
-    uid: createUID$1(),
-    votes: []
-  };
-}
-function cloneOption(option, text, votes) {
-  return {
-    text,
-    uid: option.uid,
-    votes: votes || Array.from(option.votes)
-  };
-}
-function convertPollElement(domNode) {
-  const question = domNode.getAttribute('data-lexical-poll-question');
-  if (question !== null) {
-    const node = $createPollNode(question);
-    return {
-      node
-    };
-  }
-  return null;
-}
-class PollNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'poll';
-  }
-  static clone(node) {
-    return new PollNode(node.__question, node.__options, node.__key);
-  }
-  static importJSON(serializedNode) {
-    const node = $createPollNode(serializedNode.question);
-    serializedNode.options.forEach(node.addOption);
-    return node;
-  }
-  constructor(question, options, key) {
-    super(key);
-    _defineProperty(this, "__question", void 0);
-    _defineProperty(this, "__options", void 0);
-    this.__question = question;
-    this.__options = options || [createPollOption(), createPollOption()];
-  }
-  exportJSON() {
-    return {
-      options: this.__options,
-      question: this.__question,
-      type: 'poll',
-      version: 1
-    };
-  }
-  addOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    options.push(option);
-    self.__options = options;
-  }
-  deleteOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options.splice(index, 1);
-    self.__options = options;
-  }
-  setOptionText(option, text) {
-    const self = this.getWritable();
-    const clonedOption = cloneOption(option, text);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-  toggleVote(option, clientID) {
-    const self = this.getWritable();
-    const votes = option.votes;
-    const votesClone = Array.from(votes);
-    const voteIndex = votes.indexOf(clientID);
-    if (voteIndex === -1) {
-      votesClone.push(clientID);
-    } else {
-      votesClone.splice(voteIndex, 1);
-    }
-    const clonedOption = cloneOption(option, option.text, votesClone);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-  static importDOM() {
-    return {
-      span: domNode => {
-        if (!domNode.hasAttribute('data-lexical-poll-question')) {
-          return null;
-        }
-        return {
-          conversion: convertPollElement,
-          priority: 2
-        };
-      }
-    };
-  }
-  exportDOM() {
-    const element = document.createElement('span');
-    element.setAttribute('data-lexical-poll-question', this.__question);
-    return {
-      element
-    };
-  }
-  createDOM() {
-    const elem = document.createElement('span');
-    elem.style.display = 'inline-block';
-    return elem;
-  }
-  updateDOM() {
-    return false;
-  }
-  decorate() {
-    return /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(PollComponent$2, {
-      question: this.__question,
-      options: this.__options,
-      nodeKey: this.__key
-    }));
-  }
-}
-function $createPollNode(question) {
-  return new PollNode(question);
-}
-function $isPollNode(node) {
-  return node instanceof PollNode;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
-function InsertPollDialog({
-  activeEditor,
-  onClose
-}) {
-  const [question, setQuestion] = React.useState('');
-  const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_POLL_COMMAND, question);
-    onClose();
-  };
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
-    label: "Question",
-    onChange: setQuestion,
-    value: question
-  }), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
-    disabled: question.trim() === '',
-    onClick: onClick
-  }, "Confirm")));
-}
-function PollPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  React.useEffect(() => {
-    if (!editor.hasNodes([PollNode])) {
-      throw new Error('PollPlugin: PollNode not registered on editor');
-    }
-    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
-      const pollNode = $createPollNode(payload);
-      lexical.$insertNodes([pollNode]);
-      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
-        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
-      }
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
-  return null;
-}
-
 const cellHTMLCache = new Map();
 const cellTextContentCache = new Map();
 const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
@@ -4205,13 +3850,13 @@ const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"c
 const TableComponent$2 = /*#__PURE__*/React.lazy(
 // @ts-ignore
 () => Promise.resolve().then(function () { return TableComponent$1; }));
-function createUID() {
+function createUID$1() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
 function createCell(type) {
   return {
     colSpan: 1,
-    id: createUID(),
+    id: createUID$1(),
     json: emptyEditorJSON,
     type,
     width: null
@@ -4221,7 +3866,7 @@ function createRow() {
   return {
     cells: [],
     height: null,
-    id: createUID()
+    id: createUID$1()
   };
 }
 function extractRowsFromHTML(tableElem) {
@@ -4525,7 +4170,7 @@ function $createTableNode(rows) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const INSERT_NEW_TABLE_COMMAND = lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
+lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
 const CellContext = /*#__PURE__*/React.createContext({
   cellEditorConfig: null,
   cellEditorPlugins: null,
@@ -4541,33 +4186,6 @@ function InsertTableDialog({
   const [columns, setColumns] = React.useState('5');
   const onClick = () => {
     activeEditor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
-      columns,
-      rows
-    });
-    onClose();
-  };
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
-    label: "No of rows",
-    onChange: setRows,
-    value: rows
-  }), /*#__PURE__*/React.createElement(TextInput, {
-    label: "No of columns",
-    onChange: setColumns,
-    value: columns
-  }), /*#__PURE__*/React.createElement(DialogActions, {
-    "data-test-id": "table-model-confirm-insert"
-  }, /*#__PURE__*/React.createElement(Button, {
-    onClick: onClick
-  }, "Confirm")));
-}
-function InsertNewTableDialog({
-  activeEditor,
-  onClose
-}) {
-  const [rows, setRows] = React.useState('5');
-  const [columns, setColumns] = React.useState('5');
-  const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_NEW_TABLE_COMMAND, {
       columns,
       rows
     });
@@ -4723,16 +4341,16 @@ function ComponentPickerMenuPlugin() {
         activeEditor: editor,
         onClose: onClose
       }))
-    }), new ComponentPickerOption('Table (Experimental)', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon table"
-      }),
-      keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
-      onSelect: () => showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertNewTableDialog, {
-        activeEditor: editor,
-        onClose: onClose
-      }))
-    }), new ComponentPickerOption('Numbered List', {
+    }),
+    // new ComponentPickerOption('Table (Experimental)', {
+    //   icon: <i className="icon table" />,
+    //   keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
+    //   onSelect: () =>
+    //     showModal('Insert Table', (onClose) => (
+    //       <InsertNewTableDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    new ComponentPickerOption('Numbered List', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon number"
       }),
@@ -4786,38 +4404,38 @@ function ComponentPickerMenuPlugin() {
       }),
       keywords: ['horizontal rule', 'divider', 'hr'],
       onSelect: () => editor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined)
-    }), new ComponentPickerOption('Poll', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon poll"
-      }),
-      keywords: ['poll', 'vote'],
-      onSelect: () => showModal('Insert Poll', onClose => /*#__PURE__*/React.createElement(InsertPollDialog, {
-        activeEditor: editor,
-        onClose: onClose
-      }))
-    }), ...EmbedConfigs.map(embedConfig => new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
+    }),
+    // new ComponentPickerOption('Poll', {
+    //   icon: <i className="icon poll" />,
+    //   keywords: ['poll', 'vote'],
+    //   onSelect: () =>
+    //     showModal('Insert Poll', (onClose) => (
+    //       <InsertPollDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    ...EmbedConfigs.map(embedConfig => new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
       icon: embedConfig.icon,
       keywords: [...embedConfig.keywords, 'embed'],
       onSelect: () => editor.dispatchCommand(LexicalAutoEmbedPlugin.INSERT_EMBED_COMMAND, embedConfig.type)
-    })), new ComponentPickerOption('Equation', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon equation"
-      }),
-      keywords: ['equation', 'latex', 'math'],
-      onSelect: () => showModal('Insert Equation', onClose => /*#__PURE__*/React.createElement(InsertEquationDialog, {
-        activeEditor: editor,
-        onClose: onClose
-      }))
-    }), new ComponentPickerOption('GIF', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon gif"
-      }),
-      keywords: ['gif', 'animate', 'image', 'file'],
-      onSelect: () => editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-        altText: 'Cat typing on a laptop',
-        src: ''
-      })
-    }), new ComponentPickerOption('Image', {
+    })),
+    // new ComponentPickerOption('Equation', {
+    //   icon: <i className="icon equation" />,
+    //   keywords: ['equation', 'latex', 'math'],
+    //   onSelect: () =>
+    //     showModal('Insert Equation', (onClose) => (
+    //       <InsertEquationDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    // new ComponentPickerOption('GIF', {
+    //   icon: <i className="icon gif" />,
+    //   keywords: ['gif', 'animate', 'image', 'file'],
+    //   onSelect: () =>
+    //     editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+    //       altText: 'Cat typing on a laptop',
+    //       src: '',
+    //     }),
+    // }),
+    new ComponentPickerOption('Image', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon image"
       }),
@@ -6744,6 +6362,171 @@ function OnImageUploadPlugin({
   return null;
 }
 
+const PollComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
+() => Promise.resolve().then(function () { return PollComponent$1; }));
+function createUID() {
+  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+}
+function createPollOption(text = '') {
+  return {
+    text,
+    uid: createUID(),
+    votes: []
+  };
+}
+function cloneOption(option, text, votes) {
+  return {
+    text,
+    uid: option.uid,
+    votes: votes || Array.from(option.votes)
+  };
+}
+function convertPollElement(domNode) {
+  const question = domNode.getAttribute('data-lexical-poll-question');
+  if (question !== null) {
+    const node = $createPollNode(question);
+    return {
+      node
+    };
+  }
+  return null;
+}
+class PollNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'poll';
+  }
+  static clone(node) {
+    return new PollNode(node.__question, node.__options, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const node = $createPollNode(serializedNode.question);
+    serializedNode.options.forEach(node.addOption);
+    return node;
+  }
+  constructor(question, options, key) {
+    super(key);
+    _defineProperty(this, "__question", void 0);
+    _defineProperty(this, "__options", void 0);
+    this.__question = question;
+    this.__options = options || [createPollOption(), createPollOption()];
+  }
+  exportJSON() {
+    return {
+      options: this.__options,
+      question: this.__question,
+      type: 'poll',
+      version: 1
+    };
+  }
+  addOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    options.push(option);
+    self.__options = options;
+  }
+  deleteOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options.splice(index, 1);
+    self.__options = options;
+  }
+  setOptionText(option, text) {
+    const self = this.getWritable();
+    const clonedOption = cloneOption(option, text);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+  toggleVote(option, clientID) {
+    const self = this.getWritable();
+    const votes = option.votes;
+    const votesClone = Array.from(votes);
+    const voteIndex = votes.indexOf(clientID);
+    if (voteIndex === -1) {
+      votesClone.push(clientID);
+    } else {
+      votesClone.splice(voteIndex, 1);
+    }
+    const clonedOption = cloneOption(option, option.text, votesClone);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+  static importDOM() {
+    return {
+      span: domNode => {
+        if (!domNode.hasAttribute('data-lexical-poll-question')) {
+          return null;
+        }
+        return {
+          conversion: convertPollElement,
+          priority: 2
+        };
+      }
+    };
+  }
+  exportDOM() {
+    const element = document.createElement('span');
+    element.setAttribute('data-lexical-poll-question', this.__question);
+    return {
+      element
+    };
+  }
+  createDOM() {
+    const elem = document.createElement('span');
+    elem.style.display = 'inline-block';
+    return elem;
+  }
+  updateDOM() {
+    return false;
+  }
+  decorate() {
+    return /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(PollComponent$2, {
+      question: this.__question,
+      options: this.__options,
+      nodeKey: this.__key
+    }));
+  }
+}
+function $createPollNode(question) {
+  return new PollNode(question);
+}
+function $isPollNode(node) {
+  return node instanceof PollNode;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
+function PollPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([PollNode])) {
+      throw new Error('PollPlugin: PollNode not registered on editor');
+    }
+    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
+      const pollNode = $createPollNode(payload);
+      lexical.$insertNodes([pollNode]);
+      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
+        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
+      }
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7660,87 +7443,6 @@ const IS_CHROME = CAN_USE_DOM && /^(?=.*Chrome).*/i.test(navigator.userAgent);
 // export const canUseTextInputEvent: boolean = CAN_USE_DOM && 'TextEvent' in window && !documentMode;
 
 CAN_USE_DOM && /AppleWebKit\/[\d.]+/.test(navigator.userAgent) && !IS_CHROME;
-
-const StickyComponent$2 = /*#__PURE__*/React.lazy(
-// @ts-ignore
-() => Promise.resolve().then(function () { return StickyComponent$1; }));
-class StickyNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'sticky';
-  }
-  static clone(node) {
-    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
-  }
-  static importJSON(serializedNode) {
-    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
-    const caption = serializedNode.caption;
-    const nestedEditor = stickyNode.__caption;
-    const editorState = nestedEditor.parseEditorState(caption.editorState);
-    if (!editorState.isEmpty()) {
-      nestedEditor.setEditorState(editorState);
-    }
-    return stickyNode;
-  }
-  constructor(x, y, color, caption, key) {
-    super(key);
-    _defineProperty(this, "__x", void 0);
-    _defineProperty(this, "__y", void 0);
-    _defineProperty(this, "__color", void 0);
-    _defineProperty(this, "__caption", void 0);
-    this.__x = x;
-    this.__y = y;
-    this.__caption = caption || lexical.createEditor();
-    this.__color = color;
-  }
-  exportJSON() {
-    return {
-      caption: this.__caption.toJSON(),
-      color: this.__color,
-      type: 'sticky',
-      version: 1,
-      xOffset: this.__x,
-      yOffset: this.__y
-    };
-  }
-  createDOM(config) {
-    const div = document.createElement('div');
-    div.style.display = 'contents';
-    return div;
-  }
-  updateDOM() {
-    return false;
-  }
-  setPosition(x, y) {
-    const writable = this.getWritable();
-    writable.__x = x;
-    writable.__y = y;
-    lexical.$setSelection(null);
-  }
-  toggleColor() {
-    const writable = this.getWritable();
-    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
-  }
-  decorate(editor, config) {
-    return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
-      color: this.__color,
-      x: this.__x,
-      y: this.__y,
-      nodeKey: this.getKey(),
-      caption: this.__caption
-    })), document.body);
-  }
-  isIsolated() {
-    return true;
-  }
-}
-function $isStickyNode(node) {
-  return node instanceof StickyNode;
-}
-function $createStickyNode(xOffset, yOffset) {
-  return new StickyNode(xOffset, yOffset, 'yellow');
-}
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -8761,31 +8463,6 @@ function ToolbarPlugin({
     className: "text"
   }, "Table")), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      showModal('Insert Poll', onClose => /*#__PURE__*/React.createElement(InsertPollDialog, {
-        activeEditor: activeEditor,
-        onClose: onClose
-      }));
-    },
-    className: "item"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon poll"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Poll")), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      editor.update(() => {
-        const root = lexical.$getRoot();
-        const stickyNode = $createStickyNode(0, 0);
-        root.append(stickyNode);
-      });
-    },
-    className: "item"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon sticky"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Sticky Note")), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
       editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined);
     },
     className: "item"
@@ -9021,6 +8698,84 @@ function Editor({
   })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
     config: normToolbarConfig
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
+}
+
+const StickyComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
+() => Promise.resolve().then(function () { return StickyComponent$1; }));
+class StickyNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'sticky';
+  }
+  static clone(node) {
+    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
+    const caption = serializedNode.caption;
+    const nestedEditor = stickyNode.__caption;
+    const editorState = nestedEditor.parseEditorState(caption.editorState);
+    if (!editorState.isEmpty()) {
+      nestedEditor.setEditorState(editorState);
+    }
+    return stickyNode;
+  }
+  constructor(x, y, color, caption, key) {
+    super(key);
+    _defineProperty(this, "__x", void 0);
+    _defineProperty(this, "__y", void 0);
+    _defineProperty(this, "__color", void 0);
+    _defineProperty(this, "__caption", void 0);
+    this.__x = x;
+    this.__y = y;
+    this.__caption = caption || lexical.createEditor();
+    this.__color = color;
+  }
+  exportJSON() {
+    return {
+      caption: this.__caption.toJSON(),
+      color: this.__color,
+      type: 'sticky',
+      version: 1,
+      xOffset: this.__x,
+      yOffset: this.__y
+    };
+  }
+  createDOM(config) {
+    const div = document.createElement('div');
+    div.style.display = 'contents';
+    return div;
+  }
+  updateDOM() {
+    return false;
+  }
+  setPosition(x, y) {
+    const writable = this.getWritable();
+    writable.__x = x;
+    writable.__y = y;
+    lexical.$setSelection(null);
+  }
+  toggleColor() {
+    const writable = this.getWritable();
+    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
+  }
+  decorate(editor, config) {
+    return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
+      color: this.__color,
+      x: this.__x,
+      y: this.__y,
+      nodeKey: this.getKey(),
+      caption: this.__caption
+    })), document.body);
+  }
+  isIsolated() {
+    return true;
+  }
+}
+function $isStickyNode(node) {
+  return node instanceof StickyNode;
 }
 
 /**
@@ -10122,170 +9877,6 @@ var ImageComponent$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-function getTotalVotes(options) {
-  return options.reduce((totalVotes, next) => {
-    return totalVotes + next.votes.length;
-  }, 0);
-}
-function PollOptionComponent({
-  option,
-  index,
-  options,
-  totalVotes,
-  withPollNode
-}) {
-  const {
-    clientID
-  } = LexicalCollaborationContext.useCollaborationContext();
-  const checkboxRef = React.useRef(null);
-  const votesArray = option.votes;
-  const checkedIndex = votesArray.indexOf(clientID);
-  const checked = checkedIndex !== -1;
-  const votes = votesArray.length;
-  const text = option.text;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionContainer"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
-  }, /*#__PURE__*/React.createElement("input", {
-    ref: checkboxRef,
-    className: "PollNode__optionCheckbox",
-    type: "checkbox",
-    onChange: e => {
-      withPollNode(node => {
-        node.toggleVote(option, clientID);
-      });
-    },
-    checked: checked
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputWrapper"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputVotes",
-    style: {
-      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "PollNode__optionInputVotesCount"
-  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
-    className: "PollNode__optionInput",
-    type: "text",
-    value: text,
-    onChange: e => {
-      const target = e.target;
-      const value = target.value;
-      const selectionStart = target.selectionStart;
-      const selectionEnd = target.selectionEnd;
-      withPollNode(node => {
-        node.setOptionText(option, value);
-      }, () => {
-        target.selectionStart = selectionStart;
-        target.selectionEnd = selectionEnd;
-      });
-    },
-    placeholder: `Option ${index + 1}`
-  })), /*#__PURE__*/React.createElement("button", {
-    disabled: options.length < 3,
-    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
-    "arial-label": "Remove",
-    onClick: () => {
-      withPollNode(node => {
-        node.deleteOption(option);
-      });
-    }
-  }));
-}
-function PollComponent({
-  question,
-  options,
-  nodeKey
-}) {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
-  const [selection, setSelection] = React.useState(null);
-  const ref = React.useRef(null);
-  const onDelete = React.useCallback(payload => {
-    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
-      const event = payload;
-      event.preventDefault();
-      const node = lexical.$getNodeByKey(nodeKey);
-      if ($isPollNode(node)) {
-        node.remove();
-      }
-      setSelected(false);
-    }
-    return false;
-  }, [isSelected, nodeKey, setSelected]);
-  React.useEffect(() => {
-    return utils.mergeRegister(editor.registerUpdateListener(({
-      editorState
-    }) => {
-      setSelection(editorState.read(() => lexical.$getSelection()));
-    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
-      const event = payload;
-      if (event.target === ref.current) {
-        if (!event.shiftKey) {
-          clearSelection();
-        }
-        setSelected(!isSelected);
-        return true;
-      }
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
-  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
-  const withPollNode = (cb, onUpdate) => {
-    editor.update(() => {
-      const node = lexical.$getNodeByKey(nodeKey);
-      if ($isPollNode(node)) {
-        cb(node);
-      }
-    }, {
-      onUpdate
-    });
-  };
-  const addOption = () => {
-    withPollNode(node => {
-      node.addOption(createPollOption());
-    });
-  };
-  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
-  return /*#__PURE__*/React.createElement("div", {
-    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
-    ref: ref
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__inner"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "PollNode__heading"
-  }, question), options.map((option, index) => {
-    const key = option.uid;
-    return /*#__PURE__*/React.createElement(PollOptionComponent, {
-      key: key,
-      withPollNode: withPollNode,
-      option: option,
-      index: index,
-      options: options,
-      totalVotes: totalVotes
-    });
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__footer"
-  }, /*#__PURE__*/React.createElement(Button, {
-    onClick: addOption,
-    small: true
-  }, "Add Option"))));
-}
-
-var PollComponent$1 = {
-  __proto__: null,
-  'default': PollComponent
-};
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 const NO_CELLS = [];
 function $createSelectAll() {
   const sel = lexical.$createRangeSelection();
@@ -10450,7 +10041,7 @@ function extractCellsFromRows(rows, rect) {
       const cellClone = {
         ...row.cells[x]
       };
-      cellClone.id = createUID();
+      cellClone.id = createUID$1();
       newRow.cells.push(cellClone);
     }
     newRows.push(newRow);
@@ -26304,6 +25895,170 @@ var emojiList = [{
 var emojiList$1 = {
   __proto__: null,
   'default': emojiList
+};
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+function getTotalVotes(options) {
+  return options.reduce((totalVotes, next) => {
+    return totalVotes + next.votes.length;
+  }, 0);
+}
+function PollOptionComponent({
+  option,
+  index,
+  options,
+  totalVotes,
+  withPollNode
+}) {
+  const {
+    clientID
+  } = LexicalCollaborationContext.useCollaborationContext();
+  const checkboxRef = React.useRef(null);
+  const votesArray = option.votes;
+  const checkedIndex = votesArray.indexOf(clientID);
+  const checked = checkedIndex !== -1;
+  const votes = votesArray.length;
+  const text = option.text;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionContainer"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: checkboxRef,
+    className: "PollNode__optionCheckbox",
+    type: "checkbox",
+    onChange: e => {
+      withPollNode(node => {
+        node.toggleVote(option, clientID);
+      });
+    },
+    checked: checked
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputWrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputVotes",
+    style: {
+      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "PollNode__optionInputVotesCount"
+  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
+    className: "PollNode__optionInput",
+    type: "text",
+    value: text,
+    onChange: e => {
+      const target = e.target;
+      const value = target.value;
+      const selectionStart = target.selectionStart;
+      const selectionEnd = target.selectionEnd;
+      withPollNode(node => {
+        node.setOptionText(option, value);
+      }, () => {
+        target.selectionStart = selectionStart;
+        target.selectionEnd = selectionEnd;
+      });
+    },
+    placeholder: `Option ${index + 1}`
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: options.length < 3,
+    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
+    "arial-label": "Remove",
+    onClick: () => {
+      withPollNode(node => {
+        node.deleteOption(option);
+      });
+    }
+  }));
+}
+function PollComponent({
+  question,
+  options,
+  nodeKey
+}) {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
+  const [selection, setSelection] = React.useState(null);
+  const ref = React.useRef(null);
+  const onDelete = React.useCallback(payload => {
+    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
+      const event = payload;
+      event.preventDefault();
+      const node = lexical.$getNodeByKey(nodeKey);
+      if ($isPollNode(node)) {
+        node.remove();
+      }
+      setSelected(false);
+    }
+    return false;
+  }, [isSelected, nodeKey, setSelected]);
+  React.useEffect(() => {
+    return utils.mergeRegister(editor.registerUpdateListener(({
+      editorState
+    }) => {
+      setSelection(editorState.read(() => lexical.$getSelection()));
+    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
+      const event = payload;
+      if (event.target === ref.current) {
+        if (!event.shiftKey) {
+          clearSelection();
+        }
+        setSelected(!isSelected);
+        return true;
+      }
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
+  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
+  const withPollNode = (cb, onUpdate) => {
+    editor.update(() => {
+      const node = lexical.$getNodeByKey(nodeKey);
+      if ($isPollNode(node)) {
+        cb(node);
+      }
+    }, {
+      onUpdate
+    });
+  };
+  const addOption = () => {
+    withPollNode(node => {
+      node.addOption(createPollOption());
+    });
+  };
+  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
+  return /*#__PURE__*/React.createElement("div", {
+    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
+    ref: ref
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__inner"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "PollNode__heading"
+  }, question), options.map((option, index) => {
+    const key = option.uid;
+    return /*#__PURE__*/React.createElement(PollOptionComponent, {
+      key: key,
+      withPollNode: withPollNode,
+      option: option,
+      index: index,
+      options: options,
+      totalVotes: totalVotes
+    });
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__footer"
+  }, /*#__PURE__*/React.createElement(Button, {
+    onClick: addOption,
+    small: true
+  }, "Add Option"))));
+}
+
+var PollComponent$1 = {
+  __proto__: null,
+  'default': PollComponent
 };
 
 /**
