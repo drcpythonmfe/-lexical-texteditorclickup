@@ -4398,13 +4398,14 @@ function ComponentPickerMenuPlugin() {
           }
         }
       })
-    }), new ComponentPickerOption('Divider', {
-      icon: /*#__PURE__*/React.createElement("i", {
-        className: "icon horizontal-rule"
-      }),
-      keywords: ['horizontal rule', 'divider', 'hr'],
-      onSelect: () => editor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined)
     }),
+    // new ComponentPickerOption('Divider', {
+    //   icon: <i className="icon horizontal-rule" />,
+    //   keywords: ['horizontal rule', 'divider', 'hr'],
+    //   onSelect: () =>
+    //     editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined),
+    // }),
+
     // new ComponentPickerOption('Poll', {
     //   icon: <i className="icon poll" />,
     //   keywords: ['poll', 'vote'],
@@ -6285,7 +6286,7 @@ function MentionsPlugin({
       selectOptionAndCleanUp,
       setHighlightedIndex
     }) => anchorElementRef.current && results.length ? /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
-      className: "typeahead-popovers mentions-menu"
+      className: "typeahead-popovers nogridview mentions-menu"
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(MentionsTypeaheadMenuItem, {
       index: i,
       isSelected: selectedIndex === i,
@@ -6750,12 +6751,22 @@ function TableActionMenu$1({
   React.useEffect(() => {
     const menuButtonElement = contextRef.current;
     const dropDownElement = dropDownRef.current;
-    if (menuButtonElement != null && dropDownElement != null) {
-      const menuButtonRect = menuButtonElement.getBoundingClientRect();
-      dropDownElement.style.opacity = '1';
-      dropDownElement.style.left = `${menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5}px`;
-      dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset}px`;
-    }
+    const updateDropdownPosition = () => {
+      if (menuButtonElement && dropDownElement) {
+        const menuButtonRect = menuButtonElement.getBoundingClientRect();
+        dropDownElement.style.opacity = '1';
+        dropDownElement.style.left = `${menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5}px`;
+        dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset}px`;
+      }
+    };
+    updateDropdownPosition();
+    const handleScroll = () => {
+      updateDropdownPosition();
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [contextRef, dropDownRef]);
   React.useEffect(() => {
     function handleClickOutside(event) {
@@ -8429,15 +8440,6 @@ function ToolbarPlugin({
     buttonAriaLabel: "Insert specialized editor node",
     buttonIconClassName: "icon plus"
   }, /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      activeEditor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined);
-    },
-    className: "item"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon horizontal-rule"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Horizontal Rule")), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       showModal('Insert Image', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: activeEditor,

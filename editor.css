@@ -7,6 +7,51 @@
  *
  */
 
+.ImageNode__contentEditable {
+  min-height: 20px;
+  border: 0px;
+  resize: none;
+  cursor: text;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0px;
+  padding: 10px;
+  user-select: text;
+  font-size: 12px;
+  width: calc(100% - 20px);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ImageNode__placeholder {
+  font-size: 12px;
+  color: #888;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 10px;
+  left: 10px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.image-control-wrapper--resizing {
+  touch-action: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
+
 .PollNode__container {
   border: 1px solid #eee;
   background-color: #fcfcfc;
@@ -200,51 +245,6 @@
   white-space: nowrap;
   display: inline-block;
   pointer-events: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-
-.ImageNode__contentEditable {
-  min-height: 20px;
-  border: 0px;
-  resize: none;
-  cursor: text;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0px;
-  padding: 10px;
-  user-select: text;
-  font-size: 12px;
-  width: calc(100% - 20px);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.ImageNode__placeholder {
-  font-size: 12px;
-  color: #888;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 10px;
-  left: 10px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
-}
-
-.image-control-wrapper--resizing {
-  touch-action: none;
 }
 
 /**
@@ -689,6 +689,7 @@ i.chevron-down {
 
 .editor-scroller {
   min-height: 150px;
+  max-height: 150px;
   border: 0;
   resize: none;
   cursor: text;
@@ -1108,6 +1109,7 @@ pre::-webkit-scrollbar-thumb {
 .all_dropdown{
   position: fixed !important;
 }
+
 
 .dropdowns .item {
   margin: 0 8px 0 8px;
@@ -2016,6 +2018,9 @@ hr{
   box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
 }
 
+
+
+
 .theme-dark .editor-shell .toolbar{
   background-color: #1e2022;
   box-shadow: 0px 0px 3px rgb(255 255 255 / 30%);
@@ -2128,6 +2133,20 @@ hr{
 hr{
   padding: 0px !important
 }
+
+.nogridview ul {
+  grid-template-columns: repeat(1,1fr);
+}
+
+
+span[data-lexical-mention="true"] {
+  background-color: rgba(24, 119, 232, 0.2);
+}
+
+.dropdown1{
+  background:white
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
