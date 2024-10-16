@@ -15,6 +15,7 @@ interface PlaygroundEmbedConfig extends EmbedConfig {
     description?: string;
 }
 export declare const YoutubeEmbedConfig: PlaygroundEmbedConfig;
+export declare const VideoEmbedConfig: PlaygroundEmbedConfig;
 export declare const TwitterEmbedConfig: PlaygroundEmbedConfig;
 export declare const FigmaEmbedConfig: PlaygroundEmbedConfig;
 export declare const EmbedConfigs: PlaygroundEmbedConfig[];

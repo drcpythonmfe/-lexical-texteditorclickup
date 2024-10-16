@@ -6,6 +6,45 @@
  *
  *
  */
+.StickyNode__contentEditable {
+  min-height: 20px;
+  border: 0;
+  resize: none;
+  cursor: text;
+  font-size: 24px;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 10px;
+  user-select: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.StickyNode__placeholder {
+  font-size: 24px;
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 30px;
+  left: 20px;
+  width: 120px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
 
 .ImageNode__contentEditable {
   min-height: 20px;
@@ -216,45 +255,6 @@
  *
  *
  */
-.StickyNode__contentEditable {
-  min-height: 20px;
-  border: 0;
-  resize: none;
-  cursor: text;
-  font-size: 24px;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0;
-  padding: 10px;
-  user-select: text;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.StickyNode__placeholder {
-  font-size: 24px;
-  color: #999;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 30px;
-  left: 20px;
-  width: 120px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
 
 .StickyEditorTheme__paragraph {
   margin: 0;
@@ -447,6 +447,11 @@ i.prettier-error {
   background-image: url("data:image/svg+xml,%3Csvg style%3D%22color%3Ared%22 viewBox%3D%220 0 24 24%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath d%3D%22M8.571 23.429A.571.571 0 0 1 8 24H2.286a.571.571 0 0 1 0-1.143H8c.316 0 .571.256.571.572zM8 20.57H6.857a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143zm-5.714 1.143H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zM8 18.286H2.286a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143zM16 16H5.714a.571.571 0 0 0 0 1.143H16A.571.571 0 0 0 16 16zM2.286 17.143h1.143a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm17.143-3.429H16a.571.571 0 0 0 0 1.143h3.429a.571.571 0 0 0 0-1.143zM9.143 14.857h4.571a.571.571 0 0 0 0-1.143H9.143a.571.571 0 0 0 0 1.143zm-6.857 0h4.571a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zM20.57 11.43h-9.14a.571.571 0 0 0 0 1.142h9.142a.571.571 0 0 0 0-1.142zM9.714 12a.571.571 0 0 0-.571-.571H5.714a.571.571 0 0 0 0 1.142h3.429A.571.571 0 0 0 9.714 12zm-7.428.571h1.143a.571.571 0 0 0 0-1.142H2.286a.571.571 0 0 0 0 1.142zm19.428-3.428H16a.571.571 0 0 0 0 1.143h5.714a.571.571 0 0 0 0-1.143zM2.286 10.286H8a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm13.143-2.857A.57.57 0 0 0 16 8h5.714a.571.571 0 0 0 0-1.143H16a.571.571 0 0 0-.571.572zm-8.572-.572a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143H6.857zM2.286 8H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm16.571-2.857c0 .315.256.571.572.571h1.142a.571.571 0 0 0 0-1.143H19.43a.571.571 0 0 0-.572.572zm-1.143 0a.571.571 0 0 0-.571-.572H12.57a.571.571 0 0 0 0 1.143h4.572a.571.571 0 0 0 .571-.571zm-15.428.571h8a.571.571 0 0 0 0-1.143h-8a.571.571 0 0 0 0 1.143zm5.143-2.857c0 .316.255.572.571.572h11.429a.571.571 0 0 0 0-1.143H8a.571.571 0 0 0-.571.571zm-5.143.572h3.428a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143zm0-2.286H16A.571.571 0 0 0 16 0H2.286a.571.571 0 0 0 0 1.143z%22 fill%3D%22red%22%2F%3E%3C%2Fsvg%3E");
 }
 
+
+i.videos{
+  background-image: url("data:image/svg+xml,%3Csvg fill%3D%22%23000000%22 width%3D%2216%22 height%3D%2216%22 fill%3D%22currentColor%22 version%3D%221.1%22 id%3D%22Capa_1%22 xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22 %09 viewBox%3D%220 0 291.657 291.657%22 xml%3Aspace%3D%22preserve%22%3E%3Cg%3E%09%3Cpath d%3D%22M287.157%2C87.567c-2.785-1.609-6.215-1.607-9%2C0l-51.785%2C29.897c-0.652%2C0.376-1.27%2C0.791-1.863%2C1.229V87.6%09%09c0-11.579-9.42-21-21-21H43.987c-0.144%2C0-0.284%2C0.015-0.427%2C0.021c-0.142-0.007-0.283-0.021-0.427-0.021H9c-4.971%2C0-9%2C4.029-9%2C9%09%09v24.707c0%2C4.971%2C4.029%2C9%2C9%2C9h25.987v83.351c0%2C4.971%2C4.029%2C9%2C9%2C9H66.55v14.399c0%2C4.971%2C4.029%2C9%2C9%2C9h108.397c4.971%2C0%2C9-4.029%2C9-9%09%09v-14.399h22.562c4.971%2C0%2C9-4.029%2C9-9v-43.094c0.594%2C0.438%2C1.211%2C0.853%2C1.863%2C1.229l51.785%2C29.898%09%09c1.393%2C0.804%2C2.946%2C1.206%2C4.5%2C1.206s3.108-0.402%2C4.5-1.206c2.785-1.607%2C4.5-4.578%2C4.5-7.794V95.361%09%09C291.657%2C92.145%2C289.942%2C89.174%2C287.157%2C87.567z M18%2C91.307V84.6h16.987v6.707H18z M174.947%2C207.057H84.55v-5.399h90.397V207.057z%09%09 M206.509%2C183.658h-22.562H75.55H52.987V84.6h150.521c1.654%2C0%2C3%2C1.346%2C3%2C3V183.658z M273.657%2C157.309l-38.285-22.104%09%09c-0.153-0.089-0.621-0.358-0.621-1.076c0-0.717%2C0.468-0.987%2C0.621-1.076l38.285-22.104V157.309z%22%2F%3E%09%3Cpath d%3D%22M107.146%2C96.962H72.151c-4.971%2C0-9%2C4.029-9%2C9s4.029%2C9%2C9%2C9h34.994c4.971%2C0%2C9-4.029%2C9-9S112.116%2C96.962%2C107.146%2C96.962z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+}
 
 
 #text-options-button::after {

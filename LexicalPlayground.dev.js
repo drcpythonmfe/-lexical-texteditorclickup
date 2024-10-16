@@ -1613,6 +1613,141 @@ function YouTubePlugin() {
   return null;
 }
 
+function VideoComponent({
+  className,
+  format,
+  nodeKey,
+  url
+}) {
+  return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
+    className: className,
+    format: format,
+    nodeKey: nodeKey
+  }, /*#__PURE__*/React.createElement("iframe", {
+    width: "560",
+    height: "315",
+    src: url,
+    frameBorder: "0",
+    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+    allowFullScreen: true,
+    title: "Video"
+  }));
+}
+function convertVideoElement(domNode) {
+  const url = domNode.getAttribute('data-lexical-video');
+  if (url) {
+    const node = $createVideoNode(url);
+    return {
+      node
+    };
+  }
+  return null;
+}
+class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
+  static getType() {
+    return 'video';
+  }
+  static clone(node) {
+    return new VideoNode(node.__url, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const node = $createVideoNode(serializedNode.url);
+    node.setFormat(serializedNode.format);
+    return node;
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      type: 'video',
+      version: 1,
+      url: this.__url
+    };
+  }
+  constructor(url, format, key) {
+    super(format, key);
+    _defineProperty(this, "__url", void 0);
+    this.__url = url;
+  }
+  exportDOM() {
+    const element = document.createElement('iframe');
+    element.setAttribute('data-lexical-video', this.__url);
+    element.setAttribute('width', '560');
+    element.setAttribute('height', '315');
+    element.setAttribute('src', `${this.__url}`);
+    element.setAttribute('frameborder', '0');
+    element.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    element.setAttribute('allowfullscreen', 'true');
+    element.setAttribute('title', 'Video');
+    return {
+      element
+    };
+  }
+  static importDOM() {
+    return {
+      iframe: domNode => {
+        if (!domNode.hasAttribute('data-lexical-video')) {
+          return null;
+        }
+        return {
+          conversion: convertVideoElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__url;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `${this.__url}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || '',
+      focus: embedBlockTheme.focus || ''
+    };
+    return /*#__PURE__*/React.createElement(VideoComponent, {
+      className: className,
+      format: this.__format,
+      nodeKey: this.getKey(),
+      url: this.__url
+    });
+  }
+  isInline() {
+    return false;
+  }
+}
+function $createVideoNode(url) {
+  return new VideoNode(url);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_VIDEO_COMMAND = lexical.createCommand('INSERT_VIDEO_COMMAND');
+function VideoPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([VideoNode])) {
+      throw new Error('VideoPlugin: VideoNode not registered on editor');
+    }
+    return editor.registerCommand(INSERT_VIDEO_COMMAND, payload => {
+      const videoNode = $createVideoNode(payload);
+      utils.$insertNodeToNearestRoot(videoNode);
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -1645,11 +1780,37 @@ const YoutubeEmbedConfig = {
   },
   type: 'youtube-video'
 };
+const VideoEmbedConfig = {
+  contentName: 'Video',
+  exampleUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  // Icon for display.
+  icon: /*#__PURE__*/React.createElement("i", {
+    className: "icon videos"
+  }),
+  insertNode: (editor, result) => {
+    console.log("result.id", result);
+    editor.dispatchCommand(INSERT_VIDEO_COMMAND, result.url);
+  },
+  keywords: ["mp4", 'video'],
+  // Determine if a given URL is a match and return url data.
+
+  parseUrl: async url => {
+    console.log(url);
+    if (url != null) {
+      return {
+        id: "",
+        url
+      };
+    }
+    return null;
+  },
+  type: 'video'
+};
 const EmbedConfigs = [
 // TwitterEmbedConfig,
-YoutubeEmbedConfig
+YoutubeEmbedConfig,
 // FigmaEmbedConfig,
-];
+VideoEmbedConfig];
 function AutoEmbedMenuItem({
   index,
   isSelected,
@@ -3662,7 +3823,7 @@ function InsertImageUploadedDialogBody({
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FileInput, {
     label: "Image Upload",
     onChange: loadImage,
-    accept: "image/*",
+    accept: "image/*,video/*",
     "data-test-id": "image-modal-file-upload"
   }), /*#__PURE__*/React.createElement(TextInput, {
     label: "Alt Text",
@@ -6335,17 +6496,25 @@ function OnImageUploadPlugin({
                 (async () => {
                   try {
                     const imgUrl = await onUpload(file, altText);
-                    const preloadImage = new Image();
-                    preloadImage.onload = () => {
-                      editor.update(() => {
-                        imageNode.setFile(undefined);
-                        imageNode.setSrc(imgUrl);
-                      });
-                    };
-                    preloadImage.onerror = () => {
-                      removeNode(editor, imageNode);
-                    };
-                    preloadImage.src = imgUrl;
+                    const parts = imgUrl.split('.');
+                    const extension = parts[parts.length - 1].toLowerCase();
+                    const validImageTypes = ['jpg', 'jpeg', 'png'];
+                    const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
+                    if (validImageTypes.includes(extension)) {
+                      const preloadImage = new Image();
+                      preloadImage.onload = () => {
+                        editor.update(() => {
+                          imageNode.setFile(undefined);
+                          imageNode.setSrc(imgUrl);
+                        });
+                      };
+                      preloadImage.onerror = () => {
+                        removeNode(editor, imageNode);
+                      };
+                      preloadImage.src = imgUrl;
+                    } else if (validVideoTypes.includes(extension)) {
+                      editor.dispatchCommand(INSERT_VIDEO_COMMAND, imgUrl);
+                    }
                   } catch (e) {
                     removeNode(editor, imageNode);
                   }
@@ -8673,7 +8842,7 @@ function Editor({
     maxDepth: 7
   }), /*#__PURE__*/React.createElement(LexicalTablePlugin.TablePlugin, null), /*#__PURE__*/React.createElement(TableCellResizerPlugin, null), /*#__PURE__*/React.createElement(ImagesPlugin, null), /*#__PURE__*/React.createElement(OnImageUploadPlugin, {
     onUpload: onUpload
-  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
+  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(VideoPlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
     anchorElem: floatingAnchorElem
   }), /*#__PURE__*/React.createElement(CodeActionMenuPlugin, {
     anchorElem: floatingAnchorElem
@@ -8876,7 +9045,7 @@ function patchStyleConversion(originalDOMConverter) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode];
+const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode];
 var PlaygroundNodes$1 = PlaygroundNodes;
 
 /* eslint-disable header/header */
