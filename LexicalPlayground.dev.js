@@ -3823,7 +3823,7 @@ function InsertImageUploadedDialogBody({
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FileInput, {
     label: "Image Upload",
     onChange: loadImage,
-    accept: "image/*,video/*",
+    accept: "image/*",
     "data-test-id": "image-modal-file-upload"
   }), /*#__PURE__*/React.createElement(TextInput, {
     label: "Alt Text",
@@ -6496,24 +6496,26 @@ function OnImageUploadPlugin({
                 (async () => {
                   try {
                     const imgUrl = await onUpload(file, altText);
-                    const parts = imgUrl.split('.');
-                    const extension = parts[parts.length - 1].toLowerCase();
-                    const validImageTypes = ['jpg', 'jpeg', 'png'];
-                    const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
-                    if (validImageTypes.includes(extension)) {
-                      const preloadImage = new Image();
-                      preloadImage.onload = () => {
-                        editor.update(() => {
-                          imageNode.setFile(undefined);
-                          imageNode.setSrc(imgUrl);
-                        });
-                      };
-                      preloadImage.onerror = () => {
-                        removeNode(editor, imageNode);
-                      };
-                      preloadImage.src = imgUrl;
-                    } else if (validVideoTypes.includes(extension)) {
-                      editor.dispatchCommand(INSERT_VIDEO_COMMAND, imgUrl);
+                    if (imgUrl) {
+                      const parts = imgUrl.split('.');
+                      const extension = parts[parts.length - 1].toLowerCase();
+                      const validImageTypes = ['jpg', 'jpeg', 'png'];
+                      if (validImageTypes.includes(extension)) {
+                        const preloadImage = new Image();
+                        preloadImage.onload = () => {
+                          editor.update(() => {
+                            imageNode.setFile(undefined);
+                            imageNode.setSrc(imgUrl);
+                          });
+                        };
+                        preloadImage.onerror = () => {
+                          removeNode(editor, imageNode);
+                        };
+                        preloadImage.src = imgUrl;
+                        return;
+                      }
+                    } else {
+                      return;
                     }
                   } catch (e) {
                     removeNode(editor, imageNode);
@@ -8271,7 +8273,8 @@ function FontDropDown({
   }, text))));
 }
 function ToolbarPlugin({
-  config
+  config,
+  handleClick
 }) {
   const normFontFamilyOption = Array.isArray(config.fontFamilyOptions) ? config.fontFamilyOptions : FONT_FAMILY_OPTIONS;
   const initFontFamily = normFontFamilyOption?.[0]?.[0] ?? FONT_FAMILY_OPTIONS[0][0];
@@ -8602,7 +8605,28 @@ function ToolbarPlugin({
     className: "icon clear"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Clear Formatting"))), /*#__PURE__*/React.createElement(Divider, null), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
+  }, "Clear Formatting"))), handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "file-upload",
+    className: "custom-file-uploads"
+  }, /*#__PURE__*/React.createElement("svg", {
+    "enable-background": "new 0 0 32 32",
+    height: "16px",
+    id: "Layer_1",
+    version: "1.1",
+    viewBox: "0 0 32 32",
+    width: "16px",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M30,6h-0.887c-0.525,0-1.029,0.207-1.404,0.576L25,9.248V8c0-1.657-1.344-3-3-3H3  C1.346,5,0,6.345,0,8v6.972V24c0,1.656,1.343,3,3,3h19c1.656,0,3-1.344,3-3v-1.221l2.709,2.672c0.375,0.369,0.879,0.576,1.404,0.576  H30c1.104,0,2-0.895,2-2V8C32,6.895,31.104,6,30,6z M3,25c-0.552,0-1-0.449-1-1V8c0-0.553,0.447-1,1-1h19c0.551,0,1,0.448,1,1v16  c0,0.551-0.449,1-1,1H3z M30,24.027h-0.887H29l-4-4V20l-1-1v-6l5-5h0.113H30V24.027z",
+    fill: "#333333",
+    id: "video"
+  }))), /*#__PURE__*/React.createElement("input", {
+    id: "file-upload",
+    onChange: handleClick,
+    className: "textfileupload",
+    type: "file",
+    accept: "video/*"
+  })), /*#__PURE__*/React.createElement(Divider, null), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "Insert",
@@ -8771,6 +8795,7 @@ function Editor({
   onChange,
   onChangeMode = 'json',
   onUpload,
+  onDataSend,
   toolbarConfig,
   rootClassName,
   containerClassName,
@@ -8788,6 +8813,7 @@ function Editor({
       setFloatingAnchorElem(_floatingAnchorElem);
     }
   };
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const editorContext = useEditorComposerContext();
   const normToolbarConfig = React.useMemo(() => ({
     ...defaultToolbarConfig,
@@ -8805,6 +8831,24 @@ function Editor({
       window.removeEventListener('resize', updateViewPortWidth);
     };
   }, [isSmallWidthViewport]);
+  const handleClick = event => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      if (onDataSend) {
+        onDataSend(selectedFile).then(res => {
+          const parts = res.split('.');
+          const extension = parts[parts.length - 1].toLowerCase();
+          const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
+          if (validVideoTypes.includes(extension)) {
+            editor.dispatchCommand(INSERT_VIDEO_COMMAND, res);
+            return;
+          }
+        });
+      } else {
+        console.error('onDataSend function is not defined');
+      }
+    }
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: joinClasses('editor-shell', rootClassName)
   }, /*#__PURE__*/React.createElement("div", {
@@ -8867,7 +8911,8 @@ function Editor({
   }), isAutocomplete && /*#__PURE__*/React.createElement(AutocompletePlugin, null), /*#__PURE__*/React.createElement("div", null, showTableOfContents && /*#__PURE__*/React.createElement(TableOfContentsPlugin, null)), /*#__PURE__*/React.createElement(ActionsPlugin, {
     isRichText: isRichText
   })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
-    config: normToolbarConfig
+    config: normToolbarConfig,
+    handleClick: handleClick
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
 }
 

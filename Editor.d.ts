@@ -22,8 +22,9 @@ export declare type EditorProps = {
     onChangeMode?: 'html' | 'json';
     toolbarConfig?: ToolbarConfig;
     onUpload?: OnImageUpload;
+    onDataSend?: ((data: any) => void | undefined | any) | undefined;
     rootClassName?: string;
     containerClassName?: string;
     dummyMentionsDatas?: string[];
 };
-export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas }: EditorProps): JSX.Element;
+export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, onDataSend, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas, }: EditorProps): JSX.Element;

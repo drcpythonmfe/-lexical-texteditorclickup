@@ -9,5 +9,6 @@
 import type { ToolbarConfig } from '../toolbarTypes';
 export declare type ToolbarPluginProps = {
     config: ToolbarConfig;
+    handleClick?: ((data: any) => void | undefined | any) | undefined;
 };
-export default function ToolbarPlugin({ config, }: ToolbarPluginProps): JSX.Element;
+export default function ToolbarPlugin({ config, handleClick, }: ToolbarPluginProps): JSX.Element;
