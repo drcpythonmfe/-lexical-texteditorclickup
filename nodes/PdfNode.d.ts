@@ -8,17 +8,17 @@
 /// <reference types="react" />
 import type { DOMConversionMap, DOMExportOutput, EditorConfig, ElementFormatType, LexicalEditor, LexicalNode, NodeKey, Spread } from 'lexical';
 import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-export declare type SerializedVideoNode = Spread<{
+export declare type SerializedPdfNode = Spread<{
     url: string;
-    type: 'video';
+    type: 'pdf';
     version: 1;
 }, SerializedDecoratorBlockNode>;
-export declare class VideoNode extends DecoratorBlockNode {
+export declare class PdfNode extends DecoratorBlockNode {
     __url: string;
     static getType(): string;
-    static clone(node: VideoNode): VideoNode;
-    static importJSON(serializedNode: SerializedVideoNode): VideoNode;
-    exportJSON(): SerializedVideoNode;
+    static clone(node: PdfNode): PdfNode;
+    static importJSON(serializedNode: SerializedPdfNode): PdfNode;
+    exportJSON(): SerializedPdfNode;
     constructor(url: string, format?: ElementFormatType, key?: NodeKey);
     exportDOM(): DOMExportOutput;
     static importDOM(): DOMConversionMap | null;
@@ -28,5 +28,5 @@ export declare class VideoNode extends DecoratorBlockNode {
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
     isInline(): false;
 }
-export declare function $createVideoNode(url: string): VideoNode;
-export declare function $isVideoNode(node: VideoNode | LexicalNode | null | undefined): node is VideoNode;
+export declare function $createPdfNode(url: string): PdfNode;
+export declare function $isPdfNode(node: PdfNode | LexicalNode | null | undefined): node is PdfNode;

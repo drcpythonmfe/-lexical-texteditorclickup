@@ -12,6 +12,7 @@ var LexicalCharacterLimitPlugin = require('@lexical/react/LexicalCharacterLimitP
 var LexicalCheckListPlugin = require('@lexical/react/LexicalCheckListPlugin');
 var LexicalClearEditorPlugin = require('@lexical/react/LexicalClearEditorPlugin');
 var LexicalCollaborationPlugin = require('@lexical/react/LexicalCollaborationPlugin');
+var LexicalComposerContext = require('@lexical/react/LexicalComposerContext');
 var LexicalErrorBoundary = require('@lexical/react/LexicalErrorBoundary');
 var LexicalHashtagPlugin = require('@lexical/react/LexicalHashtagPlugin');
 var LexicalHistoryPlugin = require('@lexical/react/LexicalHistoryPlugin');
@@ -26,7 +27,6 @@ var React = require('react');
 var code = require('@lexical/code');
 var markdown = require('@lexical/markdown');
 var LexicalCollaborationContext = require('@lexical/react/LexicalCollaborationContext');
-var LexicalComposerContext = require('@lexical/react/LexicalComposerContext');
 var utils = require('@lexical/utils');
 var yjs$1 = require('@lexical/yjs');
 var lexical = require('lexical');
@@ -1455,6 +1455,264 @@ function FigmaPlugin() {
   return null;
 }
 
+function OfficeComponent({
+  className,
+  format,
+  nodeKey,
+  url
+}) {
+  return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
+    className: className,
+    format: format,
+    nodeKey: nodeKey
+  }, /*#__PURE__*/React.createElement("iframe", {
+    width: "800",
+    height: "500",
+    className: "office",
+    src: `https://view.officeapps.live.com/op/embed.aspx?src=${url}`
+  }));
+}
+function convertOfficeElement(domNode) {
+  const url = domNode.getAttribute('data-lexical-office');
+  if (url) {
+    const node = $createOfficeNode(url);
+    return {
+      node
+    };
+  }
+  return null;
+}
+class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
+  static getType() {
+    return 'office';
+  }
+  static clone(node) {
+    return new OfficeNode(node.__url, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const node = $createOfficeNode(serializedNode.url);
+    node.setFormat(serializedNode.format);
+    return node;
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      type: 'office',
+      url: this.__url,
+      version: 1
+    };
+  }
+  constructor(url, format, key) {
+    super(format, key);
+    _defineProperty(this, "__url", void 0);
+    this.__url = url;
+  }
+  exportDOM() {
+    const element = document.createElement('iframe');
+    element.setAttribute('data-lexical-office', this.__url);
+    element.setAttribute('width', '800');
+    element.setAttribute('height', '500');
+    element.setAttribute('src', `https://view.officeapps.live.com/op/embed.aspx?src=${this.__url}`);
+    element.setAttribute('class', 'office');
+    return {
+      element
+    };
+  }
+  static importDOM() {
+    return {
+      iframe: domNode => {
+        if (!domNode.hasAttribute('data-lexical-office')) {
+          return null;
+        }
+        return {
+          conversion: convertOfficeElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__url;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `${this.__url}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || '',
+      focus: embedBlockTheme.focus || ''
+    };
+    return /*#__PURE__*/React.createElement(OfficeComponent, {
+      className: className,
+      format: this.__format,
+      nodeKey: this.getKey(),
+      url: this.__url
+    });
+  }
+  isInline() {
+    return false;
+  }
+}
+function $createOfficeNode(url) {
+  return new OfficeNode(url);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_OFFICE_COMMAND = lexical.createCommand('INSERT_OFFICE_COMMAND');
+function OfficePlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([OfficeNode])) {
+      throw new Error('OfficePlugin: OfficeNode not registered on editor');
+    }
+    return editor.registerCommand(INSERT_OFFICE_COMMAND, payload => {
+      const officeNode = $createOfficeNode(payload);
+      utils.$insertNodeToNearestRoot(officeNode);
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
+function PdfComponent({
+  className,
+  format,
+  nodeKey,
+  url
+}) {
+  return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
+    className: className,
+    format: format,
+    nodeKey: nodeKey
+  }, /*#__PURE__*/React.createElement("embed", {
+    width: "800",
+    height: "500",
+    className: "pdf",
+    src: url
+  }));
+}
+function convertPdfElement(domNode) {
+  const url = domNode.getAttribute('data-lexical-pdf');
+  if (url) {
+    const node = $createPdfNode(url);
+    return {
+      node
+    };
+  }
+  return null;
+}
+class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
+  static getType() {
+    return 'pdf';
+  }
+  static clone(node) {
+    return new PdfNode(node.__url, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const node = $createPdfNode(serializedNode.url);
+    node.setFormat(serializedNode.format);
+    return node;
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      type: 'pdf',
+      url: this.__url,
+      version: 1
+    };
+  }
+  constructor(url, format, key) {
+    super(format, key);
+    _defineProperty(this, "__url", void 0);
+    this.__url = url;
+  }
+  exportDOM() {
+    const element = document.createElement('embed');
+    element.setAttribute('data-lexical-pdf', this.__url);
+    element.setAttribute('width', '800');
+    element.setAttribute('height', '500');
+    element.setAttribute('src', `${this.__url}`);
+    element.setAttribute('class', 'pdf');
+    return {
+      element
+    };
+  }
+  static importDOM() {
+    return {
+      iframe: domNode => {
+        if (!domNode.hasAttribute('data-lexical-pdf')) {
+          return null;
+        }
+        return {
+          conversion: convertPdfElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__url;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `${this.__url}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || '',
+      focus: embedBlockTheme.focus || ''
+    };
+    return /*#__PURE__*/React.createElement(PdfComponent, {
+      className: className,
+      format: this.__format,
+      nodeKey: this.getKey(),
+      url: this.__url
+    });
+  }
+  isInline() {
+    return false;
+  }
+}
+function $createPdfNode(url) {
+  return new PdfNode(url);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_PDF_COMMAND = lexical.createCommand('INSERT_PDF_COMMAND');
+function PdfPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([PdfNode])) {
+      throw new Error('PdfPlugin: PdfNode not registered on editor');
+    }
+    return editor.registerCommand(INSERT_PDF_COMMAND, payload => {
+      const pdfNode = $createPdfNode(payload);
+      utils.$insertNodeToNearestRoot(pdfNode);
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -1472,6 +1730,141 @@ function TwitterPlugin() {
     return editor.registerCommand(INSERT_TWEET_COMMAND, payload => {
       const tweetNode = $createTweetNode(payload);
       utils.$insertNodeToNearestRoot(tweetNode);
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
+function VideoComponent({
+  className,
+  format,
+  nodeKey,
+  url
+}) {
+  return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
+    className: className,
+    format: format,
+    nodeKey: nodeKey
+  }, /*#__PURE__*/React.createElement("iframe", {
+    width: "560",
+    height: "315",
+    src: url,
+    frameBorder: "0",
+    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+    allowFullScreen: true,
+    title: "Video"
+  }));
+}
+function convertVideoElement(domNode) {
+  const url = domNode.getAttribute('data-lexical-video');
+  if (url) {
+    const node = $createVideoNode(url);
+    return {
+      node
+    };
+  }
+  return null;
+}
+class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
+  static getType() {
+    return 'video';
+  }
+  static clone(node) {
+    return new VideoNode(node.__url, node.__format, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const node = $createVideoNode(serializedNode.url);
+    node.setFormat(serializedNode.format);
+    return node;
+  }
+  exportJSON() {
+    return {
+      ...super.exportJSON(),
+      type: 'video',
+      url: this.__url,
+      version: 1
+    };
+  }
+  constructor(url, format, key) {
+    super(format, key);
+    _defineProperty(this, "__url", void 0);
+    this.__url = url;
+  }
+  exportDOM() {
+    const element = document.createElement('iframe');
+    element.setAttribute('data-lexical-video', this.__url);
+    element.setAttribute('width', '560');
+    element.setAttribute('height', '315');
+    element.setAttribute('src', `${this.__url}`);
+    element.setAttribute('frameborder', '0');
+    element.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    element.setAttribute('allowfullscreen', 'true');
+    element.setAttribute('title', 'Video');
+    return {
+      element
+    };
+  }
+  static importDOM() {
+    return {
+      iframe: domNode => {
+        if (!domNode.hasAttribute('data-lexical-video')) {
+          return null;
+        }
+        return {
+          conversion: convertVideoElement,
+          priority: 1
+        };
+      }
+    };
+  }
+  updateDOM() {
+    return false;
+  }
+  getId() {
+    return this.__url;
+  }
+  getTextContent(_includeInert, _includeDirectionless) {
+    return `${this.__url}`;
+  }
+  decorate(_editor, config) {
+    const embedBlockTheme = config.theme.embedBlock || {};
+    const className = {
+      base: embedBlockTheme.base || '',
+      focus: embedBlockTheme.focus || ''
+    };
+    return /*#__PURE__*/React.createElement(VideoComponent, {
+      className: className,
+      format: this.__format,
+      nodeKey: this.getKey(),
+      url: this.__url
+    });
+  }
+  isInline() {
+    return false;
+  }
+}
+function $createVideoNode(url) {
+  return new VideoNode(url);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_VIDEO_COMMAND = lexical.createCommand('INSERT_VIDEO_COMMAND');
+function VideoPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([VideoNode])) {
+      throw new Error('VideoPlugin: VideoNode not registered on editor');
+    }
+    return editor.registerCommand(INSERT_VIDEO_COMMAND, payload => {
+      const videoNode = $createVideoNode(payload);
+      utils.$insertNodeToNearestRoot(videoNode);
       return true;
     }, lexical.COMMAND_PRIORITY_EDITOR);
   }, [editor]);
@@ -1613,141 +2006,6 @@ function YouTubePlugin() {
   return null;
 }
 
-function VideoComponent({
-  className,
-  format,
-  nodeKey,
-  url
-}) {
-  return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
-    className: className,
-    format: format,
-    nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("iframe", {
-    width: "560",
-    height: "315",
-    src: url,
-    frameBorder: "0",
-    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-    allowFullScreen: true,
-    title: "Video"
-  }));
-}
-function convertVideoElement(domNode) {
-  const url = domNode.getAttribute('data-lexical-video');
-  if (url) {
-    const node = $createVideoNode(url);
-    return {
-      node
-    };
-  }
-  return null;
-}
-class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
-  static getType() {
-    return 'video';
-  }
-  static clone(node) {
-    return new VideoNode(node.__url, node.__format, node.__key);
-  }
-  static importJSON(serializedNode) {
-    const node = $createVideoNode(serializedNode.url);
-    node.setFormat(serializedNode.format);
-    return node;
-  }
-  exportJSON() {
-    return {
-      ...super.exportJSON(),
-      type: 'video',
-      version: 1,
-      url: this.__url
-    };
-  }
-  constructor(url, format, key) {
-    super(format, key);
-    _defineProperty(this, "__url", void 0);
-    this.__url = url;
-  }
-  exportDOM() {
-    const element = document.createElement('iframe');
-    element.setAttribute('data-lexical-video', this.__url);
-    element.setAttribute('width', '560');
-    element.setAttribute('height', '315');
-    element.setAttribute('src', `${this.__url}`);
-    element.setAttribute('frameborder', '0');
-    element.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-    element.setAttribute('allowfullscreen', 'true');
-    element.setAttribute('title', 'Video');
-    return {
-      element
-    };
-  }
-  static importDOM() {
-    return {
-      iframe: domNode => {
-        if (!domNode.hasAttribute('data-lexical-video')) {
-          return null;
-        }
-        return {
-          conversion: convertVideoElement,
-          priority: 1
-        };
-      }
-    };
-  }
-  updateDOM() {
-    return false;
-  }
-  getId() {
-    return this.__url;
-  }
-  getTextContent(_includeInert, _includeDirectionless) {
-    return `${this.__url}`;
-  }
-  decorate(_editor, config) {
-    const embedBlockTheme = config.theme.embedBlock || {};
-    const className = {
-      base: embedBlockTheme.base || '',
-      focus: embedBlockTheme.focus || ''
-    };
-    return /*#__PURE__*/React.createElement(VideoComponent, {
-      className: className,
-      format: this.__format,
-      nodeKey: this.getKey(),
-      url: this.__url
-    });
-  }
-  isInline() {
-    return false;
-  }
-}
-function $createVideoNode(url) {
-  return new VideoNode(url);
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_VIDEO_COMMAND = lexical.createCommand('INSERT_VIDEO_COMMAND');
-function VideoPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  React.useEffect(() => {
-    if (!editor.hasNodes([VideoNode])) {
-      throw new Error('VideoPlugin: VideoNode not registered on editor');
-    }
-    return editor.registerCommand(INSERT_VIDEO_COMMAND, payload => {
-      const videoNode = $createVideoNode(payload);
-      utils.$insertNodeToNearestRoot(videoNode);
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
-  return null;
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -1806,11 +2064,57 @@ const VideoEmbedConfig = {
   },
   type: 'video'
 };
+const PdfEmbedConfig = {
+  contentName: 'Pdf',
+  exampleUrl: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf',
+  // Icon for display.
+  icon: /*#__PURE__*/React.createElement("i", {
+    className: "icon pdf"
+  }),
+  insertNode: (editor, result) => {
+    editor.dispatchCommand(INSERT_PDF_COMMAND, result.url);
+  },
+  keywords: ['pdf'],
+  // Determine if a given URL is a match and return url data.
+  parseUrl: async url => {
+    if (url != null) {
+      return {
+        id: "",
+        url
+      };
+    }
+    return null;
+  },
+  type: 'pdf'
+};
+const OfficeEmbedConfig = {
+  contentName: 'Office',
+  exampleUrl: 'https://media.stage.truflux.drcsystems.ooo/uploads/project/294/Timesheet%20report%20_1_.xlsx',
+  // Icon for display.
+  icon: /*#__PURE__*/React.createElement("i", {
+    className: "icon office"
+  }),
+  insertNode: (editor, result) => {
+    editor.dispatchCommand(INSERT_OFFICE_COMMAND, result.url);
+  },
+  keywords: ['office'],
+  // Determine if a given URL is a match and return url data.
+  parseUrl: async url => {
+    if (url != null) {
+      return {
+        id: "",
+        url
+      };
+    }
+    return null;
+  },
+  type: 'office'
+};
 const EmbedConfigs = [
 // TwitterEmbedConfig,
 YoutubeEmbedConfig,
 // FigmaEmbedConfig,
-VideoEmbedConfig];
+VideoEmbedConfig, PdfEmbedConfig, OfficeEmbedConfig];
 function AutoEmbedMenuItem({
   index,
   isSelected,
@@ -8609,23 +8913,18 @@ function ToolbarPlugin({
     htmlFor: "file-upload",
     className: "custom-file-uploads"
   }, /*#__PURE__*/React.createElement("svg", {
-    "enable-background": "new 0 0 32 32",
-    height: "16px",
-    id: "Layer_1",
-    version: "1.1",
-    viewBox: "0 0 32 32",
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 30 30",
     width: "16px",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M30,6h-0.887c-0.525,0-1.029,0.207-1.404,0.576L25,9.248V8c0-1.657-1.344-3-3-3H3  C1.346,5,0,6.345,0,8v6.972V24c0,1.656,1.343,3,3,3h19c1.656,0,3-1.344,3-3v-1.221l2.709,2.672c0.375,0.369,0.879,0.576,1.404,0.576  H30c1.104,0,2-0.895,2-2V8C32,6.895,31.104,6,30,6z M3,25c-0.552,0-1-0.449-1-1V8c0-0.553,0.447-1,1-1h19c0.551,0,1,0.448,1,1v16  c0,0.551-0.449,1-1,1H3z M30,24.027h-0.887H29l-4-4V20l-1-1v-6l5-5h0.113H30V24.027z",
-    fill: "#333333",
-    id: "video"
+    height: "16px"
+  }, "    ", /*#__PURE__*/React.createElement("path", {
+    d: "M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"
   }))), /*#__PURE__*/React.createElement("input", {
     id: "file-upload",
     onChange: handleClick,
     className: "textfileupload",
     type: "file",
-    accept: "video/*"
+    accept: "video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, text/csv"
   })), /*#__PURE__*/React.createElement(Divider, null), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
@@ -8836,11 +9135,21 @@ function Editor({
     if (selectedFile) {
       if (onDataSend) {
         onDataSend(selectedFile).then(res => {
-          const parts = res.split('.');
-          const extension = parts[parts.length - 1].toLowerCase();
+          const parts = res?.split('.');
+          const extension = parts[parts.length - 1]?.toLowerCase();
           const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
+          const validPdfTypes = ['pdf'];
+          const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
           if (validVideoTypes.includes(extension)) {
             editor.dispatchCommand(INSERT_VIDEO_COMMAND, res);
+            return;
+          }
+          if (validPdfTypes.includes(extension)) {
+            editor.dispatchCommand(INSERT_PDF_COMMAND, res);
+            return;
+          }
+          if (validOfficeTypes.includes(extension)) {
+            editor.dispatchCommand(INSERT_OFFICE_COMMAND, res);
             return;
           }
         });
@@ -8886,7 +9195,7 @@ function Editor({
     maxDepth: 7
   }), /*#__PURE__*/React.createElement(LexicalTablePlugin.TablePlugin, null), /*#__PURE__*/React.createElement(TableCellResizerPlugin, null), /*#__PURE__*/React.createElement(ImagesPlugin, null), /*#__PURE__*/React.createElement(OnImageUploadPlugin, {
     onUpload: onUpload
-  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(VideoPlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
+  }), /*#__PURE__*/React.createElement(LinkPlugin, null), /*#__PURE__*/React.createElement(PollPlugin, null), /*#__PURE__*/React.createElement(TwitterPlugin, null), /*#__PURE__*/React.createElement(YouTubePlugin, null), /*#__PURE__*/React.createElement(VideoPlugin, null), /*#__PURE__*/React.createElement(PdfPlugin, null), /*#__PURE__*/React.createElement(OfficePlugin, null), /*#__PURE__*/React.createElement(FigmaPlugin, null), /*#__PURE__*/React.createElement(ClickableLinkPlugin, null), /*#__PURE__*/React.createElement(LexicalHorizontalRulePlugin.HorizontalRulePlugin, null), /*#__PURE__*/React.createElement(TabFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalTabIndentationPlugin.TabIndentationPlugin, null), /*#__PURE__*/React.createElement(CollapsiblePlugin, null), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DraggableBlockPlugin, {
     anchorElem: floatingAnchorElem
   }), /*#__PURE__*/React.createElement(CodeActionMenuPlugin, {
     anchorElem: floatingAnchorElem
@@ -8914,84 +9223,6 @@ function Editor({
     config: normToolbarConfig,
     handleClick: handleClick
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
-}
-
-const StickyComponent$2 = /*#__PURE__*/React.lazy(
-// @ts-ignore
-() => Promise.resolve().then(function () { return StickyComponent$1; }));
-class StickyNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'sticky';
-  }
-  static clone(node) {
-    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
-  }
-  static importJSON(serializedNode) {
-    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
-    const caption = serializedNode.caption;
-    const nestedEditor = stickyNode.__caption;
-    const editorState = nestedEditor.parseEditorState(caption.editorState);
-    if (!editorState.isEmpty()) {
-      nestedEditor.setEditorState(editorState);
-    }
-    return stickyNode;
-  }
-  constructor(x, y, color, caption, key) {
-    super(key);
-    _defineProperty(this, "__x", void 0);
-    _defineProperty(this, "__y", void 0);
-    _defineProperty(this, "__color", void 0);
-    _defineProperty(this, "__caption", void 0);
-    this.__x = x;
-    this.__y = y;
-    this.__caption = caption || lexical.createEditor();
-    this.__color = color;
-  }
-  exportJSON() {
-    return {
-      caption: this.__caption.toJSON(),
-      color: this.__color,
-      type: 'sticky',
-      version: 1,
-      xOffset: this.__x,
-      yOffset: this.__y
-    };
-  }
-  createDOM(config) {
-    const div = document.createElement('div');
-    div.style.display = 'contents';
-    return div;
-  }
-  updateDOM() {
-    return false;
-  }
-  setPosition(x, y) {
-    const writable = this.getWritable();
-    writable.__x = x;
-    writable.__y = y;
-    lexical.$setSelection(null);
-  }
-  toggleColor() {
-    const writable = this.getWritable();
-    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
-  }
-  decorate(editor, config) {
-    return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
-      color: this.__color,
-      x: this.__x,
-      y: this.__y,
-      nodeKey: this.getKey(),
-      caption: this.__caption
-    })), document.body);
-  }
-  isIsolated() {
-    return true;
-  }
-}
-function $isStickyNode(node) {
-  return node instanceof StickyNode;
 }
 
 class ExtendedTextNode extends lexical.TextNode {
@@ -9083,6 +9314,84 @@ function patchStyleConversion(originalDOMConverter) {
   };
 }
 
+const StickyComponent$2 = /*#__PURE__*/React.lazy(
+// @ts-ignore
+() => Promise.resolve().then(function () { return StickyComponent$1; }));
+class StickyNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'sticky';
+  }
+  static clone(node) {
+    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+  }
+  static importJSON(serializedNode) {
+    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
+    const caption = serializedNode.caption;
+    const nestedEditor = stickyNode.__caption;
+    const editorState = nestedEditor.parseEditorState(caption.editorState);
+    if (!editorState.isEmpty()) {
+      nestedEditor.setEditorState(editorState);
+    }
+    return stickyNode;
+  }
+  constructor(x, y, color, caption, key) {
+    super(key);
+    _defineProperty(this, "__x", void 0);
+    _defineProperty(this, "__y", void 0);
+    _defineProperty(this, "__color", void 0);
+    _defineProperty(this, "__caption", void 0);
+    this.__x = x;
+    this.__y = y;
+    this.__caption = caption || lexical.createEditor();
+    this.__color = color;
+  }
+  exportJSON() {
+    return {
+      caption: this.__caption.toJSON(),
+      color: this.__color,
+      type: 'sticky',
+      version: 1,
+      xOffset: this.__x,
+      yOffset: this.__y
+    };
+  }
+  createDOM(config) {
+    const div = document.createElement('div');
+    div.style.display = 'contents';
+    return div;
+  }
+  updateDOM() {
+    return false;
+  }
+  setPosition(x, y) {
+    const writable = this.getWritable();
+    writable.__x = x;
+    writable.__y = y;
+    lexical.$setSelection(null);
+  }
+  toggleColor() {
+    const writable = this.getWritable();
+    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
+  }
+  decorate(editor, config) {
+    return /*#__PURE__*/ReactDOM.createPortal(/*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
+      color: this.__color,
+      x: this.__x,
+      y: this.__y,
+      nodeKey: this.getKey(),
+      caption: this.__caption
+    })), document.body);
+  }
+  isIsolated() {
+    return true;
+  }
+}
+function $isStickyNode(node) {
+  return node instanceof StickyNode;
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -9090,7 +9399,7 @@ function patchStyleConversion(originalDOMConverter) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode];
+const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode, PdfNode, OfficeNode];
 var PlaygroundNodes$1 = PlaygroundNodes;
 
 /* eslint-disable header/header */
