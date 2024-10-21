@@ -1461,16 +1461,29 @@ function OfficeComponent({
   nodeKey,
   url
 }) {
+  const docName = url.split('/').pop() || 'Open Document'; // Extract Document name from URL
+  const buttonStyle = {
+    backgroundColor: '#8c74f7',
+    borderRadius: '20px',
+    color: 'white',
+    display: 'inline-block',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    padding: '10px 20px',
+    textDecoration: 'none',
+    transition: 'background-color 0.3s ease'
+  };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("iframe", {
-    width: "800",
-    height: "500",
-    className: "office",
-    src: `https://view.officeapps.live.com/op/embed.aspx?src=${url}`
-  }));
+  }, /*#__PURE__*/React.createElement("a", {
+    href: `https://view.officeapps.live.com/op/view.aspx?src=${url}`,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: buttonStyle
+  }, docName));
 }
 function convertOfficeElement(domNode) {
   const url = domNode.getAttribute('data-lexical-office');
@@ -1508,14 +1521,22 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     this.__url = url;
   }
   exportDOM() {
-    const element = document.createElement('iframe');
-    element.setAttribute('data-lexical-office', this.__url);
-    element.setAttribute('width', '800');
-    element.setAttribute('height', '500');
-    element.setAttribute('src', `https://view.officeapps.live.com/op/embed.aspx?src=${this.__url}`);
-    element.setAttribute('class', 'office');
+    // Create the button element
+    const a = document.createElement('a');
+    a.textContent = this.__url.split('/').pop() || 'Open Document';
+    a.style.display = 'inline-block';
+    a.style.padding = '10px 20px';
+    a.style.backgroundColor = '#8c74f7';
+    a.style.color = 'white';
+    a.style.textDecoration = 'none';
+    a.style.borderRadius = '20px';
+    a.style.fontFamily = 'Arial, sans-serif';
+    a.style.fontSize = '14px';
+    a.style.fontWeight = 'bold';
+    a.href = `https://view.officeapps.live.com/op/view.aspx?src=${this.__url}`;
+    a.setAttribute('target', '_blank');
     return {
-      element
+      element: a
     };
   }
   static importDOM() {
@@ -1590,16 +1611,29 @@ function PdfComponent({
   nodeKey,
   url
 }) {
+  const pdfName = url.split('/').pop() || 'Open PDF'; // Extract PDF name from URL
+  const buttonStyle = {
+    backgroundColor: '#8c74f7',
+    borderRadius: '20px',
+    color: 'white',
+    display: 'inline-block',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    padding: '10px 20px',
+    textDecoration: 'none',
+    transition: 'background-color 0.3s ease'
+  };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("embed", {
-    width: "800",
-    height: "500",
-    className: "pdf",
-    src: url
-  }));
+  }, /*#__PURE__*/React.createElement("a", {
+    href: url,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: buttonStyle
+  }, pdfName));
 }
 function convertPdfElement(domNode) {
   const url = domNode.getAttribute('data-lexical-pdf');
@@ -1637,14 +1671,22 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     this.__url = url;
   }
   exportDOM() {
-    const element = document.createElement('embed');
-    element.setAttribute('data-lexical-pdf', this.__url);
-    element.setAttribute('width', '800');
-    element.setAttribute('height', '500');
-    element.setAttribute('src', `${this.__url}`);
-    element.setAttribute('class', 'pdf');
+    // Create the button element
+    const a = document.createElement('a');
+    a.textContent = this.__url.split('/').pop() || 'Open PDF';
+    a.style.display = 'inline-block';
+    a.style.padding = '10px 20px';
+    a.style.backgroundColor = '#8c74f7';
+    a.style.color = 'white';
+    a.style.textDecoration = 'none';
+    a.style.borderRadius = '20px';
+    a.style.fontFamily = 'Arial, sans-serif';
+    a.style.fontSize = '14px';
+    a.style.fontWeight = 'bold';
+    a.href = this.__url;
+    a.setAttribute('target', '_blank');
     return {
-      element
+      element: a
     };
   }
   static importDOM() {
@@ -1742,19 +1784,29 @@ function VideoComponent({
   nodeKey,
   url
 }) {
+  const videoName = url.split('/').pop() || 'Open Video'; // Extract PDF name from URL
+  const buttonStyle = {
+    backgroundColor: '#8c74f7',
+    borderRadius: '20px',
+    color: 'white',
+    display: 'inline-block',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    padding: '10px 20px',
+    textDecoration: 'none',
+    transition: 'background-color 0.3s ease'
+  };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("iframe", {
-    width: "560",
-    height: "315",
-    src: url,
-    frameBorder: "0",
-    allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-    allowFullScreen: true,
-    title: "Video"
-  }));
+  }, /*#__PURE__*/React.createElement("a", {
+    href: url,
+    target: "_blank",
+    rel: "noopener noreferrer",
+    style: buttonStyle
+  }, videoName));
 }
 function convertVideoElement(domNode) {
   const url = domNode.getAttribute('data-lexical-video');
@@ -1792,17 +1844,21 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     this.__url = url;
   }
   exportDOM() {
-    const element = document.createElement('iframe');
-    element.setAttribute('data-lexical-video', this.__url);
-    element.setAttribute('width', '560');
-    element.setAttribute('height', '315');
-    element.setAttribute('src', `${this.__url}`);
-    element.setAttribute('frameborder', '0');
-    element.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-    element.setAttribute('allowfullscreen', 'true');
-    element.setAttribute('title', 'Video');
+    const a = document.createElement('a');
+    a.textContent = this.__url.split('/').pop() || 'Open Video';
+    a.style.display = 'inline-block';
+    a.style.padding = '10px 20px';
+    a.style.backgroundColor = '#8c74f7';
+    a.style.color = 'white';
+    a.style.textDecoration = 'none';
+    a.style.borderRadius = '20px';
+    a.style.fontFamily = 'Arial, sans-serif';
+    a.style.fontSize = '14px';
+    a.style.fontWeight = 'bold';
+    a.href = this.__url;
+    a.setAttribute('target', '_blank');
     return {
-      element
+      element: a
     };
   }
   static importDOM() {
@@ -2046,17 +2102,18 @@ const VideoEmbedConfig = {
     className: "icon videos"
   }),
   insertNode: (editor, result) => {
-    console.log("result.id", result);
     editor.dispatchCommand(INSERT_VIDEO_COMMAND, result.url);
   },
-  keywords: ["mp4", 'video'],
+  keywords: ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv', 'video'],
   // Determine if a given URL is a match and return url data.
 
   parseUrl: async url => {
-    console.log(url);
-    if (url != null) {
+    const parts = url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
+    if (validVideoTypes.includes(extension) && url != null) {
       return {
-        id: "",
+        id: '',
         url
       };
     }
@@ -2077,9 +2134,12 @@ const PdfEmbedConfig = {
   keywords: ['pdf'],
   // Determine if a given URL is a match and return url data.
   parseUrl: async url => {
-    if (url != null) {
+    const parts = url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    const validPdfTypes = ['pdf'];
+    if (validPdfTypes.includes(extension) && url != null) {
       return {
-        id: "",
+        id: '',
         url
       };
     }
@@ -2097,12 +2157,15 @@ const OfficeEmbedConfig = {
   insertNode: (editor, result) => {
     editor.dispatchCommand(INSERT_OFFICE_COMMAND, result.url);
   },
-  keywords: ['office'],
+  keywords: ['office', 'xlsx', 'docx', 'pptx', 'csv', 'ods'],
   // Determine if a given URL is a match and return url data.
   parseUrl: async url => {
-    if (url != null) {
+    const parts = url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
+    if (validOfficeTypes.includes(extension) && url != null) {
       return {
-        id: "",
+        id: '',
         url
       };
     }
