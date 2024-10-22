@@ -1461,29 +1461,34 @@ function OfficeComponent({
   nodeKey,
   url
 }) {
-  const docName = url.split('/').pop() || 'Open Document'; // Extract Document name from URL
+  const parts = url?.split('.');
+  const extension = parts[parts.length - 1]?.toLowerCase();
+  let videoName = url.split('/').pop() || 'Open Document';
+  videoName = videoName.length > 15 ? videoName.slice(0, 15) + '...' + extension : videoName;
   const buttonStyle = {
-    backgroundColor: '#8c74f7',
-    borderRadius: '20px',
+    backgroundColor: 'rgb(140, 116, 247)',
+    borderRadius: '8px',
     color: 'white',
     display: 'inline-block',
     fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
     fontWeight: 'bold',
-    padding: '10px 20px',
+    padding: '6px',
     textDecoration: 'none',
-    transition: 'background-color 0.3s ease'
+    height: '30px',
+    width: 'auto'
   };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("a", {
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: `https://view.officeapps.live.com/op/view.aspx?src=${url}`,
     target: "_blank",
-    rel: "noopener noreferrer",
+    rel: "noopener noreferrer"
+  }, /*#__PURE__*/React.createElement("span", {
+    "data-lexical-text": "true",
     style: buttonStyle
-  }, docName));
+  }, videoName)), " \xA0"));
 }
 function convertOfficeElement(domNode) {
   const url = domNode.getAttribute('data-lexical-office');
@@ -1521,22 +1526,37 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     this.__url = url;
   }
   exportDOM() {
-    // Create the button element
     const a = document.createElement('a');
-    a.textContent = this.__url.split('/').pop() || 'Open Document';
-    a.style.display = 'inline-block';
-    a.style.padding = '10px 20px';
-    a.style.backgroundColor = '#8c74f7';
-    a.style.color = 'white';
-    a.style.textDecoration = 'none';
-    a.style.borderRadius = '20px';
-    a.style.fontFamily = 'Arial, sans-serif';
-    a.style.fontSize = '14px';
-    a.style.fontWeight = 'bold';
     a.href = `https://view.officeapps.live.com/op/view.aspx?src=${this.__url}`;
     a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('data-lexical-video', this.__url);
+    a.setAttribute('allowfullscreen', 'true');
+    const span = document.createElement('span');
+    const parts = this.__url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    let urlPart = this.__url.split('/').pop() || 'Open Document';
+    urlPart = urlPart.length > 15 ? urlPart.slice(0, 15) + '...' + extension : urlPart;
+    span.textContent = urlPart;
+    span.style.backgroundColor = 'rgb(140, 116, 247)';
+    span.style.borderRadius = '8px';
+    span.style.color = 'white';
+    span.style.display = 'inline-block';
+    span.style.fontFamily = 'Arial, sans-serif';
+    span.style.fontSize = '14px';
+    span.style.fontWeight = 'bold';
+    span.style.padding = '6px';
+    span.style.textDecoration = 'none';
+    span.style.width = 'auto';
+    span.style.height = '30px';
+    a.appendChild(span);
+    const space = document.createElement('p');
+    space.textContent = ' ';
+    const p = document.createElement('p');
+    p.appendChild(a);
+    p.appendChild(space);
     return {
-      element: a
+      element: p
     };
   }
   static importDOM() {
@@ -1611,29 +1631,34 @@ function PdfComponent({
   nodeKey,
   url
 }) {
-  const pdfName = url.split('/').pop() || 'Open PDF'; // Extract PDF name from URL
+  const parts = url?.split('.');
+  const extension = parts[parts.length - 1]?.toLowerCase();
+  let videoName = url.split('/').pop() || 'Open Pdf';
+  videoName = videoName.length > 15 ? videoName.slice(0, 15) + '...' + extension : videoName;
   const buttonStyle = {
-    backgroundColor: '#8c74f7',
-    borderRadius: '20px',
+    backgroundColor: 'rgb(140, 116, 247)',
+    borderRadius: '8px',
     color: 'white',
     display: 'inline-block',
     fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
     fontWeight: 'bold',
-    padding: '10px 20px',
+    padding: '6px',
     textDecoration: 'none',
-    transition: 'background-color 0.3s ease'
+    height: '30px',
+    width: 'auto'
   };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("a", {
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: url,
     target: "_blank",
-    rel: "noopener noreferrer",
+    rel: "noopener noreferrer"
+  }, /*#__PURE__*/React.createElement("span", {
+    "data-lexical-text": "true",
     style: buttonStyle
-  }, pdfName));
+  }, videoName)), " \xA0"));
 }
 function convertPdfElement(domNode) {
   const url = domNode.getAttribute('data-lexical-pdf');
@@ -1671,22 +1696,37 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     this.__url = url;
   }
   exportDOM() {
-    // Create the button element
     const a = document.createElement('a');
-    a.textContent = this.__url.split('/').pop() || 'Open PDF';
-    a.style.display = 'inline-block';
-    a.style.padding = '10px 20px';
-    a.style.backgroundColor = '#8c74f7';
-    a.style.color = 'white';
-    a.style.textDecoration = 'none';
-    a.style.borderRadius = '20px';
-    a.style.fontFamily = 'Arial, sans-serif';
-    a.style.fontSize = '14px';
-    a.style.fontWeight = 'bold';
     a.href = this.__url;
     a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('data-lexical-video', this.__url);
+    a.setAttribute('allowfullscreen', 'true');
+    const span = document.createElement('span');
+    const parts = this.__url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    let urlPart = this.__url.split('/').pop() || 'Open pdf';
+    urlPart = urlPart.length > 15 ? urlPart.slice(0, 15) + '...' + extension : urlPart;
+    span.textContent = urlPart;
+    span.style.backgroundColor = 'rgb(140, 116, 247)';
+    span.style.borderRadius = '8px';
+    span.style.color = 'white';
+    span.style.display = 'inline-block';
+    span.style.fontFamily = 'Arial, sans-serif';
+    span.style.fontSize = '14px';
+    span.style.fontWeight = 'bold';
+    span.style.padding = '6px';
+    span.style.textDecoration = 'none';
+    span.style.width = 'auto';
+    span.style.height = '30px';
+    a.appendChild(span);
+    const space = document.createElement('p');
+    space.textContent = ' ';
+    const p = document.createElement('p');
+    p.appendChild(a);
+    p.appendChild(space);
     return {
-      element: a
+      element: p
     };
   }
   static importDOM() {
@@ -1784,29 +1824,34 @@ function VideoComponent({
   nodeKey,
   url
 }) {
-  const videoName = url.split('/').pop() || 'Open Video'; // Extract PDF name from URL
+  const parts = url?.split('.');
+  const extension = parts[parts.length - 1]?.toLowerCase();
+  let videoName = url.split('/').pop() || 'Open Video';
+  videoName = videoName.length > 15 ? videoName.slice(0, 15) + '...' + extension : videoName;
   const buttonStyle = {
-    backgroundColor: '#8c74f7',
-    borderRadius: '20px',
+    backgroundColor: 'rgb(140, 116, 247)',
+    borderRadius: '8px',
     color: 'white',
     display: 'inline-block',
     fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
     fontWeight: 'bold',
-    padding: '10px 20px',
+    padding: '6px',
     textDecoration: 'none',
-    transition: 'background-color 0.3s ease'
+    height: '30px',
+    width: 'auto'
   };
   return /*#__PURE__*/React.createElement(LexicalBlockWithAlignableContents.BlockWithAlignableContents, {
     className: className,
     format: format,
     nodeKey: nodeKey
-  }, /*#__PURE__*/React.createElement("a", {
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: url,
     target: "_blank",
-    rel: "noopener noreferrer",
+    rel: "noopener noreferrer"
+  }, /*#__PURE__*/React.createElement("span", {
+    "data-lexical-text": "true",
     style: buttonStyle
-  }, videoName));
+  }, videoName)), " \xA0"));
 }
 function convertVideoElement(domNode) {
   const url = domNode.getAttribute('data-lexical-video');
@@ -1845,20 +1890,36 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
   exportDOM() {
     const a = document.createElement('a');
-    a.textContent = this.__url.split('/').pop() || 'Open Video';
-    a.style.display = 'inline-block';
-    a.style.padding = '10px 20px';
-    a.style.backgroundColor = '#8c74f7';
-    a.style.color = 'white';
-    a.style.textDecoration = 'none';
-    a.style.borderRadius = '20px';
-    a.style.fontFamily = 'Arial, sans-serif';
-    a.style.fontSize = '14px';
-    a.style.fontWeight = 'bold';
     a.href = this.__url;
     a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    a.setAttribute('data-lexical-video', this.__url);
+    a.setAttribute('allowfullscreen', 'true');
+    const span = document.createElement('span');
+    const parts = this.__url?.split('.');
+    const extension = parts[parts.length - 1]?.toLowerCase();
+    let urlPart = this.__url.split('/').pop() || 'Open Video';
+    urlPart = urlPart.length > 15 ? urlPart.slice(0, 15) + '...' + extension : urlPart;
+    span.textContent = urlPart;
+    span.style.backgroundColor = 'rgb(140, 116, 247)';
+    span.style.borderRadius = '8px';
+    span.style.color = 'white';
+    span.style.display = 'inline-block';
+    span.style.fontFamily = 'Arial, sans-serif';
+    span.style.fontSize = '14px';
+    span.style.fontWeight = 'bold';
+    span.style.padding = '6px';
+    span.style.textDecoration = 'none';
+    span.style.width = 'auto';
+    span.style.height = '30px';
+    a.appendChild(span);
+    const space = document.createElement('p');
+    space.textContent = ' ';
+    const p = document.createElement('p');
+    p.appendChild(a);
+    p.appendChild(space);
     return {
-      element: a
+      element: p
     };
   }
   static importDOM() {
@@ -9359,13 +9420,18 @@ function patchStyleConversion(originalDOMConverter) {
     const fontSize = node.style.fontSize;
     const textDecoration = node.style.textDecoration;
     const textalignment = node.style.alignItems;
+    const display = node.style.display;
+    const height = node.style.height;
+    const borderRadius = node.style.borderRadius;
+    const padding = node.style.padding;
+    const width = node.style.width;
     return {
       ...originalOutput,
       forChild: (lexicalNode, parent) => {
         const originalForChild = originalOutput?.forChild ?? (x => x);
         const result = originalForChild(lexicalNode, parent);
         if (lexical.$isTextNode(result)) {
-          const style = [backgroundColor ? `background-color: ${backgroundColor}` : null, color ? `color: ${color}` : null, fontFamily ? `font-family: ${fontFamily}` : null, fontWeight ? `font-weight: ${fontWeight}` : null, fontSize ? `font-size: ${fontSize}` : null, textDecoration ? `text-decoration: ${textDecoration}` : null, textalignment ? `text-align: ${textalignment}` : null].filter(value => value != null).join('; ');
+          const style = [backgroundColor ? `background-color: ${backgroundColor}` : null, color ? `color: ${color}` : null, fontFamily ? `font-family: ${fontFamily}` : null, fontWeight ? `font-weight: ${fontWeight}` : null, fontSize ? `font-size: ${fontSize}` : null, textDecoration ? `text-decoration: ${textDecoration}` : null, textalignment ? `text-align: ${textalignment}` : null, display ? `display : ${display}` : null, height ? `height : ${height}` : null, borderRadius ? `border-radius :${borderRadius}` : null, padding ? `padding :${padding}` : null, width ? `width :${width}` : null].filter(value => value != null).join('; ');
           if (style.length) {
             return result.setStyle(style);
           }
