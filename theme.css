@@ -155,7 +155,7 @@
   top: 0;
 }
 .TextEditor__tableCellHeader {
-  background-color: #f2f3f5;
+  /* background-color: #f2f3f5; */
   text-align: start;
 }
 .TextEditor__tableCellSelected {

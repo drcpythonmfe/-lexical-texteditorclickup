@@ -13,6 +13,7 @@ declare type Props = Readonly<{
     onChange: (val: string) => void;
     placeholder?: string;
     value: string;
+    type?: string;
 }>;
-export default function TextInput({ label, value, onChange, placeholder, 'data-test-id': dataTestId, }: Props): JSX.Element;
+export default function TextInput({ label, value, onChange, type, placeholder, 'data-test-id': dataTestId, }: Props): JSX.Element;
 export {};

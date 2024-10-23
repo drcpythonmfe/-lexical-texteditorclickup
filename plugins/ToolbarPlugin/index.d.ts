@@ -10,5 +10,6 @@ import type { ToolbarConfig } from '../toolbarTypes';
 export declare type ToolbarPluginProps = {
     config: ToolbarConfig;
     handleClick?: ((data: any) => void | undefined | any) | undefined;
+    floatingText?: boolean;
 };
-export default function ToolbarPlugin({ config, handleClick, }: ToolbarPluginProps): JSX.Element;
+export default function ToolbarPlugin({ config, handleClick, floatingText }: ToolbarPluginProps): JSX.Element;
