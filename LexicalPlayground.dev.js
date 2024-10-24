@@ -7450,6 +7450,23 @@ function transformColor(format, color) {
  *
  */
 
+const SvgIcon = () => {
+  const bodyElement = document.querySelector('body');
+  const isDarkTheme = bodyElement?.classList.contains('theme-dark') || false;
+  return /*#__PURE__*/React.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 50 50",
+    width: "16px",
+    height: "16px",
+    className: isDarkTheme ? 'theme-dark-svg' : 'theme-light-svg'
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M 7 2 L 7 48 L 43 48 L 43 14.59375 L 42.71875 14.28125 L 30.71875 2.28125 L 30.40625 2 Z M 9 4 L 29 4 L 29 16 L 41 16 L 41 46 L 9 46 Z M 31 5.4375 L 39.5625 14 L 31 14 Z",
+    style: {
+      fill: isDarkTheme ? '#ffffff' : '#000000'
+    }
+  }));
+};
+
 const blockTypeToBlockName = {
   bullet: 'Bulleted List',
   check: 'Check List',
@@ -7793,33 +7810,7 @@ function ToolbarPlugin({
   }, [activeEditor, selectedElementKey]);
   return /*#__PURE__*/React.createElement("div", {
     className: "toolbar"
-  }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, config.undoRedo && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
-    disabled: !canUndo || !isEditable,
-    onClick: () => {
-      activeEditor.dispatchCommand(lexical.UNDO_COMMAND, undefined);
-    },
-    title: IS_APPLE ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)',
-    type: "button",
-    className: "toolbar-item spaced",
-    "aria-label": "Undo"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "format undo"
-  })), /*#__PURE__*/React.createElement("button", {
-    disabled: !canRedo || !isEditable,
-    onClick: () => {
-      activeEditor.dispatchCommand(lexical.REDO_COMMAND, undefined);
-    },
-    title: IS_APPLE ? 'Redo (⌘Y)' : 'Redo (Ctrl+Y)',
-    type: "button",
-    className: "toolbar-item",
-    "aria-label": "Redo"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "format redo"
-  }))), /*#__PURE__*/React.createElement(Divider, null), config.formatBlockOptions && blockType in blockTypeToBlockName && activeEditor === editor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BlockFormatDropDown, {
-    disabled: !isEditable,
-    blockType: blockType,
-    editor: editor
-  }), /*#__PURE__*/React.createElement(Divider, null)), blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
+  }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item code-language",
     buttonLabel: code.getLanguageFriendlyName(codeLanguage),
@@ -7838,13 +7829,11 @@ function ToolbarPlugin({
     value: fontFamily,
     editor: editor,
     options: normFontFamilyOption
-  }), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
+  }), config.formatBlockOptions && blockType in blockTypeToBlockName && activeEditor === editor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BlockFormatDropDown, {
     disabled: !isEditable,
-    style: 'font-size',
-    value: fontSize,
-    editor: editor,
-    options: FONT_SIZE_OPTIONS
-  }), /*#__PURE__*/React.createElement(Divider, null), config.biu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    blockType: blockType,
+    editor: editor
+  }), /*#__PURE__*/React.createElement(Divider, null)), /*#__PURE__*/React.createElement(Divider, null), config.biu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     disabled: !isEditable,
     onClick: () => {
       activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
@@ -7913,55 +7902,7 @@ function ToolbarPlugin({
     color: bgColor,
     onChange: onBgColorSelect,
     title: "bg color"
-  }), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
-    disabled: !isEditable,
-    buttonClassName: "toolbar-item spaced",
-    buttonLabel: "",
-    buttonAriaLabel: "Formatting options for additional text styles",
-    buttonIconClassName: "icon dropdowns-more"
-  }, /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
-    },
-    className: 'item ' + dropDownActiveClass(isStrikethrough),
-    title: "Strikethrough",
-    "aria-label": "Format text with a strikethrough"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon strikethrough"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Strikethrough")), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'subscript');
-    },
-    className: 'item ' + dropDownActiveClass(isSubscript),
-    title: "Subscript",
-    "aria-label": "Format text with a subscript"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon subscript"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Subscript")), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'superscript');
-    },
-    className: 'item ' + dropDownActiveClass(isSuperscript),
-    title: "Superscript",
-    "aria-label": "Format text with a superscript"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon superscript"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Superscript")), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: clearFormatting,
-    className: "item",
-    title: "Clear text formatting",
-    "aria-label": "Clear all text formatting"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon clear"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Clear Formatting"))), /*#__PURE__*/React.createElement(Divider, null)), /*#__PURE__*/React.createElement(Divider, null), config.align && /*#__PURE__*/React.createElement(DropDown, {
+  })), /*#__PURE__*/React.createElement(Divider, null), config.align && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonLabel: "Align",
     buttonIconClassName: "icon left-align",
@@ -8085,42 +8026,72 @@ function ToolbarPlugin({
     type: "button"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format link"
-  })), handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+  })), handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "toolbar-item spaced"
+  }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "file-upload",
     className: "custom-file-uploads"
-  }, /*#__PURE__*/React.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 50 50",
-    width: "16px",
-    height: "16px"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M 7 2 L 7 48 L 43 48 L 43 14.59375 L 42.71875 14.28125 L 30.71875 2.28125 L 30.40625 2 Z M 9 4 L 29 4 L 29 16 L 41 16 L 41 46 L 9 46 Z M 31 5.4375 L 39.5625 14 L 31 14 Z",
-    style: {
-      color: "#ffffff"
-    }
-  }))), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement(SvgIcon, null)), /*#__PURE__*/React.createElement("input", {
     id: "file-upload",
     onChange: handleClick,
     className: "textfileupload",
     type: "file",
     accept: "video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, text/csv"
-  })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+  }))), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
     disabled: !isEditable,
-    buttonClassName: "toolbar-item color-picker",
-    buttonAriaLabel: "Formatting text color",
-    buttonIconClassName: "icon font-color",
-    color: fontColor,
-    onChange: onFontColorSelect,
-    title: "text color"
-  }), config.bgColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    style: 'font-size',
+    value: fontSize,
+    editor: editor,
+    options: FONT_SIZE_OPTIONS
+  }), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
-    buttonClassName: "toolbar-item color-picker",
-    buttonAriaLabel: "Formatting background color",
-    buttonIconClassName: "icon bg-color",
-    color: bgColor,
-    onChange: onBgColorSelect,
-    title: "bg color"
-  }), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
+    buttonClassName: "toolbar-item spaced",
+    buttonLabel: "",
+    buttonAriaLabel: "Formatting options for additional text styles",
+    buttonIconClassName: "icon dropdowns-more"
+  }, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
+    },
+    className: 'item ' + dropDownActiveClass(isStrikethrough),
+    title: "Strikethrough",
+    "aria-label": "Format text with a strikethrough"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon strikethrough"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Strikethrough")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'subscript');
+    },
+    className: 'item ' + dropDownActiveClass(isSubscript),
+    title: "Subscript",
+    "aria-label": "Format text with a subscript"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon subscript"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Subscript")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'superscript');
+    },
+    className: 'item ' + dropDownActiveClass(isSuperscript),
+    title: "Superscript",
+    "aria-label": "Format text with a superscript"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon superscript"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Superscript")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: clearFormatting,
+    className: "item",
+    title: "Clear text formatting",
+    "aria-label": "Clear all text formatting"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon clear"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Clear Formatting"))), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "Insert",
