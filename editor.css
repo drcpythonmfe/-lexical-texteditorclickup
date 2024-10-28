@@ -1614,11 +1614,11 @@ button.action-button:disabled {
   display: flex;
   margin-bottom: 1px;
   background: #fff;
-  padding: 4px;
+  /* padding: 4px; */
   /* border-top-left-radius: 10px;
   border-top-right-radius: 10px; */
   vertical-align: middle;
-  /* overflow: auto; */
+  overflow: auto;
   height: 36px;
 }
 
@@ -1627,7 +1627,7 @@ button.action-button:disabled {
   display: flex;
   background: none;
   border-radius: 10px;
-  padding: 8px;
+  /* padding: 8px; */
   cursor: pointer;
   vertical-align: middle;
   flex-shrink: 0;
@@ -1673,7 +1673,7 @@ button.action-button:disabled {
 }
 
 .toolbar .toolbar-item.font-family .text {
-  display: block;
+  display: block;  
   max-width: 40px;
 }
 
@@ -1696,8 +1696,8 @@ button.action-button:disabled {
 
 .toolbar .toolbar-item .icon {
   display: flex;
-  width: 20px;
-  height: 20px;
+  width: 17px;
+  height: 17px;
   user-select: none;
   margin-right: 8px;
   line-height: 16px;
@@ -3198,8 +3198,8 @@ i.send {
 
 .floating-text-format-popup i.chevron-down {
   margin-top: 3px;
-  width: 16px;
-  height: 16px;
+  width: 11px;
+  height: 11px;
   display: flex;
   user-select: none;
 }
