@@ -1,25 +1,25 @@
-![image info](./images/image.png)
+![image info](/image/image.png)
 
 
 Use the toolbar to adjust your text formatting:
 
 Turn into: Convert the selected text into headings, banners, a code block, or a quote block.
 
-![image info](./images/image1.png)
+![image info](/image/image1.png)
 
 
 Rich text: Bold, italics, underline, strikethrough, or inline code formatting.
 
 Text colors and Text highlights: Select from a range of vibrant text colors.
 
-![image info](./images/image2.png)
+![image info](/image/image2.png)
 
 
 Badges: Insert a colorful badge to emphasize or call attention to a line or block of content. You can also add some rich text formatting to the text in the badge like you can in a banner. 
 
 
 Alignment: Indent and set text to left, center, or right justified.
-![image info](./images/image5.png)
+![image info](/image/image5.png)
 
 
 Bulleted List: Format text into a bulleted list.
@@ -42,11 +42,11 @@ Redo: Redo your last action.
 
 
 
-![image info](./images/image3.png)
-![image info](./images/image4.png)
-![image info](./images/image6.png)
-![image info](./images/image7.png)
-![image info](./images/image8.png)
+![image info](/image/image3.png)
+![image info](/image/image4.png)
+![image info](/image/image6.png)
+![image info](/image/image7.png)
+![image info](/image/image8.png)
 
 ## /Slash Commands
 
