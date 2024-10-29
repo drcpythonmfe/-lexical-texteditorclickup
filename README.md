@@ -53,19 +53,19 @@ Redo: Redo your last action.
 Use /Slash Commands, our custom shortcuts that quickly add rich text, attach images, move a task, change a due date, and more!
 
 
-![image info](./images/image9.png)
+![image info](./image/image9.png)
 
 
 
-![image info](./images/image10.png)
+![image info](./image/image10.png)
 
 
 ## Emojis
 Add emojis to give your content some flair!
-![image info](./images/image11.png)
+![image info](./image/image11.png)
 
-![image info](./images/image12.png)
-![image info](./images/image13.png)
+![image info](./image/image12.png)
+![image info](./image/image13.png)
 
 
 
