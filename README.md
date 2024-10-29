@@ -1,3 +1,74 @@
+![image info](./images/image.png)
+
+
+Use the toolbar to adjust your text formatting:
+
+Turn into: Convert the selected text into headings, banners, a code block, or a quote block.
+
+![image info](./images/image1.png)
+
+
+Rich text: Bold, italics, underline, strikethrough, or inline code formatting.
+
+Text colors and Text highlights: Select from a range of vibrant text colors.
+
+![image info](./images/image2.png)
+
+
+Badges: Insert a colorful badge to emphasize or call attention to a line or block of content. You can also add some rich text formatting to the text in the badge like you can in a banner. 
+
+
+Alignment: Indent and set text to left, center, or right justified.
+![image info](./images/image5.png)
+
+
+Bulleted List: Format text into a bulleted list.
+All Lists: Click the caret icon next to the Bulleted List icon to format text into a Numbered List or Toggled List.
+
+
+Check List: Format text into a check list.
+
+
+Insert a link: Insert a hyperlink.
+
+
+Create subpage: Create a series of subtopics that are part of the main Doc.
+
+Create comment: Add comments about the Doc to the right sidebar of the Doc. Text that has comments is highlighted.
+
+Undo: Undo your last action.
+
+Redo: Redo your last action.
+
+
+
+![image info](./images/image3.png)
+![image info](./images/image4.png)
+![image info](./images/image6.png)
+![image info](./images/image7.png)
+![image info](./images/image8.png)
+
+## /Slash Commands
+
+Use /Slash Commands, our custom shortcuts that quickly add rich text, attach images, move a task, change a due date, and more!
+
+
+![image info](./images/image9.png)
+
+
+
+![image info](./images/image10.png)
+
+
+## Emojis
+Add emojis to give your content some flair!
+![image info](./images/image11.png)
+
+![image info](./images/image12.png)
+![image info](./images/image13.png)
+
+
+
 ```tsx 
 const uploadImg = async (file: File, altText: string) => {
   console.log("file",file)
