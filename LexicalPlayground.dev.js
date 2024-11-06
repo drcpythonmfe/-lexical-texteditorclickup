@@ -10520,11 +10520,71 @@ class ExtendedTextNode extends lexical.TextNode {
   exportJSON() {
     return { ...super.exportJSON(),
       type: 'extended-text',
-      version: 1
+      version: 1,
+      detail: this.getDetail(),
+      format: this.getFormat(),
+      mode: this.getMode(),
+      style: this.getStyle(),
+      text: this.getTextContent()
     };
   }
 
 }
+//   originalDOMConverter?: (node: HTMLElement) => DOMConversion | null
+// ): (node: HTMLElement) => DOMConversionOutput | null {
+//   return (node) => {
+//     const original = originalDOMConverter?.(node);
+//     if (!original) {
+//       return null;
+//     }
+//     console.log("original",original)
+//     const originalOutput = original.conversion(node);
+//     if (!originalOutput) {
+//       return originalOutput;
+//     }
+//     const backgroundColor = node.style.backgroundColor;
+//     const color = node.style.color;
+//     const fontFamily = node.style.fontFamily;
+//     const fontWeight = node.style.fontWeight;
+//     const fontSize = node.style.fontSize;
+//     const textDecoration = node.style.textDecoration;
+//     const textalignment =  node.style.alignItems
+//     const display = node.style.display
+//     const height =  node.style.height
+//     const borderRadius = node.style.borderRadius
+//     const padding = node.style.padding
+//     const width = node.style.width
+//     return {
+//       ...originalOutput,
+//       forChild: (lexicalNode, parent) => {
+//         const originalForChild = originalOutput?.forChild ?? ((x) => x);
+//         const result = originalForChild(lexicalNode, parent);
+//         if ($isTextNode(result)) {
+//           const style = [
+//             textalignment ?  `text-align: ${textalignment}` : null,
+//             backgroundColor ? `background-color: ${backgroundColor}` : null,
+//             color ? `color: ${color}` : null,
+//             fontFamily ? `font-family: ${fontFamily}` : null,
+//             fontWeight ? `font-weight: ${fontWeight}` : null,
+//             fontSize ? `font-size: ${fontSize}` : null,
+//             textDecoration ? `text-decoration: ${textDecoration}` : null,
+//             display ?  `display : ${display}` : null,
+//             height ?  `height : ${height}` :null,
+//             borderRadius ? `border-radius :${borderRadius}` :null,
+//             padding ? `padding :${padding}`:null,
+//             width ? `width :${width}`:null,
+//           ]
+//             .filter((value) => value != null)
+//             .join('; ');
+//           if (style.length) {
+//             return result.setStyle(style);
+//           }
+//         }
+//         return result;
+//       }
+//     };
+//   };
+// }
 
 function patchStyleConversion(originalDOMConverter) {
   return node => {
@@ -10538,20 +10598,16 @@ function patchStyleConversion(originalDOMConverter) {
 
     if (!originalOutput) {
       return originalOutput;
-    }
+    } // Get styles from the current node
 
-    const backgroundColor = node.style.backgroundColor;
-    const color = node.style.color;
-    const fontFamily = node.style.fontFamily;
-    const fontWeight = node.style.fontWeight;
-    const fontSize = node.style.fontSize;
-    const textDecoration = node.style.textDecoration;
-    const textalignment = node.style.alignItems;
-    const display = node.style.display;
-    const height = node.style.height;
-    const borderRadius = node.style.borderRadius;
-    const padding = node.style.padding;
-    const width = node.style.width;
+
+    const nodeStyles = getNodeStyles(node); // Get styles from parent elements
+
+    const parentStyles = getParentStyles(node); // Merge styles, giving priority to current node's styles
+
+    const mergedStyles = { ...parentStyles,
+      ...nodeStyles
+    };
     return { ...originalOutput,
       forChild: (lexicalNode, parent) => {
         const originalForChild = originalOutput?.forChild ?? (x => x);
@@ -10559,18 +10615,96 @@ function patchStyleConversion(originalDOMConverter) {
         const result = originalForChild(lexicalNode, parent);
 
         if (lexical.$isTextNode(result)) {
-          const style = [backgroundColor ? `background-color: ${backgroundColor}` : null, color ? `color: ${color}` : null, fontFamily ? `font-family: ${fontFamily}` : null, fontWeight ? `font-weight: ${fontWeight}` : null, fontSize ? `font-size: ${fontSize}` : null, textDecoration ? `text-decoration: ${textDecoration}` : null, textalignment ? `text-align: ${textalignment}` : null, display ? `display : ${display}` : null, height ? `height : ${height}` : null, borderRadius ? `border-radius :${borderRadius}` : null, padding ? `padding :${padding}` : null, width ? `width :${width}` : null].filter(value => value != null).join('; ');
+          const style = generateStyleString(mergedStyles);
 
           if (style.length) {
             return result.setStyle(style);
           }
         }
 
-        console.log(result);
         return result;
       }
     };
   };
+}
+
+function getNodeStyles(node) {
+  return {
+    backgroundColor: node.style.backgroundColor,
+    color: node.style.color,
+    fontFamily: node.style.fontFamily,
+    fontWeight: node.style.fontWeight,
+    fontSize: node.style.fontSize,
+    textDecoration: node.style.textDecoration,
+    textAlign: node.style.textAlign || getComputedTextAlign(node),
+    display: node.style.display,
+    height: node.style.height,
+    borderRadius: node.style.borderRadius,
+    padding: node.style.padding,
+    width: node.style.width
+  };
+}
+
+function getParentStyles(node) {
+  const styles = {};
+  let parent = node.parentElement;
+
+  while (parent && parent.tagName !== 'BODY') {
+    // Get inline styles
+    if (parent.hasAttribute('style')) {
+      const styleAttr = parent.getAttribute('style');
+
+      if (styleAttr) {
+        const declarations = styleAttr.split(';').filter(Boolean);
+        declarations.forEach(declaration => {
+          const [property, value] = declaration.split(':').map(s => s.trim());
+
+          if (property && value && !styles[property]) {
+            styles[property] = value;
+          }
+        });
+      }
+    } // Check for text alignment in parent
+
+
+    if (parent.style.textAlign || parent.hasAttribute('dir')) {
+      styles['text-align'] = parent.style.textAlign || (parent.getAttribute('dir') === 'rtl' ? 'right' : parent.getAttribute('dir') === 'ltr' ? 'left' : '');
+    } // Check for specific classes
+
+
+    if (parent.className) {
+      if (parent.className.includes('TextEditor__paragraph')) {
+        if (!styles['text-align'] && parent.getAttribute('dir') === 'rtl') {
+          styles['text-align'] = 'right';
+        }
+      }
+    }
+
+    parent = parent.parentElement;
+  }
+
+  return styles;
+}
+
+function getComputedTextAlign(node) {
+  // Check direct style
+  if (node.style.textAlign) {
+    return node.style.textAlign;
+  } // Check dir attribute
+
+
+  if (node.hasAttribute('dir')) {
+    return node.getAttribute('dir') === 'rtl' ? 'right' : 'left';
+  } // Check computed style
+
+
+  const computed = window.getComputedStyle(node);
+  return computed.textAlign;
+}
+
+function generateStyleString(styles) {
+  const styleEntries = [styles['text-align'] ? `text-align: ${styles['text-align']}` : null, styles.backgroundColor ? `background-color: ${styles.backgroundColor}` : null, styles.color ? `color: ${styles.color}` : null, styles.fontFamily ? `font-family: ${styles.fontFamily}` : null, styles.fontWeight ? `font-weight: ${styles.fontWeight}` : null, styles.fontSize ? `font-size: ${styles.fontSize}` : null, styles.textDecoration ? `text-decoration: ${styles.textDecoration}` : null, styles.display ? `display: ${styles.display}` : null, styles.height ? `height: ${styles.height}` : null, styles.borderRadius ? `border-radius: ${styles.borderRadius}` : null, styles.padding ? `padding: ${styles.padding}` : null, styles.width ? `width: ${styles.width}` : null].filter(Boolean);
+  return styleEntries.join('; ');
 }
 
 /**
@@ -10620,9 +10754,62 @@ function EditorComposer({
   }, children));
 }
 
-/* eslint-disable header/header */
+const normalizeHtml = html => {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.innerHTML;
+};
 
 const useSyncWithInputHtml = (html$1, {
+  timeoutMs = 800
+} = {}) => {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const [debHtml] = useDebounce$1.useDebounce(html$1, timeoutMs);
+  const normHtml = editor.getEditorState().isEmpty() ? html$1 : debHtml;
+  useLayoutEffect(() => {
+    if (!normHtml) return;
+    const currentHtml = editor.getEditorState().read(() => html.$generateHtmlFromNodes(editor, null));
+    const normalizedCurrentHtml = normalizeHtml(currentHtml);
+    const normalizedNewHtml = normalizeHtml(normHtml);
+
+    if (normalizedCurrentHtml !== normalizedNewHtml) {
+      editor.update(() => {
+        lexical.$getRoot().clear();
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(normHtml, 'text/html');
+        const nodes = html.$generateNodesFromDOM(editor, dom);
+        const root = lexical.$getRoot();
+
+        if (nodes.length === 0) {
+          const paragraph = lexical.$createParagraphNode();
+          paragraph.append(lexical.$createTextNode(''));
+          root.append(paragraph);
+        } else {
+          nodes.forEach(node => {
+            root.append(node);
+          });
+        }
+
+        root.selectEnd();
+        editor.dispatchCommand(lexical.CLEAR_HISTORY_COMMAND, undefined);
+      });
+    }
+  }, [editor, normHtml]);
+
+  const getCurrentHtml = () => {
+    return editor.getEditorState().read(() => html.$generateHtmlFromNodes(editor, null));
+  };
+
+  return {
+    getCurrentHtml
+  };
+};
+
+var useSyncWithInputHtml$1 = useSyncWithInputHtml;
+
+/* eslint-disable header/header */
+
+const useSyncWithInputHtml2 = (html$1, {
   timeoutMs = 800
 } = {}) => {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
@@ -10649,7 +10836,7 @@ const useSyncWithInputHtml = (html$1, {
   }, [normHtml]); // eslint-disable-line react-hooks/exhaustive-deps
 };
 
-var useSyncWithInputHtml$1 = useSyncWithInputHtml;
+var useSyncWithInputHtml2$1 = useSyncWithInputHtml2;
 
 /* eslint-disable header/header */
 
@@ -28420,6 +28607,7 @@ exports.SharedHistoryContext = SharedHistoryContext;
 exports.TestRecorderPlugin = TestRecorderPlugin;
 exports.TypingPerfPlugin = TypingPerfPlugin;
 exports.useSyncWithInputHtml = useSyncWithInputHtml$1;
+exports.useSyncWithInputHtml2 = useSyncWithInputHtml2$1;
 exports.useSyncWithInputJson = useSyncWithInputJson$1;
 for (var k in html) {
   if (k !== 'default' && !exports.hasOwnProperty(k)) exports[k] = html[k];
