@@ -7795,23 +7795,6 @@ function PollPlugin() {
  *
  */
 
-const SvgIcon = () => {
-  const bodyElement = document.querySelector('body');
-  const isDarkTheme = bodyElement?.classList.contains('theme-dark') || false;
-  return /*#__PURE__*/React.createElement("svg", {
-    xmlns: "http://www.w3.org/2000/svg",
-    viewBox: "0 0 50 50",
-    width: "16px",
-    height: "16px",
-    className: isDarkTheme ? 'theme-dark-svg' : 'theme-light-svg'
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M 7 2 L 7 48 L 43 48 L 43 14.59375 L 42.71875 14.28125 L 30.71875 2.28125 L 30.40625 2 Z M 9 4 L 29 4 L 29 16 L 41 16 L 41 46 L 9 46 Z M 31 5.4375 L 39.5625 14 L 31 14 Z",
-    style: {
-      fill: isDarkTheme ? '#171313' : '#0A0303'
-    }
-  }));
-};
-
 const blockTypeToBlockName = {
   bullet: 'Bulleted List',
   check: 'Check List',
@@ -8319,21 +8302,7 @@ function ToolbarPlugin({
     className: 'icon ' + (isRTL ? 'outdent' : 'indent')
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Indent"))), handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "toolbar-item spaced"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "toolbar-item spaced"
-  }, /*#__PURE__*/React.createElement("label", {
-    htmlFor: "file-upload",
-    className: "custom-file-uploads"
-  }, /*#__PURE__*/React.createElement(SvgIcon, null)), /*#__PURE__*/React.createElement("input", {
-    id: "file-upload",
-    onChange: handleClick,
-    className: "textfileupload",
-    type: "file",
-    accept: "video/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, text/csv"
-  })))), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
+  }, "Indent"))), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
     disabled: !isEditable,
     style: 'font-size',
     value: fontSize,
