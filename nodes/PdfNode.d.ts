@@ -1,25 +1,22 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 /// <reference types="react" />
 import type { DOMConversionMap, DOMExportOutput, EditorConfig, ElementFormatType, LexicalEditor, LexicalNode, NodeKey, Spread } from 'lexical';
 import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-export declare type SerializedPdfNode = Spread<{
+declare type PdfData = {
     url: string;
+    id: string;
+};
+export declare type SerializedPdfNode = Spread<{
+    data: PdfData;
     type: 'pdf';
     version: 1;
 }, SerializedDecoratorBlockNode>;
 export declare class PdfNode extends DecoratorBlockNode {
-    __url: string;
+    __data: PdfData;
     static getType(): string;
     static clone(node: PdfNode): PdfNode;
     static importJSON(serializedNode: SerializedPdfNode): PdfNode;
     exportJSON(): SerializedPdfNode;
-    constructor(url: string, format?: ElementFormatType, key?: NodeKey);
+    constructor(data: PdfData, format?: ElementFormatType, key?: NodeKey);
     exportDOM(): DOMExportOutput;
     static importDOM(): DOMConversionMap | null;
     updateDOM(): false;
@@ -28,5 +25,6 @@ export declare class PdfNode extends DecoratorBlockNode {
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
     isInline(): false;
 }
-export declare function $createPdfNode(url: string): PdfNode;
+export declare function $createPdfNode(data: PdfData): PdfNode;
 export declare function $isPdfNode(node: PdfNode | LexicalNode | null | undefined): node is PdfNode;
+export {};

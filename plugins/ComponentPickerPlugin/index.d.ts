@@ -6,4 +6,4 @@
  *
  */
 /// <reference types="react" />
-export default function ComponentPickerMenuPlugin(): JSX.Element;
+export default function ComponentPickerMenuPlugin(config: any): JSX.Element;

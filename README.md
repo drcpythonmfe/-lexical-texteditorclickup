@@ -73,13 +73,23 @@ Add emojis to give your content some flair!
 const uploadImg = async (file: File, altText: string) => {
   console.log("file",file)
   await delay(500);
-  return `https://media.stage.truflux.drcsystems.ooo/uploads/project/372/2024-09-16_13-38-11_1.mp4`;
+   await delay(500);
+  let data = {
+    url : `http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`,
+    id :  126548545485465 
+  }
+  return data
+  
 };
 
 const onDataSend = async (file: File) => {   // all file upload
   console.log(file)
-  await delay(500);
-  return `https://media.stage.truflux.drcsystems.ooo/uploads/project/372/2024-09-16_13-38-11_1.mp4`;
+ await delay(500);
+  let data = {
+    url : `http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`,
+    id :  126548545485465 
+  }
+  return data
 };
 
 function App({
@@ -108,6 +118,7 @@ function App({
 
 ## dummyMentionsData 
 ```tsx
+
 const dummyMentionsData = [
   'Aayla Secura',
   'Adi Gallia',
@@ -133,17 +144,56 @@ const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout
 const uploadImg = async (file: File, altText: string) => {
   console.log("file",file)
   await delay(500);
-  return `https://placehold.co/300x300?text=${altText}`;
+  let data = {
+    url : `http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4`,
+    id :  126548545485465 
+  }
+  return data
 };
+
+
+
+const toolbarConfig ={
+  align: true,
+  bgColorPicker: true,
+  biu: true,
+  codeBlock: false,
+  fontFamilyOptions: false,
+  fontSizeOptions: false,
+  formatBlockOptions: true,
+  formatTextOptions: true,
+  insertOptions: true,
+  link: true,
+  textColorPicker: true,
+  undoRedo: true,
+  paragraph: false,      //   / type data 
+  heading1: false,
+  heading2: false,
+  heading3: false,
+  table: true,
+  numberedList: false,
+  bulletedList: false,
+  checkList: true,
+  embedYoutubeVideo: false,
+  embedVideo: false,
+  embedPdf: false,
+  embedOffice: false,
+  UploadDocuments: true,
+  alignLeft: false,
+  alignCenter: false,
+  alignRight: false,
+  alignJustify: false,
+}
+
 
 function App({
   html,
   setHtml,
-  dummyMentionsData
+  userList
 }: {
   html: string;
   setHtml: (newHtml: string) => void;
-  dummyMentionsData:any;
+  userList:any;
 }): JSX.Element {
   useSyncWithInputHtml(html);
 
@@ -153,10 +203,26 @@ function App({
       onChange={setHtml}
       onUpload={uploadImg}
       onChangeMode="html"
-      dummyMentionsDatas={dummyMentionsData || []}
+      toolbarConfig={toolbarConfig}
+      dummyMentionsDatas={userList || []}
     />
   );
 }
+
+export default function PlaygroundApp1(): JSX.Element {
+ 
+  const [html, setHtml] = useState(``);
+  
+  return (
+    <>
+    <EditorComposer>
+        <App html={html}  setHtml={setHtml}   userList={dummyMentionsData} />
+      </EditorComposer>
+      <div dangerouslySetInnerHTML={{__html: html}} />
+    </>
+  );
+}
+
 ```
 
 ## Dark Mode

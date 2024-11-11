@@ -51,6 +51,7 @@ export declare class ImageNode extends DecoratorNode<JSX.Element> {
     setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void;
     setShowCaption(showCaption: boolean): void;
     setSrc(src: string): void;
+    settext(id: string): void;
     setFile(file: File | undefined): void;
     createDOM(config: EditorConfig): HTMLElement;
     updateDOM(): false;

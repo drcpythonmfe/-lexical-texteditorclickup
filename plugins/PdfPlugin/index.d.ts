@@ -7,5 +7,9 @@
  */
 /// <reference types="react" />
 import { LexicalCommand } from 'lexical';
-export declare const INSERT_PDF_COMMAND: LexicalCommand<string>;
+export interface PdfData {
+    url: string;
+    id: string;
+}
+export declare const INSERT_PDF_COMMAND: LexicalCommand<PdfData>;
 export default function PdfPlugin(): JSX.Element | null;

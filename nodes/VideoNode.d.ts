@@ -1,25 +1,22 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 /// <reference types="react" />
 import type { DOMConversionMap, DOMExportOutput, EditorConfig, ElementFormatType, LexicalEditor, LexicalNode, NodeKey, Spread } from 'lexical';
 import { DecoratorBlockNode, SerializedDecoratorBlockNode } from '@lexical/react/LexicalDecoratorBlockNode';
-export declare type SerializedVideoNode = Spread<{
+declare type VideoData = {
     url: string;
+    id: string;
+};
+export declare type SerializedVideoNode = Spread<{
+    data: VideoData;
     type: 'video';
     version: 1;
 }, SerializedDecoratorBlockNode>;
 export declare class VideoNode extends DecoratorBlockNode {
-    __url: string;
+    __data: VideoData;
     static getType(): string;
     static clone(node: VideoNode): VideoNode;
     static importJSON(serializedNode: SerializedVideoNode): VideoNode;
     exportJSON(): SerializedVideoNode;
-    constructor(url: string, format?: ElementFormatType, key?: NodeKey);
+    constructor(data: VideoData, format?: ElementFormatType, key?: NodeKey);
     exportDOM(): DOMExportOutput;
     static importDOM(): DOMConversionMap | null;
     updateDOM(): false;
@@ -28,5 +25,6 @@ export declare class VideoNode extends DecoratorBlockNode {
     decorate(_editor: LexicalEditor, config: EditorConfig): JSX.Element;
     isInline(): false;
 }
-export declare function $createVideoNode(url: string): VideoNode;
+export declare function $createVideoNode(data: VideoData): VideoNode;
 export declare function $isVideoNode(node: VideoNode | LexicalNode | null | undefined): node is VideoNode;
+export {};

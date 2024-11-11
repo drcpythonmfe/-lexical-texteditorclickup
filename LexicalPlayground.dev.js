@@ -325,44 +325,6 @@ function Button({
   }), children);
 }
 
-/* eslint-disable header/header */
-
-const useIsShownDelayed = (delayMs = 400) => {
-  const [isShown, setIsShown] = React.useState(false);
-  React.useEffect(() => {
-    let isMounted = true;
-    setTimeout(() => {
-      if (isMounted) setIsShown(true);
-    }, delayMs);
-    return () => {
-      isMounted = false;
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return isShown;
-};
-
-function ImageSpinner() {
-  const isShown = useIsShownDelayed();
-  if (!isShown) return null;
-  return /*#__PURE__*/React.createElement("svg", {
-    className: "image-spinner",
-    viewBox: "0 0 24 24"
-  }, /*#__PURE__*/React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "12",
-    fill: "rgba(0 0 0 / .6)"
-  }), /*#__PURE__*/React.createElement("circle", {
-    className: "circle",
-    cx: "12",
-    cy: "12",
-    r: "9",
-    fill: "none",
-    strokeWidth: "3"
-  }));
-}
-
 const ImageComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
 () => Promise.resolve().then(function () { return ImageComponent$1; }));
 
@@ -514,6 +476,11 @@ class ImageNode extends lexical.DecoratorNode {
     writable.__src = src;
   }
 
+  settext(id) {
+    const writable = this.getWritable();
+    writable.__altText = id;
+  }
+
   setFile(file) {
     const writable = this.getWritable();
     writable.__file = file;
@@ -562,7 +529,7 @@ class ImageNode extends lexical.DecoratorNode {
       caption: this.__caption,
       captionsEnabled: this.__captionsEnabled,
       resizable: true
-    }), this.__file && /*#__PURE__*/React.createElement(ImageSpinner, null));
+    }));
   }
 
 }
@@ -1638,12 +1605,16 @@ function OfficeComponent({
   className,
   format,
   nodeKey,
-  url
+  data
 }) {
-  const parts = url?.split('.');
+  const {
+    url,
+    id
+  } = data;
+  const parts = url.split('.');
   const extension = parts[parts.length - 1]?.toLowerCase();
-  let videoName = url.split('/').pop() || 'Open Document';
-  videoName = videoName.length > 25 ? videoName.slice(0, 25) + '...' + extension : videoName;
+  let fileName = url.split('/').pop() || 'Open Document';
+  fileName = fileName.length > 25 ? fileName.slice(0, 25) + '...' + extension : fileName;
   const buttonStyle = {
     backgroundColor: 'rgb(140, 116, 247)',
     borderRadius: '8px',
@@ -1663,18 +1634,25 @@ function OfficeComponent({
   }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: `https://view.officeapps.live.com/op/view.aspx?src=${url}`,
     target: "_blank",
-    rel: "noopener noreferrer"
+    rel: id,
+    title: id
   }, /*#__PURE__*/React.createElement("span", {
     "data-lexical-text": "true",
-    style: buttonStyle
-  }, videoName)), " \xA0"));
-}
+    style: buttonStyle,
+    title: id
+  }, fileName)), " \xA0"));
+} // Updated serialized type to include id
+
 
 function convertOfficeElement(domNode) {
-  const url = domNode.getAttribute('data-lexical-office');
+  const url = domNode.getAttribute('data-lexical-office-url');
+  const id = domNode.getAttribute('data-lexical-office-id');
 
-  if (url) {
-    const node = $createOfficeNode(url);
+  if (url && id) {
+    const node = $createOfficeNode({
+      url,
+      id
+    });
     return {
       node
     };
@@ -1689,11 +1667,11 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   static clone(node) {
-    return new OfficeNode(node.__url, node.__format, node.__key);
+    return new OfficeNode(node.__data, node.__format, node.__key);
   }
 
   static importJSON(serializedNode) {
-    const node = $createOfficeNode(serializedNode.url);
+    const node = $createOfficeNode(serializedNode.data);
     node.setFormat(serializedNode.format);
     return node;
   }
@@ -1701,32 +1679,39 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   exportJSON() {
     return { ...super.exportJSON(),
       type: 'office',
-      url: this.__url,
+      data: this.__data,
       version: 1
     };
   }
 
-  constructor(url, format, key) {
+  constructor(data, format, key) {
     super(format, key);
 
-    _defineProperty(this, "__url", void 0);
+    _defineProperty(this, "__data", void 0);
 
-    this.__url = url;
+    this.__data = data;
   }
 
   exportDOM() {
+    const {
+      url,
+      id
+    } = this.__data;
     const a = document.createElement('a');
-    a.href = `https://view.officeapps.live.com/op/view.aspx?src=${this.__url}`;
+    a.href = `https://view.officeapps.live.com/op/view.aspx?src=${url}`;
     a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    a.setAttribute('data-lexical-video', this.__url);
-    a.setAttribute('allowfullscreen', 'true');
+    a.setAttribute('rel', id);
+    a.setAttribute('data-lexical-office-url', url);
+    a.setAttribute('data-lexical-office-id', id);
+    a.setAttribute('title', id);
     const span = document.createElement('span');
-    const parts = this.__url?.split('.');
+    const parts = url.split('.');
     const extension = parts[parts.length - 1]?.toLowerCase();
-    let urlPart = this.__url.split('/').pop() || 'Open Document';
+    let urlPart = url.split('/').pop() || 'Open Document';
     urlPart = urlPart.length > 25 ? urlPart.slice(0, 25) + '...' + extension : urlPart;
     span.textContent = urlPart;
+    span.setAttribute('title', id); // span.setAttribute('alt', id);
+
     span.style.backgroundColor = 'rgb(140, 116, 247)';
     span.style.borderRadius = '8px';
     span.style.color = 'white';
@@ -1752,7 +1737,7 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static importDOM() {
     return {
       iframe: domNode => {
-        if (!domNode.hasAttribute('data-lexical-office')) {
+        if (!domNode.hasAttribute('data-lexical-office-url')) {
           return null;
         }
 
@@ -1769,11 +1754,11 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   getId() {
-    return this.__url;
+    return this.__data.id;
   }
 
   getTextContent(_includeInert, _includeDirectionless) {
-    return `${this.__url}`;
+    return `${this.__data.url}`;
   }
 
   decorate(_editor, config) {
@@ -1786,7 +1771,7 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       className: className,
       format: this.__format,
       nodeKey: this.getKey(),
-      url: this.__url
+      data: this.__data
     });
   }
 
@@ -1794,9 +1779,10 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     return false;
   }
 
-}
-function $createOfficeNode(url) {
-  return new OfficeNode(url);
+} // Updated create function to accept data object
+
+function $createOfficeNode(data) {
+  return new OfficeNode(data);
 }
 
 /**
@@ -1804,8 +1790,9 @@ function $createOfficeNode(url) {
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- *
  */
+
+// Update the command type to use OfficeData interface
 const INSERT_OFFICE_COMMAND = lexical.createCommand('INSERT_OFFICE_COMMAND');
 function OfficePlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
@@ -1827,12 +1814,16 @@ function PdfComponent({
   className,
   format,
   nodeKey,
-  url
+  data
 }) {
+  const {
+    url,
+    id
+  } = data;
   const parts = url?.split('.');
   const extension = parts[parts.length - 1]?.toLowerCase();
-  let videoName = url.split('/').pop() || 'Open Pdf';
-  videoName = videoName.length > 25 ? videoName.slice(0, 25) + '...' + extension : videoName;
+  let fileName = url.split('/').pop() || 'Open Pdf';
+  fileName = fileName.length > 25 ? fileName.slice(0, 25) + '...' + extension : fileName;
   const buttonStyle = {
     backgroundColor: 'rgb(140, 116, 247)',
     borderRadius: '8px',
@@ -1852,18 +1843,23 @@ function PdfComponent({
   }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: url,
     target: "_blank",
-    rel: "noopener noreferrer"
+    rel: id
   }, /*#__PURE__*/React.createElement("span", {
     "data-lexical-text": "true",
-    style: buttonStyle
-  }, videoName)), " \xA0"));
+    style: buttonStyle,
+    title: id
+  }, fileName)), " \xA0"));
 }
 
 function convertPdfElement(domNode) {
-  const url = domNode.getAttribute('data-lexical-pdf');
+  const url = domNode.getAttribute('data-lexical-pdf-url');
+  const id = domNode.getAttribute('data-lexical-pdf-id');
 
-  if (url) {
-    const node = $createPdfNode(url);
+  if (url && id) {
+    const node = $createPdfNode({
+      url,
+      id
+    });
     return {
       node
     };
@@ -1878,11 +1874,11 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   static clone(node) {
-    return new PdfNode(node.__url, node.__format, node.__key);
+    return new PdfNode(node.__data, node.__format, node.__key);
   }
 
   static importJSON(serializedNode) {
-    const node = $createPdfNode(serializedNode.url);
+    const node = $createPdfNode(serializedNode.data);
     node.setFormat(serializedNode.format);
     return node;
   }
@@ -1890,32 +1886,38 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   exportJSON() {
     return { ...super.exportJSON(),
       type: 'pdf',
-      url: this.__url,
+      data: this.__data,
       version: 1
     };
   }
 
-  constructor(url, format, key) {
+  constructor(data, format, key) {
     super(format, key);
 
-    _defineProperty(this, "__url", void 0);
+    _defineProperty(this, "__data", void 0);
 
-    this.__url = url;
+    this.__data = data;
   }
 
   exportDOM() {
+    const {
+      url,
+      id
+    } = this.__data;
     const a = document.createElement('a');
-    a.href = this.__url;
+    a.href = url;
     a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    a.setAttribute('data-lexical-video', this.__url);
-    a.setAttribute('allowfullscreen', 'true');
+    a.setAttribute('rel', id);
+    a.setAttribute('data-lexical-pdf-url', url);
+    a.setAttribute('data-lexical-pdf-id', id);
     const span = document.createElement('span');
-    const parts = this.__url?.split('.');
+    const parts = url?.split('.');
     const extension = parts[parts.length - 1]?.toLowerCase();
-    let urlPart = this.__url.split('/').pop() || 'Open pdf';
+    let urlPart = url.split('/').pop() || 'Open pdf';
     urlPart = urlPart.length > 25 ? urlPart.slice(0, 25) + '...' + extension : urlPart;
     span.textContent = urlPart;
+    span.setAttribute('title', id);
+    span.setAttribute('alt', id);
     span.style.backgroundColor = 'rgb(140, 116, 247)';
     span.style.borderRadius = '8px';
     span.style.color = 'white';
@@ -1941,7 +1943,7 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static importDOM() {
     return {
       iframe: domNode => {
-        if (!domNode.hasAttribute('data-lexical-pdf')) {
+        if (!domNode.hasAttribute('data-lexical-pdf-url')) {
           return null;
         }
 
@@ -1958,11 +1960,11 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   getId() {
-    return this.__url;
+    return this.__data.id;
   }
 
   getTextContent(_includeInert, _includeDirectionless) {
-    return `${this.__url}`;
+    return `${this.__data.url}`;
   }
 
   decorate(_editor, config) {
@@ -1975,7 +1977,7 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       className: className,
       format: this.__format,
       nodeKey: this.getKey(),
-      url: this.__url
+      data: this.__data
     });
   }
 
@@ -1984,8 +1986,8 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
 }
-function $createPdfNode(url) {
-  return new PdfNode(url);
+function $createPdfNode(data) {
+  return new PdfNode(data);
 }
 
 /**
@@ -1995,6 +1997,7 @@ function $createPdfNode(url) {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 const INSERT_PDF_COMMAND = lexical.createCommand('INSERT_PDF_COMMAND');
 function PdfPlugin() {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
@@ -2040,12 +2043,16 @@ function VideoComponent({
   className,
   format,
   nodeKey,
-  url
+  data
 }) {
+  const {
+    url,
+    id
+  } = data;
   const parts = url?.split('.');
   const extension = parts[parts.length - 1]?.toLowerCase();
-  let videoName = url.split('/').pop() || 'Open Video';
-  videoName = videoName.length > 25 ? videoName.slice(0, 25) + '...' + extension : videoName;
+  let fileName = url.split('/').pop() || 'Open Video';
+  fileName = fileName.length > 25 ? fileName.slice(0, 25) + '...' + extension : fileName;
   const buttonStyle = {
     backgroundColor: 'rgb(140, 116, 247)',
     borderRadius: '8px',
@@ -2065,18 +2072,23 @@ function VideoComponent({
   }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     href: url,
     target: "_blank",
-    rel: "noopener noreferrer"
+    rel: id
   }, /*#__PURE__*/React.createElement("span", {
     "data-lexical-text": "true",
-    style: buttonStyle
-  }, videoName)), " \xA0"));
+    style: buttonStyle,
+    title: id
+  }, fileName)), " \xA0"));
 }
 
 function convertVideoElement(domNode) {
-  const url = domNode.getAttribute('data-lexical-video');
+  const url = domNode.getAttribute('data-lexical-video-url');
+  const id = domNode.getAttribute('data-lexical-video-id');
 
-  if (url) {
-    const node = $createVideoNode(url);
+  if (url && id) {
+    const node = $createVideoNode({
+      url,
+      id
+    });
     return {
       node
     };
@@ -2091,11 +2103,11 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   static clone(node) {
-    return new VideoNode(node.__url, node.__format, node.__key);
+    return new VideoNode(node.__data, node.__format, node.__key);
   }
 
   static importJSON(serializedNode) {
-    const node = $createVideoNode(serializedNode.url);
+    const node = $createVideoNode(serializedNode.data);
     node.setFormat(serializedNode.format);
     return node;
   }
@@ -2103,32 +2115,38 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   exportJSON() {
     return { ...super.exportJSON(),
       type: 'video',
-      url: this.__url,
+      data: this.__data,
       version: 1
     };
   }
 
-  constructor(url, format, key) {
+  constructor(data, format, key) {
     super(format, key);
 
-    _defineProperty(this, "__url", void 0);
+    _defineProperty(this, "__data", void 0);
 
-    this.__url = url;
+    this.__data = data;
   }
 
   exportDOM() {
+    const {
+      url,
+      id
+    } = this.__data;
     const a = document.createElement('a');
-    a.href = this.__url;
+    a.href = url;
     a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    a.setAttribute('data-lexical-video', this.__url);
-    a.setAttribute('allowfullscreen', 'true');
+    a.setAttribute('rel', id);
+    a.setAttribute('data-lexical-video-url', url);
+    a.setAttribute('data-lexical-video-id', id);
     const span = document.createElement('span');
-    const parts = this.__url?.split('.');
+    const parts = url?.split('.');
     const extension = parts[parts.length - 1]?.toLowerCase();
-    let urlPart = this.__url.split('/').pop() || 'Open Video';
+    let urlPart = url.split('/').pop() || 'Open Video';
     urlPart = urlPart.length > 25 ? urlPart.slice(0, 25) + '...' + extension : urlPart;
     span.textContent = urlPart;
+    span.setAttribute('title', id);
+    span.setAttribute('alt', id);
     span.style.backgroundColor = 'rgb(140, 116, 247)';
     span.style.borderRadius = '8px';
     span.style.color = 'white';
@@ -2154,7 +2172,7 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   static importDOM() {
     return {
       iframe: domNode => {
-        if (!domNode.hasAttribute('data-lexical-video')) {
+        if (!domNode.hasAttribute('data-lexical-video-url')) {
           return null;
         }
 
@@ -2171,11 +2189,11 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
   getId() {
-    return this.__url;
+    return this.__data.id;
   }
 
   getTextContent(_includeInert, _includeDirectionless) {
-    return `${this.__url}`;
+    return `${this.__data.url}`;
   }
 
   decorate(_editor, config) {
@@ -2188,7 +2206,7 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
       className: className,
       format: this.__format,
       nodeKey: this.getKey(),
-      url: this.__url
+      data: this.__data
     });
   }
 
@@ -2197,8 +2215,8 @@ class VideoNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
   }
 
 }
-function $createVideoNode(url) {
-  return new VideoNode(url);
+function $createVideoNode(data) {
+  return new VideoNode(data);
 }
 
 /**
@@ -2386,6 +2404,17 @@ function YouTubePlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
+function generateUUIDWithTimestamp() {
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : r & 0x3 | 0x8;
+    return v.toString(16);
+  });
+  const timestamp = new Date().toISOString();
+  return `${uuid}-${timestamp}`;
+}
+
 const YoutubeEmbedConfig = {
   contentName: 'Youtube Video',
   exampleUrl: 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
@@ -2421,7 +2450,9 @@ const VideoEmbedConfig = {
     className: "icon videos"
   }),
   insertNode: (editor, result) => {
-    editor.dispatchCommand(INSERT_VIDEO_COMMAND, result.url);
+    let data = generateUUIDWithTimestamp();
+    result.id = String(data);
+    editor.dispatchCommand(INSERT_VIDEO_COMMAND, result);
   },
   keywords: ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv', 'video'],
   // Determine if a given URL is a match and return url data.
@@ -2449,7 +2480,9 @@ const PdfEmbedConfig = {
     className: "icon pdf"
   }),
   insertNode: (editor, result) => {
-    editor.dispatchCommand(INSERT_PDF_COMMAND, result.url);
+    let data = generateUUIDWithTimestamp();
+    result.id = String(data);
+    editor.dispatchCommand(INSERT_PDF_COMMAND, result);
   },
   keywords: ['pdf'],
   // Determine if a given URL is a match and return url data.
@@ -2477,7 +2510,9 @@ const OfficeEmbedConfig = {
     className: "icon office"
   }),
   insertNode: (editor, result) => {
-    editor.dispatchCommand(INSERT_OFFICE_COMMAND, result.url);
+    let data = generateUUIDWithTimestamp();
+    result.id = String(data);
+    editor.dispatchCommand(INSERT_OFFICE_COMMAND, result);
   },
   keywords: ['office', 'xlsx', 'docx', 'pptx', 'csv', 'ods'],
   // Determine if a given URL is a match and return url data.
@@ -4756,16 +4791,10 @@ function InsertImageUploadedDialogBody({
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(FileInput, {
-    label: "Image Upload",
+    label: "Upload Document",
     onChange: loadImage,
-    accept: "image/*",
+    accept: "image/jpeg,image/jpg,image/png,video/mp4,video/webm,video/mov,video/avi,video/flv,video/mkv,video/wmv,application/pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/csv,application/vnd.oasis.opendocument.spreadsheet",
     "data-test-id": "image-modal-file-upload"
-  }), /*#__PURE__*/React.createElement(TextInput, {
-    label: "Alt Text",
-    placeholder: "Descriptive alternative text",
-    onChange: setAltText,
-    value: altText,
-    "data-test-id": "image-modal-alt-text-input"
   }), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
     "data-test-id": "image-modal-file-upload-btn",
     disabled: isDisabled,
@@ -4803,9 +4832,6 @@ function InsertImageDialog({
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, !mode && /*#__PURE__*/React.createElement(DialogButtonsList, null, /*#__PURE__*/React.createElement(Button, {
-    "data-test-id": "image-modal-option-url",
-    onClick: () => setMode('url')
-  }, "URL"), /*#__PURE__*/React.createElement(Button, {
     "data-test-id": "image-modal-option-file",
     onClick: () => setMode('file')
   }, "File")), mode === 'url' && /*#__PURE__*/React.createElement(InsertImageUriDialogBody, {
@@ -5431,15 +5457,21 @@ function ComponentPickerMenuItem({
   isSelected,
   onClick,
   onMouseEnter,
-  option
+  option,
+  dynamicOptions
 }) {
   let className = 'item';
+  let data;
 
   if (isSelected) {
     className += ' selected';
   }
 
-  return /*#__PURE__*/React.createElement("li", {
+  if (dynamicOptions && option) {
+    data = Object.entries(dynamicOptions)?.filter(([key, value]) => key?.toLowerCase()?.replace(/\s+/g, '') === option?.title?.toLowerCase()?.replace(/\s+/g, ''))?.map(([key, value]) => ['show' , value]);
+  }
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, Object.fromEntries(data)?.show && /*#__PURE__*/React.createElement("li", {
     key: option.key,
     tabIndex: -1,
     className: className,
@@ -5451,10 +5483,10 @@ function ComponentPickerMenuItem({
     onClick: onClick
   }, option.icon, /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, option.title));
+  }, option.title)));
 }
 
-function ComponentPickerMenuPlugin() {
+function ComponentPickerMenuPlugin(config) {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [modal, showModal] = useModal();
   const [queryString, setQueryString] = React.useState(null);
@@ -5633,12 +5665,12 @@ function ComponentPickerMenuPlugin() {
     //       src: '',
     //     }),
     // }),
-    new ComponentPickerOption('Image', {
+    new ComponentPickerOption('Upload Documents', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon image"
       }),
-      keywords: ['image', 'photo', 'picture', 'file'],
-      onSelect: () => showModal('Insert Image', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
+      keywords: ['image', 'photo', 'picture', 'file', 'ppt', 'mp4', 'pdf', 'docux', 'word file'],
+      onSelect: () => showModal('Upload Document', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: editor,
         onClose: onClose
       }))
@@ -5685,6 +5717,7 @@ function ComponentPickerMenuPlugin() {
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ComponentPickerMenuItem, {
       index: i,
       isSelected: selectedIndex === i,
+      dynamicOptions: config?.config,
       onClick: () => {
         setHighlightedIndex(i);
         selectOptionAndCleanUp(option);
@@ -8381,7 +8414,7 @@ function ToolbarPlugin({
     className: "icon image"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Image")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Upload Document")), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertTableDialog, {
         activeEditor: activeEditor,
@@ -9203,10 +9236,32 @@ function OnImageUploadPlugin({
                   try {
                     const imgUrl = await onUpload(file, altText);
 
-                    if (imgUrl) {
-                      const parts = imgUrl.split('.');
+                    if (imgUrl.url) {
+                      const parts = imgUrl.url.split('.');
                       const extension = parts[parts.length - 1].toLowerCase();
                       const validImageTypes = ['jpg', 'jpeg', 'png'];
+                      const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
+                      const validPdfTypes = ['pdf'];
+                      const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
+                      let dataPayload = {
+                        url: imgUrl.url,
+                        id: String(imgUrl.id)
+                      };
+
+                      if (validVideoTypes.includes(extension)) {
+                        editor.dispatchCommand(INSERT_VIDEO_COMMAND, dataPayload);
+                        return;
+                      }
+
+                      if (validPdfTypes.includes(extension)) {
+                        editor.dispatchCommand(INSERT_PDF_COMMAND, dataPayload);
+                        return;
+                      }
+
+                      if (validOfficeTypes.includes(extension)) {
+                        editor.dispatchCommand(INSERT_OFFICE_COMMAND, dataPayload);
+                        return;
+                      }
 
                       if (validImageTypes.includes(extension)) {
                         const preloadImage = new Image();
@@ -9214,7 +9269,8 @@ function OnImageUploadPlugin({
                         preloadImage.onload = () => {
                           editor.update(() => {
                             imageNode.setFile(undefined);
-                            imageNode.setSrc(imgUrl);
+                            imageNode.setSrc(imgUrl.url);
+                            imageNode.settext(String(imgUrl.id));
                           });
                         };
 
@@ -9222,7 +9278,7 @@ function OnImageUploadPlugin({
                           removeNode(editor, imageNode);
                         };
 
-                        preloadImage.src = imgUrl;
+                        preloadImage.src = imgUrl.url;
                         return;
                       }
                     } else {
@@ -10313,7 +10369,25 @@ const defaultToolbarConfig = {
   insertOptions: true,
   link: true,
   textColorPicker: true,
-  undoRedo: true
+  undoRedo: true,
+  paragraph: true,
+  heading1: true,
+  heading2: true,
+  heading3: true,
+  table: true,
+  numberedList: true,
+  bulletedList: true,
+  checkList: true,
+  embedYoutubeVideo: true,
+  embedVideo: true,
+  embedPdf: true,
+  embedOffice: true,
+  UploadDocuments: true,
+  alignments: true,
+  alignLeft: true,
+  alignCenter: true,
+  alignRight: true,
+  alignJustify: true
 };
 function Editor({
   isCollab,
@@ -10373,7 +10447,7 @@ function Editor({
     if (selectedFile) {
       if (onDataSend) {
         onDataSend(selectedFile).then(res => {
-          const parts = res?.split('.');
+          const parts = res?.url?.split('.');
           const extension = parts[parts.length - 1]?.toLowerCase();
           const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
           const validPdfTypes = ['pdf'];
@@ -10406,7 +10480,9 @@ function Editor({
     className: `editor-container ${containerClassName ?? ''} ${showTreeView ? 'tree-view' : ''} ${!isRichText ? 'plain-text' : ''}`
   }, isMaxLength && /*#__PURE__*/React.createElement(MaxLengthPlugin, {
     maxLength: 30
-  }), /*#__PURE__*/React.createElement(DragDropPaste, null), /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalClearEditorPlugin.ClearEditorPlugin, null), /*#__PURE__*/React.createElement(CommentPlugin, null), /*#__PURE__*/React.createElement(ComponentPickerMenuPlugin, null), /*#__PURE__*/React.createElement(EmojiPickerPlugin, null), /*#__PURE__*/React.createElement(AutoEmbedPlugin, null), /*#__PURE__*/React.createElement(MentionsPlugin, {
+  }), /*#__PURE__*/React.createElement(DragDropPaste, null), /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalClearEditorPlugin.ClearEditorPlugin, null), /*#__PURE__*/React.createElement(CommentPlugin, null), /*#__PURE__*/React.createElement(ComponentPickerMenuPlugin, {
+    config: normToolbarConfig
+  }), /*#__PURE__*/React.createElement(EmojiPickerPlugin, null), /*#__PURE__*/React.createElement(AutoEmbedPlugin, null), /*#__PURE__*/React.createElement(MentionsPlugin, {
     dummyMentionsDatas: dummyMentionsDatas
   }), /*#__PURE__*/React.createElement(EmojisPlugin, null), /*#__PURE__*/React.createElement(LexicalHashtagPlugin.HashtagPlugin, null), /*#__PURE__*/React.createElement(KeywordsPlugin, null), /*#__PURE__*/React.createElement(SpeechToTextPlugin$1, null), /*#__PURE__*/React.createElement(LexicalAutoLinkPlugin, null), onChange && /*#__PURE__*/React.createElement(LexicalOnChangePlugin.OnChangePlugin, {
     onChange: (editorState, editor) => {
@@ -10463,7 +10539,11 @@ function Editor({
     maxLength: 5
   }), isAutocomplete && /*#__PURE__*/React.createElement(AutocompletePlugin, null), /*#__PURE__*/React.createElement("div", null, showTableOfContents && /*#__PURE__*/React.createElement(TableOfContentsPlugin, null)), /*#__PURE__*/React.createElement(ActionsPlugin, {
     isRichText: isRichText
-  })), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
+  })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
+    config: normToolbarConfig,
+    handleClick: handleClick,
+    floatingText: false
+  }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
 }
 
 class ExtendedTextNode extends lexical.TextNode {

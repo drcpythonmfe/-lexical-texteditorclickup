@@ -5,7 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-export declare type OnImageUpload = (img: File, altText: string) => Promise<string>;
+export declare type OnImageUpload = (img: File, altText: string) => Promise<{
+    url: string;
+    id: number;
+}>;
 export declare type DragDropPasteProps = {
     onUpload?: OnImageUpload;
 };
