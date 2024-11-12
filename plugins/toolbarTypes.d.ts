@@ -30,5 +30,6 @@ export declare type ToolbarConfig = {
     alignCenter?: boolean;
     alignRight?: boolean;
     alignJustify?: boolean;
+    editorshow?: boolean;
 };
 export {};

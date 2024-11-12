@@ -7002,104 +7002,6 @@ const IS_CHROME = CAN_USE_DOM && /^(?=.*Chrome).*/i.test(navigator.userAgent); /
 
 CAN_USE_DOM && /AppleWebKit\/[\d.]+/.test(navigator.userAgent) && !IS_CHROME;
 
-const StickyComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return StickyComponent$1; }));
-class StickyNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'sticky';
-  }
-
-  static clone(node) {
-    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
-    const caption = serializedNode.caption;
-    const nestedEditor = stickyNode.__caption;
-    const editorState = nestedEditor.parseEditorState(caption.editorState);
-
-    if (!editorState.isEmpty()) {
-      nestedEditor.setEditorState(editorState);
-    }
-
-    return stickyNode;
-  }
-
-  constructor(x, y, color, caption, key) {
-    super(key);
-
-    _defineProperty(this, "__x", void 0);
-
-    _defineProperty(this, "__y", void 0);
-
-    _defineProperty(this, "__color", void 0);
-
-    _defineProperty(this, "__caption", void 0);
-
-    this.__x = x;
-    this.__y = y;
-    this.__caption = caption || lexical.createEditor();
-    this.__color = color;
-  }
-
-  exportJSON() {
-    return {
-      caption: this.__caption.toJSON(),
-      color: this.__color,
-      type: 'sticky',
-      version: 1,
-      xOffset: this.__x,
-      yOffset: this.__y
-    };
-  }
-
-  createDOM(config) {
-    const div = document.createElement('div');
-    div.style.display = 'contents';
-    return div;
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  setPosition(x, y) {
-    const writable = this.getWritable();
-    writable.__x = x;
-    writable.__y = y;
-    lexical.$setSelection(null);
-  }
-
-  toggleColor() {
-    const writable = this.getWritable();
-    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
-  }
-
-  decorate(editor, config) {
-    return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
-      color: this.__color,
-      x: this.__x,
-      y: this.__y,
-      nodeKey: this.getKey(),
-      caption: this.__caption
-    })), document.body);
-  }
-
-  isIsolated() {
-    return true;
-  }
-
-}
-function $isStickyNode(node) {
-  return node instanceof StickyNode;
-}
-function $createStickyNode(xOffset, yOffset) {
-  return new StickyNode(xOffset, yOffset, 'yellow');
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7573,220 +7475,6 @@ function transformColor(format, color) {
   };
 }
 
-const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return PollComponent$1; }));
-
-function createUID() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-}
-
-function createPollOption(text = '') {
-  return {
-    text,
-    uid: createUID(),
-    votes: []
-  };
-}
-
-function cloneOption(option, text, votes) {
-  return {
-    text,
-    uid: option.uid,
-    votes: votes || Array.from(option.votes)
-  };
-}
-
-function convertPollElement(domNode) {
-  const question = domNode.getAttribute('data-lexical-poll-question');
-
-  if (question !== null) {
-    const node = $createPollNode(question);
-    return {
-      node
-    };
-  }
-
-  return null;
-}
-
-class PollNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'poll';
-  }
-
-  static clone(node) {
-    return new PollNode(node.__question, node.__options, node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    const node = $createPollNode(serializedNode.question);
-    serializedNode.options.forEach(node.addOption);
-    return node;
-  }
-
-  constructor(question, options, key) {
-    super(key);
-
-    _defineProperty(this, "__question", void 0);
-
-    _defineProperty(this, "__options", void 0);
-
-    this.__question = question;
-    this.__options = options || [createPollOption(), createPollOption()];
-  }
-
-  exportJSON() {
-    return {
-      options: this.__options,
-      question: this.__question,
-      type: 'poll',
-      version: 1
-    };
-  }
-
-  addOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    options.push(option);
-    self.__options = options;
-  }
-
-  deleteOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options.splice(index, 1);
-    self.__options = options;
-  }
-
-  setOptionText(option, text) {
-    const self = this.getWritable();
-    const clonedOption = cloneOption(option, text);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-
-  toggleVote(option, clientID) {
-    const self = this.getWritable();
-    const votes = option.votes;
-    const votesClone = Array.from(votes);
-    const voteIndex = votes.indexOf(clientID);
-
-    if (voteIndex === -1) {
-      votesClone.push(clientID);
-    } else {
-      votesClone.splice(voteIndex, 1);
-    }
-
-    const clonedOption = cloneOption(option, option.text, votesClone);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-
-  static importDOM() {
-    return {
-      span: domNode => {
-        if (!domNode.hasAttribute('data-lexical-poll-question')) {
-          return null;
-        }
-
-        return {
-          conversion: convertPollElement,
-          priority: 2
-        };
-      }
-    };
-  }
-
-  exportDOM() {
-    const element = document.createElement('span');
-    element.setAttribute('data-lexical-poll-question', this.__question);
-    return {
-      element
-    };
-  }
-
-  createDOM() {
-    const elem = document.createElement('span');
-    elem.style.display = 'inline-block';
-    return elem;
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  decorate() {
-    return /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(PollComponent$2, {
-      question: this.__question,
-      options: this.__options,
-      nodeKey: this.__key
-    }));
-  }
-
-}
-function $createPollNode(question) {
-  return new PollNode(question);
-}
-function $isPollNode(node) {
-  return node instanceof PollNode;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
-function InsertPollDialog({
-  activeEditor,
-  onClose
-}) {
-  const [question, setQuestion] = React.useState('');
-
-  const onClick = () => {
-    activeEditor.dispatchCommand(INSERT_POLL_COMMAND, question);
-    onClose();
-  };
-
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
-    label: "Question",
-    onChange: setQuestion,
-    value: question
-  }), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
-    disabled: question.trim() === '',
-    onClick: onClick
-  }, "Confirm")));
-}
-function PollPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  React.useEffect(() => {
-    if (!editor.hasNodes([PollNode])) {
-      throw new Error('PollPlugin: PollNode not registered on editor');
-    }
-
-    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
-      const pollNode = $createPollNode(payload);
-      lexical.$insertNodes([pollNode]);
-
-      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
-        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
-      }
-
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
-  return null;
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -8002,7 +7690,7 @@ function ToolbarPlugin({
   const [isRTL, setIsRTL] = React.useState(false);
   const [codeLanguage, setCodeLanguage] = React.useState('');
   const [isEditable, setIsEditable] = React.useState(() => editor.isEditable());
-  const editorContext = useEditorComposerContext();
+  useEditorComposerContext();
   const updateToolbar = React.useCallback(() => {
     const selection$1 = lexical.$getSelection();
 
@@ -8356,22 +8044,171 @@ function ToolbarPlugin({
     className: "icon clear"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Clear Formatting")))) : /*#__PURE__*/React.createElement(React.Fragment, null, config?.insertOptions && false && /*#__PURE__*/React.createElement(DropDown, {
+  }, "Clear Formatting")))) : /*#__PURE__*/React.createElement(React.Fragment, null, config.editorshow && /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
-    buttonClassName: "toolbar-item spaced",
-    buttonLabel: "Insert",
-    buttonAriaLabel: "Insert specialized editor node",
-    buttonIconClassName: "icon plus"
+    buttonClassName: "toolbar-item code-language",
+    buttonLabel: code.getLanguageFriendlyName(codeLanguage),
+    buttonAriaLabel: "Select language"
+  }, CODE_LANGUAGE_OPTIONS.map(([value, name]) => {
+    return /*#__PURE__*/React.createElement(DropDownItem, {
+      className: `item ${dropDownActiveClass(value === codeLanguage)}`,
+      onClick: () => onCodeLanguageSelect(value),
+      key: value
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, name));
+  }))) : /*#__PURE__*/React.createElement(React.Fragment, null, Boolean(config.fontFamilyOptions) && /*#__PURE__*/React.createElement(FontDropDown, {
+    disabled: !isEditable,
+    style: 'font-family',
+    value: fontFamily,
+    editor: editor,
+    options: normFontFamilyOption
+  }), config.formatBlockOptions && blockType in blockTypeToBlockName && activeEditor === editor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BlockFormatDropDown, {
+    disabled: !isEditable,
+    blockType: blockType,
+    editor: editor
+  })), config.biu && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
+    },
+    className: 'toolbar-item spaced ' + (isBold ? 'active' : ''),
+    title: IS_APPLE ? 'Bold (⌘B)' : 'Bold (Ctrl+B)',
+    type: "button",
+    "aria-label": `Format text as bold. Shortcut: ${IS_APPLE ? '⌘B' : 'Ctrl+B'}`
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format bold"
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'italic');
+    },
+    className: 'toolbar-item spaced ' + (isItalic ? 'active' : ''),
+    title: IS_APPLE ? 'Italic (⌘I)' : 'Italic (Ctrl+I)',
+    type: "button",
+    "aria-label": `Format text as italics. Shortcut: ${IS_APPLE ? '⌘I' : 'Ctrl+I'}`
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format italic"
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'underline');
+    },
+    className: 'toolbar-item spaced ' + (isUnderline ? 'active' : ''),
+    title: IS_APPLE ? 'Underline (⌘U)' : 'Underline (Ctrl+U)',
+    type: "button",
+    "aria-label": `Format text to underlined. Shortcut: ${IS_APPLE ? '⌘U' : 'Ctrl+U'}`
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format underline"
+  }))), config.codeBlock && /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'code');
+    },
+    className: 'toolbar-item spaced ' + (isCode ? 'active' : ''),
+    title: "Insert code block",
+    type: "button",
+    "aria-label": "Insert code block"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format code"
+  })), config.link && /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: insertLink,
+    className: 'toolbar-item spaced ' + (isLink ? 'active' : ''),
+    "aria-label": "Insert link",
+    title: "Insert link",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format link"
+  })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    disabled: !isEditable,
+    buttonClassName: "toolbar-item color-picker",
+    buttonAriaLabel: "Formatting text color",
+    buttonIconClassName: "icon font-color",
+    color: fontColor,
+    onChange: onFontColorSelect,
+    title: "text color"
+  }), config.bgColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    disabled: !isEditable,
+    buttonClassName: "toolbar-item color-picker",
+    buttonAriaLabel: "Formatting background color",
+    buttonIconClassName: "icon bg-color",
+    color: bgColor,
+    onChange: onBgColorSelect,
+    title: "bg color"
+  })), config.align && /*#__PURE__*/React.createElement(DropDown, {
+    disabled: !isEditable // buttonLabel="Align"
+    ,
+    buttonIconClassName: "icon left-align",
+    buttonClassName: "toolbar-item spaced alignment",
+    buttonAriaLabel: "Formatting options for text alignment"
   }, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      activeEditor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined);
+      activeEditor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, 'left');
     },
     className: "item"
   }, /*#__PURE__*/React.createElement("i", {
-    className: "icon horizontal-rule"
+    className: "icon left-align"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Horizontal Rule")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Left Align")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, 'center');
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon center-align"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Center Align")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, 'right');
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon right-align"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Right Align")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, 'justify');
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon justify-align"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Justify Align")), /*#__PURE__*/React.createElement(Divider, null), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.OUTDENT_CONTENT_COMMAND, undefined);
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: 'icon ' + (isRTL ? 'indent' : 'outdent')
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Outdent")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.INDENT_CONTENT_COMMAND, undefined);
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: 'icon ' + (isRTL ? 'outdent' : 'indent')
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Indent"))), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
+    disabled: !isEditable,
+    style: 'font-size',
+    value: fontSize,
+    editor: editor,
+    options: FONT_SIZE_OPTIONS
+  }), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
+    disabled: !isEditable,
+    buttonClassName: "toolbar-item spaced" // buttonLabel="Insert"
+    ,
+    buttonAriaLabel: "Insert specialized editor node",
+    buttonIconClassName: "icon plus"
+  }, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       showModal('Insert Image', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: activeEditor,
@@ -8395,53 +8232,55 @@ function ToolbarPlugin({
     className: "icon table"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Table")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Table"))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+    disabled: !isEditable,
+    buttonClassName: "toolbar-item spaced",
+    buttonLabel: "",
+    buttonAriaLabel: "Formatting options for additional text styles",
+    buttonIconClassName: "icon dropdowns-more"
+  }, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      showModal('Insert Poll', onClose => /*#__PURE__*/React.createElement(InsertPollDialog, {
-        activeEditor: activeEditor,
-        onClose: onClose
-      }));
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
     },
-    className: "item"
+    className: 'item ' + dropDownActiveClass(isStrikethrough),
+    title: "Strikethrough",
+    "aria-label": "Format text with a strikethrough"
   }, /*#__PURE__*/React.createElement("i", {
-    className: "icon poll"
+    className: "icon strikethrough"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Poll")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Strikethrough")), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      editor.update(() => {
-        const root = lexical.$getRoot();
-        const stickyNode = $createStickyNode(0, 0);
-        root.append(stickyNode);
-      });
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'subscript');
     },
-    className: "item"
+    className: 'item ' + dropDownActiveClass(isSubscript),
+    title: "Subscript",
+    "aria-label": "Format text with a subscript"
   }, /*#__PURE__*/React.createElement("i", {
-    className: "icon sticky"
+    className: "icon subscript"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Sticky Note")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Subscript")), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined);
+      activeEditor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'superscript');
     },
-    className: "item"
+    className: 'item ' + dropDownActiveClass(isSuperscript),
+    title: "Superscript",
+    "aria-label": "Format text with a superscript"
   }, /*#__PURE__*/React.createElement("i", {
-    className: "icon caret-right"
+    className: "icon superscript"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Collapsible container")), EmbedConfigs.map(embedConfig => /*#__PURE__*/React.createElement(DropDownItem, {
-    key: embedConfig.type,
-    onClick: () => {
-      activeEditor.dispatchCommand(LexicalAutoEmbedPlugin.INSERT_EMBED_COMMAND, embedConfig.type);
-    },
-    className: "item"
-  }, embedConfig.icon, /*#__PURE__*/React.createElement("span", {
+  }, "Superscript")), /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: clearFormatting,
+    className: "item",
+    title: "Clear text formatting",
+    "aria-label": "Clear all text formatting"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon clear"
+  }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, embedConfig.contentName))), editorContext.extensions.toolbarInsertsAfter.map(([extName, ExtDropDownItem]) => /*#__PURE__*/React.createElement(ExtDropDownItem, {
-    key: extName,
-    showModal: showModal,
-    activeEditor: activeEditor
-  })))), modal);
+  }, "Clear Formatting"))))), modal);
 }
 
 /**
@@ -9267,6 +9106,200 @@ function OnImageUploadPlugin({
       unregisterMutationListener();
     };
   }, [editor, onUpload]);
+  return null;
+}
+
+const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return PollComponent$1; }));
+
+function createUID() {
+  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+}
+
+function createPollOption(text = '') {
+  return {
+    text,
+    uid: createUID(),
+    votes: []
+  };
+}
+
+function cloneOption(option, text, votes) {
+  return {
+    text,
+    uid: option.uid,
+    votes: votes || Array.from(option.votes)
+  };
+}
+
+function convertPollElement(domNode) {
+  const question = domNode.getAttribute('data-lexical-poll-question');
+
+  if (question !== null) {
+    const node = $createPollNode(question);
+    return {
+      node
+    };
+  }
+
+  return null;
+}
+
+class PollNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'poll';
+  }
+
+  static clone(node) {
+    return new PollNode(node.__question, node.__options, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    const node = $createPollNode(serializedNode.question);
+    serializedNode.options.forEach(node.addOption);
+    return node;
+  }
+
+  constructor(question, options, key) {
+    super(key);
+
+    _defineProperty(this, "__question", void 0);
+
+    _defineProperty(this, "__options", void 0);
+
+    this.__question = question;
+    this.__options = options || [createPollOption(), createPollOption()];
+  }
+
+  exportJSON() {
+    return {
+      options: this.__options,
+      question: this.__question,
+      type: 'poll',
+      version: 1
+    };
+  }
+
+  addOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    options.push(option);
+    self.__options = options;
+  }
+
+  deleteOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options.splice(index, 1);
+    self.__options = options;
+  }
+
+  setOptionText(option, text) {
+    const self = this.getWritable();
+    const clonedOption = cloneOption(option, text);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+
+  toggleVote(option, clientID) {
+    const self = this.getWritable();
+    const votes = option.votes;
+    const votesClone = Array.from(votes);
+    const voteIndex = votes.indexOf(clientID);
+
+    if (voteIndex === -1) {
+      votesClone.push(clientID);
+    } else {
+      votesClone.splice(voteIndex, 1);
+    }
+
+    const clonedOption = cloneOption(option, option.text, votesClone);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+
+  static importDOM() {
+    return {
+      span: domNode => {
+        if (!domNode.hasAttribute('data-lexical-poll-question')) {
+          return null;
+        }
+
+        return {
+          conversion: convertPollElement,
+          priority: 2
+        };
+      }
+    };
+  }
+
+  exportDOM() {
+    const element = document.createElement('span');
+    element.setAttribute('data-lexical-poll-question', this.__question);
+    return {
+      element
+    };
+  }
+
+  createDOM() {
+    const elem = document.createElement('span');
+    elem.style.display = 'inline-block';
+    return elem;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  decorate() {
+    return /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(PollComponent$2, {
+      question: this.__question,
+      options: this.__options,
+      nodeKey: this.__key
+    }));
+  }
+
+}
+function $createPollNode(question) {
+  return new PollNode(question);
+}
+function $isPollNode(node) {
+  return node instanceof PollNode;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
+function PollPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([PollNode])) {
+      throw new Error('PollPlugin: PollNode not registered on editor');
+    }
+
+    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
+      const pollNode = $createPollNode(payload);
+      lexical.$insertNodes([pollNode]);
+
+      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
+        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
+      }
+
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
   return null;
 }
 
@@ -10356,7 +10389,8 @@ const defaultToolbarConfig = {
   alignLeft: true,
   alignCenter: true,
   alignRight: true,
-  alignJustify: true
+  alignJustify: true,
+  editorshow: true
 };
 function Editor({
   isCollab,
@@ -10754,6 +10788,101 @@ function getComputedTextAlign(node) {
 function generateStyleString(styles) {
   const styleEntries = [styles['text-align'] ? `text-align: ${styles['text-align']}` : null, styles.backgroundColor ? `background-color: ${styles.backgroundColor}` : null, styles.color ? `color: ${styles.color}` : null, styles.fontFamily ? `font-family: ${styles.fontFamily}` : null, styles.fontWeight ? `font-weight: ${styles.fontWeight}` : null, styles.fontSize ? `font-size: ${styles.fontSize}` : null, styles.textDecoration ? `text-decoration: ${styles.textDecoration}` : null, styles.display ? `display: ${styles.display}` : null, styles.height ? `height: ${styles.height}` : null, styles.borderRadius ? `border-radius: ${styles.borderRadius}` : null, styles.padding ? `padding: ${styles.padding}` : null, styles.width ? `width: ${styles.width}` : null].filter(Boolean);
   return styleEntries.join('; ');
+}
+
+const StickyComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return StickyComponent$1; }));
+class StickyNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'sticky';
+  }
+
+  static clone(node) {
+    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
+    const caption = serializedNode.caption;
+    const nestedEditor = stickyNode.__caption;
+    const editorState = nestedEditor.parseEditorState(caption.editorState);
+
+    if (!editorState.isEmpty()) {
+      nestedEditor.setEditorState(editorState);
+    }
+
+    return stickyNode;
+  }
+
+  constructor(x, y, color, caption, key) {
+    super(key);
+
+    _defineProperty(this, "__x", void 0);
+
+    _defineProperty(this, "__y", void 0);
+
+    _defineProperty(this, "__color", void 0);
+
+    _defineProperty(this, "__caption", void 0);
+
+    this.__x = x;
+    this.__y = y;
+    this.__caption = caption || lexical.createEditor();
+    this.__color = color;
+  }
+
+  exportJSON() {
+    return {
+      caption: this.__caption.toJSON(),
+      color: this.__color,
+      type: 'sticky',
+      version: 1,
+      xOffset: this.__x,
+      yOffset: this.__y
+    };
+  }
+
+  createDOM(config) {
+    const div = document.createElement('div');
+    div.style.display = 'contents';
+    return div;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  setPosition(x, y) {
+    const writable = this.getWritable();
+    writable.__x = x;
+    writable.__y = y;
+    lexical.$setSelection(null);
+  }
+
+  toggleColor() {
+    const writable = this.getWritable();
+    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
+  }
+
+  decorate(editor, config) {
+    return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
+      color: this.__color,
+      x: this.__x,
+      y: this.__y,
+      nodeKey: this.getKey(),
+      caption: this.__caption
+    })), document.body);
+  }
+
+  isIsolated() {
+    return true;
+  }
+
+}
+function $isStickyNode(node) {
+  return node instanceof StickyNode;
 }
 
 /**
@@ -28241,6 +28370,183 @@ var emojiList$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
+function getTotalVotes(options) {
+  return options.reduce((totalVotes, next) => {
+    return totalVotes + next.votes.length;
+  }, 0);
+}
+
+function PollOptionComponent({
+  option,
+  index,
+  options,
+  totalVotes,
+  withPollNode
+}) {
+  const {
+    clientID
+  } = LexicalCollaborationContext.useCollaborationContext();
+  const checkboxRef = React.useRef(null);
+  const votesArray = option.votes;
+  const checkedIndex = votesArray.indexOf(clientID);
+  const checked = checkedIndex !== -1;
+  const votes = votesArray.length;
+  const text = option.text;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionContainer"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: checkboxRef,
+    className: "PollNode__optionCheckbox",
+    type: "checkbox",
+    onChange: e => {
+      withPollNode(node => {
+        node.toggleVote(option, clientID);
+      });
+    },
+    checked: checked
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputWrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputVotes",
+    style: {
+      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "PollNode__optionInputVotesCount"
+  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
+    className: "PollNode__optionInput",
+    type: "text",
+    value: text,
+    onChange: e => {
+      const target = e.target;
+      const value = target.value;
+      const selectionStart = target.selectionStart;
+      const selectionEnd = target.selectionEnd;
+      withPollNode(node => {
+        node.setOptionText(option, value);
+      }, () => {
+        target.selectionStart = selectionStart;
+        target.selectionEnd = selectionEnd;
+      });
+    },
+    placeholder: `Option ${index + 1}`
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: options.length < 3,
+    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
+    "arial-label": "Remove",
+    onClick: () => {
+      withPollNode(node => {
+        node.deleteOption(option);
+      });
+    }
+  }));
+}
+
+function PollComponent({
+  question,
+  options,
+  nodeKey
+}) {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
+  const [selection, setSelection] = React.useState(null);
+  const ref = React.useRef(null);
+  const onDelete = React.useCallback(payload => {
+    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
+      const event = payload;
+      event.preventDefault();
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isPollNode(node)) {
+        node.remove();
+      }
+
+      setSelected(false);
+    }
+
+    return false;
+  }, [isSelected, nodeKey, setSelected]);
+  React.useEffect(() => {
+    return utils.mergeRegister(editor.registerUpdateListener(({
+      editorState
+    }) => {
+      setSelection(editorState.read(() => lexical.$getSelection()));
+    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
+      const event = payload;
+
+      if (event.target === ref.current) {
+        if (!event.shiftKey) {
+          clearSelection();
+        }
+
+        setSelected(!isSelected);
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
+  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
+
+  const withPollNode = (cb, onUpdate) => {
+    editor.update(() => {
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isPollNode(node)) {
+        cb(node);
+      }
+    }, {
+      onUpdate
+    });
+  };
+
+  const addOption = () => {
+    withPollNode(node => {
+      node.addOption(createPollOption());
+    });
+  };
+
+  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
+  return /*#__PURE__*/React.createElement("div", {
+    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
+    ref: ref
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__inner"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "PollNode__heading"
+  }, question), options.map((option, index) => {
+    const key = option.uid;
+    return /*#__PURE__*/React.createElement(PollOptionComponent, {
+      key: key,
+      withPollNode: withPollNode,
+      option: option,
+      index: index,
+      options: options,
+      totalVotes: totalVotes
+    });
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__footer"
+  }, /*#__PURE__*/React.createElement(Button, {
+    onClick: addOption,
+    small: true
+  }, "Add Option"))));
+}
+
+var PollComponent$1 = {
+  __proto__: null,
+  'default': PollComponent
+};
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
 const theme = { ...baseTheme,
   paragraph: 'StickyEditorTheme__paragraph'
 };
@@ -28467,183 +28773,6 @@ function StickyComponent({
 var StickyComponent$1 = {
   __proto__: null,
   'default': StickyComponent
-};
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
-function getTotalVotes(options) {
-  return options.reduce((totalVotes, next) => {
-    return totalVotes + next.votes.length;
-  }, 0);
-}
-
-function PollOptionComponent({
-  option,
-  index,
-  options,
-  totalVotes,
-  withPollNode
-}) {
-  const {
-    clientID
-  } = LexicalCollaborationContext.useCollaborationContext();
-  const checkboxRef = React.useRef(null);
-  const votesArray = option.votes;
-  const checkedIndex = votesArray.indexOf(clientID);
-  const checked = checkedIndex !== -1;
-  const votes = votesArray.length;
-  const text = option.text;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionContainer"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
-  }, /*#__PURE__*/React.createElement("input", {
-    ref: checkboxRef,
-    className: "PollNode__optionCheckbox",
-    type: "checkbox",
-    onChange: e => {
-      withPollNode(node => {
-        node.toggleVote(option, clientID);
-      });
-    },
-    checked: checked
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputWrapper"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputVotes",
-    style: {
-      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "PollNode__optionInputVotesCount"
-  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
-    className: "PollNode__optionInput",
-    type: "text",
-    value: text,
-    onChange: e => {
-      const target = e.target;
-      const value = target.value;
-      const selectionStart = target.selectionStart;
-      const selectionEnd = target.selectionEnd;
-      withPollNode(node => {
-        node.setOptionText(option, value);
-      }, () => {
-        target.selectionStart = selectionStart;
-        target.selectionEnd = selectionEnd;
-      });
-    },
-    placeholder: `Option ${index + 1}`
-  })), /*#__PURE__*/React.createElement("button", {
-    disabled: options.length < 3,
-    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
-    "arial-label": "Remove",
-    onClick: () => {
-      withPollNode(node => {
-        node.deleteOption(option);
-      });
-    }
-  }));
-}
-
-function PollComponent({
-  question,
-  options,
-  nodeKey
-}) {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
-  const [selection, setSelection] = React.useState(null);
-  const ref = React.useRef(null);
-  const onDelete = React.useCallback(payload => {
-    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
-      const event = payload;
-      event.preventDefault();
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isPollNode(node)) {
-        node.remove();
-      }
-
-      setSelected(false);
-    }
-
-    return false;
-  }, [isSelected, nodeKey, setSelected]);
-  React.useEffect(() => {
-    return utils.mergeRegister(editor.registerUpdateListener(({
-      editorState
-    }) => {
-      setSelection(editorState.read(() => lexical.$getSelection()));
-    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
-      const event = payload;
-
-      if (event.target === ref.current) {
-        if (!event.shiftKey) {
-          clearSelection();
-        }
-
-        setSelected(!isSelected);
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
-  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
-
-  const withPollNode = (cb, onUpdate) => {
-    editor.update(() => {
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isPollNode(node)) {
-        cb(node);
-      }
-    }, {
-      onUpdate
-    });
-  };
-
-  const addOption = () => {
-    withPollNode(node => {
-      node.addOption(createPollOption());
-    });
-  };
-
-  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
-  return /*#__PURE__*/React.createElement("div", {
-    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
-    ref: ref
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__inner"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "PollNode__heading"
-  }, question), options.map((option, index) => {
-    const key = option.uid;
-    return /*#__PURE__*/React.createElement(PollOptionComponent, {
-      key: key,
-      withPollNode: withPollNode,
-      option: option,
-      index: index,
-      options: options,
-      totalVotes: totalVotes
-    });
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__footer"
-  }, /*#__PURE__*/React.createElement(Button, {
-    onClick: addOption,
-    small: true
-  }, "Add Option"))));
-}
-
-var PollComponent$1 = {
-  __proto__: null,
-  'default': PollComponent
 };
 
 exports.Editor = Editor;

@@ -1,25 +1,25 @@
-![image info](/image/image.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image.png)
 
 
 Use the toolbar to adjust your text formatting:
 
 Turn into: Convert the selected text into headings, banners, a code block, or a quote block.
 
-![image info](/image/image1.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image1.png)
 
 
 Rich text: Bold, italics, underline, strikethrough, or inline code formatting.
 
 Text colors and Text highlights: Select from a range of vibrant text colors.
 
-![image info](/image/image2.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image2.png)
 
 
 Badges: Insert a colorful badge to emphasize or call attention to a line or block of content. You can also add some rich text formatting to the text in the badge like you can in a banner. 
 
 
 Alignment: Indent and set text to left, center, or right justified.
-![image info](/image/image5.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image5.png)
 
 
 Bulleted List: Format text into a bulleted list.
@@ -42,30 +42,30 @@ Redo: Redo your last action.
 
 
 
-![image info](/image/image3.png)
-![image info](/image/image4.png)
-![image info](/image/image6.png)
-![image info](/image/image7.png)
-![image info](/image/image8.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image3.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image4.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image6.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image7.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image8.png)
 
 ## /Slash Commands
 
 Use /Slash Commands, our custom shortcuts that quickly add rich text, attach images, move a task, change a due date, and more!
 
 
-![image info](./image/image9.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image9.png)
 
 
 
-![image info](./image/image10.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image10.png)
 
 
 ## Emojis
 Add emojis to give your content some flair!
-![image info](./image/image11.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image11.png)
 
-![image info](./image/image12.png)
-![image info](./image/image13.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image12.png)
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image13.png)
 
 
 
@@ -183,6 +183,7 @@ const toolbarConfig ={
   alignCenter: false,
   alignRight: false,
   alignJustify: false,
+  editorshow:true, 
 }
 
 
