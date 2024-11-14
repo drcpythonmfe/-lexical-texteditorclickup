@@ -108,6 +108,7 @@ function App({
       isRichText={true}
       onChange={setHtml}
       onUpload={uploadImg}
+      onDataSend={uploadImg}
       onChangeMode="html"
       onDataSend={onDataSend}
       dummyMentionsDatas={userList || []}
