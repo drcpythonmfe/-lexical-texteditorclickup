@@ -4809,7 +4809,8 @@ function InsertImageUploadedDialogBody({
 }
 function InsertImageDialog({
   activeEditor,
-  onClose
+  onClose,
+  handleClick
 }) {
   const [mode, setMode] = React.useState(null);
   const hasModifier = React.useRef(false);
@@ -4827,7 +4828,26 @@ function InsertImageDialog({
   }, [activeEditor]);
 
   const onClick = payload => {
-    activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
+    if (!payload.file) {
+      console.log('No file provided.');
+      return;
+    }
+
+    const validImageTypes = ['jpg', 'jpeg', 'png'];
+    const fileExtension = payload.file.name.split('.').pop()?.toLowerCase() ?? '';
+
+    if (validImageTypes.includes(fileExtension)) {
+      activeEditor.dispatchCommand(INSERT_IMAGE_COMMAND, payload);
+      onClose();
+    } else {
+      if (handleClick) {
+        if (payload.file) {
+          handleClick(payload.file);
+          onClose();
+        }
+      }
+    }
+
     onClose();
   };
 
@@ -5486,10 +5506,20 @@ function ComponentPickerMenuItem({
   }, option.title)));
 }
 
-function ComponentPickerMenuPlugin(config) {
+function ComponentPickerMenuPlugin({
+  config,
+  handleClickUpload
+}) {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const [modal, showModal] = useModal();
   const [queryString, setQueryString] = React.useState(null);
+
+  const uploadData = data => {
+    if (typeof handleClickUpload === 'function') {
+      handleClickUpload(data);
+    }
+  };
+
   const checkForTriggerMatch = LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch('/', {
     minLength: 0
   });
@@ -5669,10 +5699,11 @@ function ComponentPickerMenuPlugin(config) {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon image"
       }),
-      keywords: ['image', 'photo', 'picture', 'file', 'ppt', 'mp4', 'pdf', 'docux', 'word file'],
+      keywords: ['image', 'photo', 'picture', 'file', 'ppt', 'mp4', 'pdf', 'docux', 'word file', 'Upload Document', 'Document'],
       onSelect: () => showModal('Upload Document', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: editor,
-        onClose: onClose
+        onClose: onClose,
+        handleClick: uploadData
       }))
     }), // new ComponentPickerOption('Collapsible', {
     //   icon: <i className="icon caret-right" />,
@@ -5717,7 +5748,7 @@ function ComponentPickerMenuPlugin(config) {
     }, /*#__PURE__*/React.createElement("ul", null, options.map((option, i) => /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ComponentPickerMenuItem, {
       index: i,
       isSelected: selectedIndex === i,
-      dynamicOptions: config?.config,
+      dynamicOptions: config,
       onClick: () => {
         setHighlightedIndex(i);
         selectOptionAndCleanUp(option);
@@ -8208,11 +8239,12 @@ function ToolbarPlugin({
     ,
     buttonAriaLabel: "Insert specialized editor node",
     buttonIconClassName: "icon plus"
-  }, /*#__PURE__*/React.createElement(DropDownItem, {
+  }, handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       showModal('Insert Image', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: activeEditor,
-        onClose: onClose
+        onClose: onClose,
+        handleClick: handleClick
       }));
     },
     className: "item"
@@ -8220,7 +8252,7 @@ function ToolbarPlugin({
     className: "icon image"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Upload Document")), /*#__PURE__*/React.createElement(DropDownItem, {
+  }, "Upload Document"))), /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
       showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertTableDialog, {
         activeEditor: activeEditor,
@@ -9048,28 +9080,6 @@ function OnImageUploadPlugin({
                       const parts = imgUrl.url.split('.');
                       const extension = parts[parts.length - 1].toLowerCase();
                       const validImageTypes = ['jpg', 'jpeg', 'png'];
-                      const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
-                      const validPdfTypes = ['pdf'];
-                      const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
-                      let dataPayload = {
-                        url: imgUrl.url,
-                        id: String(imgUrl.id)
-                      };
-
-                      if (validVideoTypes.includes(extension)) {
-                        editor.dispatchCommand(INSERT_VIDEO_COMMAND, dataPayload);
-                        return;
-                      }
-
-                      if (validPdfTypes.includes(extension)) {
-                        editor.dispatchCommand(INSERT_PDF_COMMAND, dataPayload);
-                        return;
-                      }
-
-                      if (validOfficeTypes.includes(extension)) {
-                        editor.dispatchCommand(INSERT_OFFICE_COMMAND, dataPayload);
-                        return;
-                      }
 
                       if (validImageTypes.includes(extension)) {
                         const preloadImage = new Image();
@@ -10444,36 +10454,42 @@ function Editor({
     };
   }, [isSmallWidthViewport]);
 
-  const handleClick = event => {
-    const selectedFile = event.target.files?.[0];
-
-    if (selectedFile) {
+  const handleFileUpload = async file => {
+    if (file) {
       if (onDataSend) {
-        onDataSend(selectedFile).then(res => {
-          const parts = res?.url?.split('.');
-          const extension = parts[parts.length - 1]?.toLowerCase();
+        try {
+          const res = await onDataSend(file);
+          const urlParts = res?.url?.split('.');
+          const extension = urlParts?.pop()?.toLowerCase();
           const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
           const validPdfTypes = ['pdf'];
           const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
+          let dataPayload = {
+            url: res?.url,
+            id: String(res?.id)
+          };
 
-          if (validVideoTypes.includes(extension)) {
-            editor.dispatchCommand(INSERT_VIDEO_COMMAND, res);
-            return;
+          if (extension) {
+            if (validVideoTypes.includes(extension)) {
+              editor.dispatchCommand(INSERT_VIDEO_COMMAND, dataPayload);
+            } else if (validPdfTypes.includes(extension)) {
+              editor.dispatchCommand(INSERT_PDF_COMMAND, dataPayload);
+            } else if (validOfficeTypes.includes(extension)) {
+              editor.dispatchCommand(INSERT_OFFICE_COMMAND, dataPayload);
+            } else {
+              console.error('Unsupported file type.');
+            }
+          } else {
+            console.error('File extension could not be determined.');
           }
-
-          if (validPdfTypes.includes(extension)) {
-            editor.dispatchCommand(INSERT_PDF_COMMAND, res);
-            return;
-          }
-
-          if (validOfficeTypes.includes(extension)) {
-            editor.dispatchCommand(INSERT_OFFICE_COMMAND, res);
-            return;
-          }
-        });
+        } catch (error) {
+          console.error('Error uploading file:', error);
+        }
       } else {
         console.error('onDataSend function is not defined');
       }
+    } else {
+      console.error('No file provided.');
     }
   };
 
@@ -10484,6 +10500,7 @@ function Editor({
   }, isMaxLength && /*#__PURE__*/React.createElement(MaxLengthPlugin, {
     maxLength: 30
   }), /*#__PURE__*/React.createElement(DragDropPaste, null), /*#__PURE__*/React.createElement(LexicalAutoFocusPlugin.AutoFocusPlugin, null), /*#__PURE__*/React.createElement(LexicalClearEditorPlugin.ClearEditorPlugin, null), /*#__PURE__*/React.createElement(CommentPlugin, null), /*#__PURE__*/React.createElement(ComponentPickerMenuPlugin, {
+    handleClickUpload: handleFileUpload,
     config: normToolbarConfig
   }), /*#__PURE__*/React.createElement(EmojiPickerPlugin, null), /*#__PURE__*/React.createElement(AutoEmbedPlugin, null), /*#__PURE__*/React.createElement(MentionsPlugin, {
     dummyMentionsDatas: dummyMentionsDatas
@@ -10528,7 +10545,7 @@ function Editor({
     anchorElem: floatingAnchorElem,
     config: normToolbarConfig,
     isRichText: isRichText,
-    handleClick: handleClick
+    handleClick: handleFileUpload
   })), editorContext.extensions.plugins.map(([extName, Plugin]) => /*#__PURE__*/React.createElement(Plugin, {
     key: extName
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(LexicalPlainTextPlugin.PlainTextPlugin, {
@@ -10544,7 +10561,7 @@ function Editor({
     isRichText: isRichText
   })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
     config: normToolbarConfig,
-    handleClick: handleClick,
+    handleClick: handleFileUpload,
     floatingText: false
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
 }

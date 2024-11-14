@@ -22,7 +22,10 @@ export declare type EditorProps = {
     onChangeMode?: 'html' | 'json';
     toolbarConfig?: ToolbarConfig;
     onUpload?: OnImageUpload;
-    onDataSend?: ((data: any) => void | undefined | any) | undefined;
+    onDataSend?: (img: File) => Promise<{
+        url: string;
+        id: number;
+    }>;
     rootClassName?: string;
     containerClassName?: string;
     dummyMentionsDatas?: string[];

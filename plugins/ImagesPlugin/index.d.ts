@@ -9,9 +9,10 @@ export declare function InsertImageUriDialogBody({ onClick, }: {
 export declare function InsertImageUploadedDialogBody({ onClick, }: {
     onClick: (payload: InsertImagePayload) => void;
 }): JSX.Element;
-export declare function InsertImageDialog({ activeEditor, onClose, }: {
+export declare function InsertImageDialog({ activeEditor, onClose, handleClick, }: {
     activeEditor: LexicalEditor;
     onClose: () => void;
+    handleClick?: ((data: any) => void | undefined | any) | undefined;
 }): JSX.Element;
 export default function ImagesPlugin({ captionsEnabled, }: {
     captionsEnabled?: boolean;

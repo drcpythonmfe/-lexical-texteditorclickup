@@ -6,4 +6,9 @@
  *
  */
 /// <reference types="react" />
-export default function ComponentPickerMenuPlugin(config: any): JSX.Element;
+interface ComponentPickerMenuPluginProps {
+    config: any;
+    handleClickUpload?: ((data: any) => void | undefined | any) | undefined;
+}
+export default function ComponentPickerMenuPlugin({ config, handleClickUpload, }: ComponentPickerMenuPluginProps): JSX.Element;
+export {};
