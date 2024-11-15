@@ -58,9 +58,9 @@ var useLexicalNodeSelection = require('@lexical/react/useLexicalNodeSelection');
 var useLexicalTextEntity = require('@lexical/react/useLexicalTextEntity');
 var LexicalLinkPlugin = require('@lexical/react/LexicalLinkPlugin');
 var LexicalTreeView = require('@lexical/react/LexicalTreeView');
-var clipboard = require('@lexical/clipboard');
 var yWebsocket = require('y-websocket');
 var LexicalContentEditable$1 = require('@lexical/react/LexicalContentEditable');
+var clipboard = require('@lexical/clipboard');
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
@@ -5022,428 +5022,6 @@ function getDragSelection(event) {
   return range;
 }
 
-const cellHTMLCache = new Map();
-const cellTextContentCache = new Map();
-const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-
-const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":${text},"type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
-
-const TableComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return TableComponent$1; }));
-function createUID$1() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-}
-
-function createCell(type) {
-  return {
-    colSpan: 1,
-    id: createUID$1(),
-    json: emptyEditorJSON,
-    type,
-    width: null
-  };
-}
-
-function createRow() {
-  return {
-    cells: [],
-    height: null,
-    id: createUID$1()
-  };
-}
-function extractRowsFromHTML(tableElem) {
-  const rowElems = tableElem.querySelectorAll('tr');
-  const rows = [];
-
-  for (let y = 0; y < rowElems.length; y++) {
-    const rowElem = rowElems[y];
-    const cellElems = rowElem.querySelectorAll('td,th');
-
-    if (!cellElems || cellElems.length === 0) {
-      continue;
-    }
-
-    const cells = [];
-
-    for (let x = 0; x < cellElems.length; x++) {
-      const cellElem = cellElems[x];
-      const isHeader = cellElem.nodeName === 'TH';
-      const cell = createCell(isHeader ? 'header' : 'normal');
-      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
-      cells.push(cell);
-    }
-
-    const row = createRow();
-    row.cells = cells;
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function convertTableElement(domNode) {
-  const rowElems = domNode.querySelectorAll('tr');
-
-  if (!rowElems || rowElems.length === 0) {
-    return null;
-  }
-
-  const rows = [];
-
-  for (let y = 0; y < rowElems.length; y++) {
-    const rowElem = rowElems[y];
-    const cellElems = rowElem.querySelectorAll('td,th');
-
-    if (!cellElems || cellElems.length === 0) {
-      continue;
-    }
-
-    const cells = [];
-
-    for (let x = 0; x < cellElems.length; x++) {
-      const cellElem = cellElems[x];
-      const isHeader = cellElem.nodeName === 'TH';
-      const cell = createCell(isHeader ? 'header' : 'normal');
-      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
-      cells.push(cell);
-    }
-
-    const row = createRow();
-    row.cells = cells;
-    rows.push(row);
-  }
-
-  return {
-    node: $createTableNode(rows)
-  };
-}
-
-function exportTableCellsToHTML(rows, rect) {
-  const table = document.createElement('table');
-  const colGroup = document.createElement('colgroup');
-  const tBody = document.createElement('tbody');
-  const firstRow = rows[0];
-
-  for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : firstRow.cells.length); x++) {
-    const col = document.createElement('col');
-    colGroup.append(col);
-  }
-
-  for (let y = rect != null ? rect.startY : 0; y < (rect != null ? rect.endY + 1 : rows.length); y++) {
-    const row = rows[y];
-    const cells = row.cells;
-    const rowElem = document.createElement('tr');
-
-    for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : cells.length); x++) {
-      const cell = cells[x];
-      const cellElem = document.createElement(cell.type === 'header' ? 'th' : 'td');
-      cellElem.innerHTML = cellHTMLCache.get(cell.json) || '';
-      rowElem.appendChild(cellElem);
-    }
-
-    tBody.appendChild(rowElem);
-  }
-
-  table.appendChild(colGroup);
-  table.appendChild(tBody);
-  return table;
-}
-class TableNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'tablesheet';
-  }
-
-  static clone(node) {
-    return new TableNode(Array.from(node.__rows), node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    return $createTableNode(serializedNode.rows);
-  }
-
-  exportJSON() {
-    return {
-      rows: this.__rows,
-      type: 'tablesheet',
-      version: 1
-    };
-  }
-
-  static importDOM() {
-    return {
-      table: _node => ({
-        conversion: convertTableElement,
-        priority: 0
-      })
-    };
-  }
-
-  exportDOM() {
-    return {
-      element: exportTableCellsToHTML(this.__rows)
-    };
-  }
-
-  constructor(rows, key) {
-    super(key);
-
-    _defineProperty(this, "__rows", void 0);
-
-    this.__rows = rows || [];
-  }
-
-  createDOM() {
-    return document.createElement('div');
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  mergeRows(startX, startY, mergeRows) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const endY = Math.min(rows.length, startY + mergeRows.length);
-
-    for (let y = startY; y < endY; y++) {
-      const row = rows[y];
-      const mergeRow = mergeRows[y - startY];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const mergeCells = mergeRow.cells;
-      const endX = Math.min(cells.length, startX + mergeCells.length);
-
-      for (let x = startX; x < endX; x++) {
-        const cell = cells[x];
-        const mergeCell = mergeCells[x - startX];
-        const cellClone = { ...cell,
-          json: mergeCell.json,
-          type: mergeCell.type
-        };
-        cellsClone[x] = cellClone;
-      }
-
-      rows[y] = rowClone;
-    }
-  }
-
-  updateCellJSON(x, y, json) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const row = rows[y];
-    const cells = row.cells;
-    const cell = cells[x];
-    const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
-      json
-    };
-    const rowClone = { ...row,
-      cells: cellsClone
-    };
-    cellsClone[x] = cellClone;
-    rows[y] = rowClone;
-  }
-
-  updateCellType(x, y, type) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const row = rows[y];
-    const cells = row.cells;
-    const cell = cells[x];
-    const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
-      type
-    };
-    const rowClone = { ...row,
-      cells: cellsClone
-    };
-    cellsClone[x] = cellClone;
-    rows[y] = rowClone;
-  }
-
-  insertColumnAt(x) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const type = (cells[x] || cells[x - 1]).type;
-      cellsClone.splice(x, 0, createCell(type));
-      rows[y] = rowClone;
-    }
-  }
-
-  deleteColumnAt(x) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      cellsClone.splice(x, 1);
-      rows[y] = rowClone;
-    }
-  }
-
-  addColumns(count) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const type = cells[cells.length - 1].type;
-
-      for (let x = 0; x < count; x++) {
-        cellsClone.push(createCell(type));
-      }
-
-      rows[y] = rowClone;
-    }
-  }
-
-  insertRowAt(y) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const prevRow = rows[y] || rows[y - 1];
-    const cellCount = prevRow.cells.length;
-    const row = createRow();
-
-    for (let x = 0; x < cellCount; x++) {
-      const cell = createCell(prevRow.cells[x].type);
-      row.cells.push(cell);
-    }
-
-    rows.splice(y, 0, row);
-  }
-
-  deleteRowAt(y) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    rows.splice(y, 1);
-  }
-
-  addRows(count) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const prevRow = rows[rows.length - 1];
-    const cellCount = prevRow.cells.length;
-
-    for (let y = 0; y < count; y++) {
-      const row = createRow();
-
-      for (let x = 0; x < cellCount; x++) {
-        const cell = createCell(prevRow.cells[x].type);
-        row.cells.push(cell);
-      }
-
-      rows.push(row);
-    }
-  }
-
-  updateColumnWidth(x, width) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      cellsClone[x].width = width;
-      rows[y] = rowClone;
-    }
-  }
-
-  decorate(_, config) {
-    return /*#__PURE__*/React.createElement(React.Suspense, null, /*#__PURE__*/React.createElement(TableComponent$2, {
-      nodeKey: this.__key,
-      theme: config.theme,
-      rows: this.__rows
-    }));
-  }
-
-  isInline() {
-    return false;
-  }
-
-}
-function $isTableNode(node) {
-  return node instanceof TableNode;
-}
-function $createTableNode(rows) {
-  return new TableNode(rows);
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
-const CellContext = /*#__PURE__*/React.createContext({
-  cellEditorConfig: null,
-  cellEditorPlugins: null,
-  set: () => {// Empty
-  }
-});
-function InsertTableDialog({
-  activeEditor,
-  onClose
-}) {
-  const [rows, setRows] = React.useState('5');
-  const [columns, setColumns] = React.useState('5');
-
-  const onClick = () => {
-    activeEditor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
-      columns,
-      rows
-    });
-    onClose();
-  };
-
-  const newLocal = Number(columns) > 5 || Number(rows) > 5;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
-    label: "No of rows",
-    type: "number",
-    onChange: setRows,
-    value: rows
-  }), /*#__PURE__*/React.createElement(TextInput, {
-    label: "No of columns",
-    type: "number",
-    onChange: setColumns,
-    value: columns
-  }), /*#__PURE__*/React.createElement(DialogActions, {
-    "data-test-id": "table-model-confirm-insert"
-  }, newLocal ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
-    onClick: onClick,
-    disabled: true
-  }, "Confirm"), ' ') : /*#__PURE__*/React.createElement(Button, {
-    onClick: onClick,
-    disabled: columns == '' || rows == '' ? true : false
-  }, "Confirm")));
-}
-
 class ComponentPickerOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
   // What shows up in the editor
   // Icon for display
@@ -5568,7 +5146,7 @@ function ComponentPickerMenuPlugin({
     return options;
   }, [editor, queryString]);
   const options = React.useMemo(() => {
-    const baseOptions = [new ComponentPickerOption('Paragraph', {
+    const baseOptions = [...(config.paragraph ? [new ComponentPickerOption('Paragraph', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon paragraph"
       }),
@@ -5580,9 +5158,9 @@ function ComponentPickerMenuPlugin({
           selection.$setBlocksType_experimental(selection$1, () => lexical.$createParagraphNode());
         }
       })
-    }), ...Array.from({
+    })] : []), ...(config.heading1 || config.heading2 || config.heading3 ? Array.from({
       length: 3
-    }, (_, i) => i + 1).map(n => new ComponentPickerOption(`Heading ${n}`, {
+    }, (_, i) => i + 1).filter(n => config[`heading${n}`]).map(n => new ComponentPickerOption(`Heading ${n}`, {
       icon: /*#__PURE__*/React.createElement("i", {
         className: `icon h${n}`
       }),
@@ -5591,20 +5169,27 @@ function ComponentPickerMenuPlugin({
         const selection$1 = lexical.$getSelection();
 
         if (lexical.$isRangeSelection(selection$1)) {
-          selection.$setBlocksType_experimental(selection$1, () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
-          richText.$createHeadingNode(`h${n}`));
+          selection.$setBlocksType_experimental(selection$1, () => richText.$createHeadingNode(`h${n}`));
         }
       })
-    })), new ComponentPickerOption('Table', {
+    })) : []), ...(config.table ? [new ComponentPickerOption('Table', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon table"
       }),
       keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
-      onSelect: () => showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertTableDialog, {
-        activeEditor: editor,
-        onClose: onClose
-      }))
-    }), // new ComponentPickerOption('Table (Experimental)', {
+      onSelect: () => editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
+        columns: 3,
+        rows: 3
+      })
+    })] : []), // new ComponentPickerOption('Table', {
+    //   icon: <i className="icon table" />,
+    //   keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
+    //   onSelect: () =>
+    //     showModal('Insert Table', (onClose) => (
+    //       <InsertTableDialog activeEditor={editor} onClose={onClose} />
+    //     )),
+    // }),
+    // new ComponentPickerOption('Table (Experimental)', {
     //   icon: <i className="icon table" />,
     //   keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
     //   onSelect: () =>
@@ -5612,25 +5197,25 @@ function ComponentPickerMenuPlugin({
     //       <InsertNewTableDialog activeEditor={editor} onClose={onClose} />
     //     )),
     // }),
-    new ComponentPickerOption('Numbered List', {
+    ...(config.numberedList ? [new ComponentPickerOption('Numbered List', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon number"
       }),
       keywords: ['numbered list', 'ordered list', 'ol'],
       onSelect: () => editor.dispatchCommand(list.INSERT_ORDERED_LIST_COMMAND, undefined)
-    }), new ComponentPickerOption('Bulleted List', {
+    })] : []), ...(config.bulletedList ? [new ComponentPickerOption('Bulleted List', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon bullet"
       }),
       keywords: ['bulleted list', 'unordered list', 'ul'],
       onSelect: () => editor.dispatchCommand(list.INSERT_UNORDERED_LIST_COMMAND, undefined)
-    }), new ComponentPickerOption('Check List', {
+    })] : []), ...(config.checkList ? [new ComponentPickerOption('Check List', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon check"
       }),
       keywords: ['check list', 'todo list'],
       onSelect: () => editor.dispatchCommand(list.INSERT_CHECK_LIST_COMMAND, undefined)
-    }), // new ComponentPickerOption('Quote', {
+    })] : []), // new ComponentPickerOption('Quote', {
     //   icon: <i className="icon quote" />,
     //   keywords: ['block quote'],
     //   onSelect: () =>
@@ -5674,7 +5259,7 @@ function ComponentPickerMenuPlugin({
     //       <InsertPollDialog activeEditor={editor} onClose={onClose} />
     //     )),
     // }),
-    ...EmbedConfigs.map(embedConfig => new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
+    ...EmbedConfigs.filter(config => config.type === 'youtube' ? config.embedYoutubeVideo : config.type === 'video' ? config.embedVideo : config.type === 'pdf' ? config.embedPdf : config.type === 'office' ? config.embedOffice : false).map(embedConfig => new ComponentPickerOption(`Embed ${embedConfig.contentName}`, {
       icon: embedConfig.icon,
       keywords: [...embedConfig.keywords, 'embed'],
       onSelect: () => editor.dispatchCommand(LexicalAutoEmbedPlugin.INSERT_EMBED_COMMAND, embedConfig.type)
@@ -5695,7 +5280,7 @@ function ComponentPickerMenuPlugin({
     //       src: '',
     //     }),
     // }),
-    new ComponentPickerOption('Upload Documents', {
+    ...(config.UploadDocuments ? [new ComponentPickerOption('Upload Documents', {
       icon: /*#__PURE__*/React.createElement("i", {
         className: "icon image"
       }),
@@ -5705,20 +5290,19 @@ function ComponentPickerMenuPlugin({
         onClose: onClose,
         handleClick: uploadData
       }))
-    }), // new ComponentPickerOption('Collapsible', {
+    })] : []), // new ComponentPickerOption('Collapsible', {
     //   icon: <i className="icon caret-right" />,
     //   keywords: ['collapse', 'collapsible', 'toggle'],
     //   onSelect: () =>
     //     editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined),
     // }),
-    ...['left', 'center', 'right', 'justify'].map(alignment => new ComponentPickerOption(`Align ${alignment}`, {
+    ...(config.alignments ? ['left', 'center', 'right', 'justify'].filter(alignment => config[`align${alignment.charAt(0).toUpperCase() + alignment.slice(1)}`]).map(alignment => new ComponentPickerOption(`Align ${alignment}`, {
       icon: /*#__PURE__*/React.createElement("i", {
         className: `icon ${alignment}-align`
       }),
       keywords: ['align', 'justify', alignment],
-      onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
-      editor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, alignment)
-    }))];
+      onSelect: () => editor.dispatchCommand(lexical.FORMAT_ELEMENT_COMMAND, alignment)
+    })) : [])];
     const dynamicOptions = getDynamicOptions();
     return queryString ? [...dynamicOptions, ...baseOptions.filter(option => {
       return new RegExp(queryString, 'gi').exec(option.title) || option.keywords != null ? option.keywords.some(keyword => new RegExp(queryString, 'gi').exec(keyword)) : false;
@@ -5734,6 +5318,7 @@ function ComponentPickerMenuPlugin({
       closeMenu();
     });
   }, [editor]);
+  console.log(config, options);
   return /*#__PURE__*/React.createElement(React.Fragment, null, modal, /*#__PURE__*/React.createElement(LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
@@ -7721,6 +7306,8 @@ function ToolbarPlugin({
   const [isRTL, setIsRTL] = React.useState(false);
   const [codeLanguage, setCodeLanguage] = React.useState('');
   const [isEditable, setIsEditable] = React.useState(() => editor.isEditable());
+  React.useState('5');
+  React.useState('5');
   useEditorComposerContext();
   const updateToolbar = React.useCallback(() => {
     const selection$1 = lexical.$getSelection();
@@ -8252,19 +7839,7 @@ function ToolbarPlugin({
     className: "icon image"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Upload Document"))), /*#__PURE__*/React.createElement(DropDownItem, {
-    onClick: () => {
-      showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertTableDialog, {
-        activeEditor: activeEditor,
-        onClose: onClose
-      }));
-    },
-    className: "item"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon table"
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Table"))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+  }, "Upload Document")))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "",
@@ -9122,14 +8697,14 @@ function OnImageUploadPlugin({
 const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
 () => Promise.resolve().then(function () { return PollComponent$1; }));
 
-function createUID() {
+function createUID$1() {
   return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
 }
 
 function createPollOption(text = '') {
   return {
     text,
-    uid: createUID(),
+    uid: createUID$1(),
     votes: []
   };
 }
@@ -10902,6 +10477,377 @@ function $isStickyNode(node) {
   return node instanceof StickyNode;
 }
 
+const cellHTMLCache = new Map();
+const cellTextContentCache = new Map();
+const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+
+const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":${text},"type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+
+const TableComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return TableComponent$1; }));
+function createUID() {
+  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+}
+
+function createCell(type) {
+  return {
+    colSpan: 1,
+    id: createUID(),
+    json: emptyEditorJSON,
+    type,
+    width: null
+  };
+}
+
+function createRow() {
+  return {
+    cells: [],
+    height: null,
+    id: createUID()
+  };
+}
+function extractRowsFromHTML(tableElem) {
+  const rowElems = tableElem.querySelectorAll('tr');
+  const rows = [];
+
+  for (let y = 0; y < rowElems.length; y++) {
+    const rowElem = rowElems[y];
+    const cellElems = rowElem.querySelectorAll('td,th');
+
+    if (!cellElems || cellElems.length === 0) {
+      continue;
+    }
+
+    const cells = [];
+
+    for (let x = 0; x < cellElems.length; x++) {
+      const cellElem = cellElems[x];
+      const isHeader = cellElem.nodeName === 'TH';
+      const cell = createCell(isHeader ? 'header' : 'normal');
+      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
+      cells.push(cell);
+    }
+
+    const row = createRow();
+    row.cells = cells;
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function convertTableElement(domNode) {
+  const rowElems = domNode.querySelectorAll('tr');
+
+  if (!rowElems || rowElems.length === 0) {
+    return null;
+  }
+
+  const rows = [];
+
+  for (let y = 0; y < rowElems.length; y++) {
+    const rowElem = rowElems[y];
+    const cellElems = rowElem.querySelectorAll('td,th');
+
+    if (!cellElems || cellElems.length === 0) {
+      continue;
+    }
+
+    const cells = [];
+
+    for (let x = 0; x < cellElems.length; x++) {
+      const cellElem = cellElems[x];
+      const isHeader = cellElem.nodeName === 'TH';
+      const cell = createCell(isHeader ? 'header' : 'normal');
+      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
+      cells.push(cell);
+    }
+
+    const row = createRow();
+    row.cells = cells;
+    rows.push(row);
+  }
+
+  return {
+    node: $createTableNode(rows)
+  };
+}
+
+function exportTableCellsToHTML(rows, rect) {
+  const table = document.createElement('table');
+  const colGroup = document.createElement('colgroup');
+  const tBody = document.createElement('tbody');
+  const firstRow = rows[0];
+
+  for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : firstRow.cells.length); x++) {
+    const col = document.createElement('col');
+    colGroup.append(col);
+  }
+
+  for (let y = rect != null ? rect.startY : 0; y < (rect != null ? rect.endY + 1 : rows.length); y++) {
+    const row = rows[y];
+    const cells = row.cells;
+    const rowElem = document.createElement('tr');
+
+    for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : cells.length); x++) {
+      const cell = cells[x];
+      const cellElem = document.createElement(cell.type === 'header' ? 'th' : 'td');
+      cellElem.innerHTML = cellHTMLCache.get(cell.json) || '';
+      rowElem.appendChild(cellElem);
+    }
+
+    tBody.appendChild(rowElem);
+  }
+
+  table.appendChild(colGroup);
+  table.appendChild(tBody);
+  return table;
+}
+class TableNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'tablesheet';
+  }
+
+  static clone(node) {
+    return new TableNode(Array.from(node.__rows), node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    return $createTableNode(serializedNode.rows);
+  }
+
+  exportJSON() {
+    return {
+      rows: this.__rows,
+      type: 'tablesheet',
+      version: 1
+    };
+  }
+
+  static importDOM() {
+    return {
+      table: _node => ({
+        conversion: convertTableElement,
+        priority: 0
+      })
+    };
+  }
+
+  exportDOM() {
+    return {
+      element: exportTableCellsToHTML(this.__rows)
+    };
+  }
+
+  constructor(rows, key) {
+    super(key);
+
+    _defineProperty(this, "__rows", void 0);
+
+    this.__rows = rows || [];
+  }
+
+  createDOM() {
+    return document.createElement('div');
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  mergeRows(startX, startY, mergeRows) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const endY = Math.min(rows.length, startY + mergeRows.length);
+
+    for (let y = startY; y < endY; y++) {
+      const row = rows[y];
+      const mergeRow = mergeRows[y - startY];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const mergeCells = mergeRow.cells;
+      const endX = Math.min(cells.length, startX + mergeCells.length);
+
+      for (let x = startX; x < endX; x++) {
+        const cell = cells[x];
+        const mergeCell = mergeCells[x - startX];
+        const cellClone = { ...cell,
+          json: mergeCell.json,
+          type: mergeCell.type
+        };
+        cellsClone[x] = cellClone;
+      }
+
+      rows[y] = rowClone;
+    }
+  }
+
+  updateCellJSON(x, y, json) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const row = rows[y];
+    const cells = row.cells;
+    const cell = cells[x];
+    const cellsClone = Array.from(cells);
+    const cellClone = { ...cell,
+      json
+    };
+    const rowClone = { ...row,
+      cells: cellsClone
+    };
+    cellsClone[x] = cellClone;
+    rows[y] = rowClone;
+  }
+
+  updateCellType(x, y, type) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const row = rows[y];
+    const cells = row.cells;
+    const cell = cells[x];
+    const cellsClone = Array.from(cells);
+    const cellClone = { ...cell,
+      type
+    };
+    const rowClone = { ...row,
+      cells: cellsClone
+    };
+    cellsClone[x] = cellClone;
+    rows[y] = rowClone;
+  }
+
+  insertColumnAt(x) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const type = (cells[x] || cells[x - 1]).type;
+      cellsClone.splice(x, 0, createCell(type));
+      rows[y] = rowClone;
+    }
+  }
+
+  deleteColumnAt(x) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      cellsClone.splice(x, 1);
+      rows[y] = rowClone;
+    }
+  }
+
+  addColumns(count) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const type = cells[cells.length - 1].type;
+
+      for (let x = 0; x < count; x++) {
+        cellsClone.push(createCell(type));
+      }
+
+      rows[y] = rowClone;
+    }
+  }
+
+  insertRowAt(y) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[y] || rows[y - 1];
+    const cellCount = prevRow.cells.length;
+    const row = createRow();
+
+    for (let x = 0; x < cellCount; x++) {
+      const cell = createCell(prevRow.cells[x].type);
+      row.cells.push(cell);
+    }
+
+    rows.splice(y, 0, row);
+  }
+
+  deleteRowAt(y) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    rows.splice(y, 1);
+  }
+
+  addRows(count) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[rows.length - 1];
+    const cellCount = prevRow.cells.length;
+
+    for (let y = 0; y < count; y++) {
+      const row = createRow();
+
+      for (let x = 0; x < cellCount; x++) {
+        const cell = createCell(prevRow.cells[x].type);
+        row.cells.push(cell);
+      }
+
+      rows.push(row);
+    }
+  }
+
+  updateColumnWidth(x, width) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      cellsClone[x].width = width;
+      rows[y] = rowClone;
+    }
+  }
+
+  decorate(_, config) {
+    return /*#__PURE__*/React.createElement(React.Suspense, null, /*#__PURE__*/React.createElement(TableComponent$2, {
+      nodeKey: this.__key,
+      theme: config.theme,
+      rows: this.__rows
+    }));
+  }
+
+  isInline() {
+    return false;
+  }
+
+}
+function $isTableNode(node) {
+  return node instanceof TableNode;
+}
+function $createTableNode(rows) {
+  return new TableNode(rows);
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -12151,1427 +12097,6 @@ function ImageComponent({
 var ImageComponent$1 = {
   __proto__: null,
   'default': ImageComponent
-};
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const NO_CELLS = [];
-
-function $createSelectAll() {
-  const sel = lexical.$createRangeSelection();
-  sel.focus.set('root', lexical.$getRoot().getChildrenSize(), 'element');
-  return sel;
-}
-
-function createEmptyParagraphHTML(theme) {
-  return `<p class="${theme.paragraph}"><br></p>`;
-}
-
-function focusCell(tableElem, id) {
-  const cellElem = tableElem.querySelector(`[data-id=${id}]`);
-
-  if (cellElem == null) {
-    return;
-  }
-
-  cellElem.focus();
-}
-
-function isStartingResize(target) {
-  return target.nodeType === 1 && target.hasAttribute('data-table-resize');
-}
-
-function generateHTMLFromJSON(editorStateJSON, cellEditor) {
-  const editorState = cellEditor.parseEditorState(editorStateJSON);
-  let html$1 = cellHTMLCache.get(editorStateJSON);
-
-  if (html$1 === undefined) {
-    html$1 = editorState.read(() => html.$generateHtmlFromNodes(cellEditor, null));
-    const textContent = editorState.read(() => lexical.$getRoot().getTextContent());
-    cellHTMLCache.set(editorStateJSON, html$1);
-    cellTextContentCache.set(editorStateJSON, textContent);
-  }
-
-  return html$1;
-}
-
-function getCurrentDocument(editor) {
-  const rootElement = editor.getRootElement();
-  return rootElement !== null ? rootElement.ownerDocument : document;
-}
-
-function isCopy(keyCode, shiftKey, metaKey, ctrlKey) {
-  if (shiftKey) {
-    return false;
-  }
-
-  if (keyCode === 67) {
-    return IS_APPLE ? metaKey : ctrlKey;
-  }
-
-  return false;
-}
-
-function isCut(keyCode, shiftKey, metaKey, ctrlKey) {
-  if (shiftKey) {
-    return false;
-  }
-
-  if (keyCode === 88) {
-    return IS_APPLE ? metaKey : ctrlKey;
-  }
-
-  return false;
-}
-
-function isPaste(keyCode, shiftKey, metaKey, ctrlKey) {
-  if (shiftKey) {
-    return false;
-  }
-
-  if (keyCode === 86) {
-    return IS_APPLE ? metaKey : ctrlKey;
-  }
-
-  return false;
-}
-
-function getCellID(domElement) {
-  let node = domElement;
-
-  while (node !== null) {
-    const possibleID = node.getAttribute('data-id');
-
-    if (possibleID != null) {
-      return possibleID;
-    }
-
-    node = node.parentElement;
-  }
-
-  return null;
-}
-
-function getTableCellWidth(domElement) {
-  let node = domElement;
-
-  while (node !== null) {
-    if (node.nodeName === 'TH' || node.nodeName === 'TD') {
-      return node.getBoundingClientRect().width;
-    }
-
-    node = node.parentElement;
-  }
-
-  return 0;
-}
-
-function $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn) {
-  for (const id of ids) {
-    const cell = getCell(rows, id, cellCoordMap);
-
-    if (cell !== null && cellEditor !== null) {
-      const editorState = cellEditor.parseEditorState(cell.json);
-      cellEditor._headless = true;
-      cellEditor.setEditorState(editorState);
-      cellEditor.update(fn, {
-        discrete: true
-      });
-      cellEditor._headless = false;
-      const newJSON = JSON.stringify(cellEditor.getEditorState());
-      updateTableNode(tableNode => {
-        const [x, y] = cellCoordMap.get(id);
-        lexical.$addUpdateTag('history-push');
-        tableNode.updateCellJSON(x, y, newJSON);
-      });
-    }
-  }
-}
-
-function isTargetOnPossibleUIControl(target) {
-  let node = target;
-
-  while (node !== null) {
-    const nodeName = node.nodeName;
-
-    if (nodeName === 'BUTTON' || nodeName === 'INPUT' || nodeName === 'TEXTAREA') {
-      return true;
-    }
-
-    node = node.parentElement;
-  }
-
-  return false;
-}
-
-function getSelectedRect(startID, endID, cellCoordMap) {
-  const startCoords = cellCoordMap.get(startID);
-  const endCoords = cellCoordMap.get(endID);
-
-  if (startCoords === undefined || endCoords === undefined) {
-    return null;
-  }
-
-  const startX = Math.min(startCoords[0], endCoords[0]);
-  const endX = Math.max(startCoords[0], endCoords[0]);
-  const startY = Math.min(startCoords[1], endCoords[1]);
-  const endY = Math.max(startCoords[1], endCoords[1]);
-  return {
-    endX,
-    endY,
-    startX,
-    startY
-  };
-}
-
-function getSelectedIDs(rows, startID, endID, cellCoordMap) {
-  const rect = getSelectedRect(startID, endID, cellCoordMap);
-
-  if (rect === null) {
-    return [];
-  }
-
-  const {
-    startX,
-    endY,
-    endX,
-    startY
-  } = rect;
-  const ids = [];
-
-  for (let x = startX; x <= endX; x++) {
-    for (let y = startY; y <= endY; y++) {
-      ids.push(rows[y].cells[x].id);
-    }
-  }
-
-  return ids;
-}
-
-function extractCellsFromRows(rows, rect) {
-  const {
-    startX,
-    endY,
-    endX,
-    startY
-  } = rect;
-  const newRows = [];
-
-  for (let y = startY; y <= endY; y++) {
-    const row = rows[y];
-    const newRow = createRow();
-
-    for (let x = startX; x <= endX; x++) {
-      const cellClone = { ...row.cells[x]
-      };
-      cellClone.id = createUID$1();
-      newRow.cells.push(cellClone);
-    }
-
-    newRows.push(newRow);
-  }
-
-  return newRows;
-}
-
-function TableCellEditor({
-  cellEditor
-}) {
-  const {
-    cellEditorConfig,
-    cellEditorPlugins
-  } = React.useContext(CellContext);
-
-  if (cellEditorPlugins === null || cellEditorConfig === null) {
-    return null;
-  }
-
-  return /*#__PURE__*/React.createElement(LexicalNestedComposer.LexicalNestedComposer, {
-    initialEditor: cellEditor,
-    initialTheme: cellEditorConfig.theme,
-    initialNodes: cellEditorConfig.nodes,
-    skipCollabChecks: true
-  }, cellEditorPlugins);
-}
-
-function getCell(rows, cellID, cellCoordMap) {
-  const coords = cellCoordMap.get(cellID);
-
-  if (coords === undefined) {
-    return null;
-  }
-
-  const [x, y] = coords;
-  const row = rows[y];
-  return row.cells[x];
-}
-
-function TableActionMenu({
-  cell,
-  rows,
-  cellCoordMap,
-  menuElem,
-  updateCellsByID,
-  onClose,
-  updateTableNode,
-  setSortingOptions,
-  sortingOptions
-}) {
-  const dropDownRef = React.useRef(null);
-  React.useEffect(() => {
-    const dropdownElem = dropDownRef.current;
-
-    if (dropdownElem !== null) {
-      const rect = menuElem.getBoundingClientRect();
-      dropdownElem.style.top = `${rect.y}px`;
-      dropdownElem.style.left = `${rect.x}px`;
-    }
-  }, [menuElem]);
-  React.useEffect(() => {
-    const handleClickOutside = event => {
-      const dropdownElem = dropDownRef.current;
-
-      if (dropdownElem !== null && !dropdownElem.contains(event.target)) {
-        event.stopPropagation();
-      }
-    };
-
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, [onClose]);
-  const coords = cellCoordMap.get(cell.id);
-
-  if (coords === undefined) {
-    return null;
-  }
-
-  const [x, y] = coords;
-  return (
-    /*#__PURE__*/
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    React.createElement("div", {
-      className: "dropdowns Tabledropdown",
-      ref: dropDownRef,
-      onPointerMove: e => {
-        e.stopPropagation();
-      },
-      onPointerDown: e => {
-        e.stopPropagation();
-      },
-      onPointerUp: e => {
-        e.stopPropagation();
-      },
-      onClick: e => {
-        e.stopPropagation();
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.updateCellType(x, y, cell.type === 'normal' ? 'header' : 'normal');
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, cell.type === 'normal' ? 'Make header' : 'Remove header')), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateCellsByID([cell.id], () => {
-          const root = lexical.$getRoot();
-          root.clear();
-          root.append(lexical.$createParagraphNode());
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Clear cell")), /*#__PURE__*/React.createElement("hr", null), cell.type === 'header' && y === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, sortingOptions !== null && sortingOptions.x === x && /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        setSortingOptions(null);
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Remove sorting")), (sortingOptions === null || sortingOptions.x !== x || sortingOptions.type === 'descending') && /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        setSortingOptions({
-          type: 'ascending',
-          x
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Sort ascending")), (sortingOptions === null || sortingOptions.x !== x || sortingOptions.type === 'ascending') && /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        setSortingOptions({
-          type: 'descending',
-          x
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Sort descending")), /*#__PURE__*/React.createElement("hr", null)), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.insertRowAt(y);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert row above")), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.insertRowAt(y + 1);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert row below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.insertColumnAt(x);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert column left")), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.insertColumnAt(x + 1);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert column right")), /*#__PURE__*/React.createElement("hr", null), rows[0].cells.length !== 1 && /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.deleteColumnAt(x);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete column")), rows.length !== 1 && /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.deleteRowAt(y);
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete row")), /*#__PURE__*/React.createElement("button", {
-      className: "item",
-      onClick: () => {
-        updateTableNode(tableNode => {
-          lexical.$addUpdateTag('history-push');
-          tableNode.selectNext();
-          tableNode.remove();
-        });
-        onClose();
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete table")))
-  );
-}
-
-function TableCell({
-  cell,
-  cellCoordMap,
-  cellEditor,
-  isEditing,
-  isSelected,
-  isPrimarySelected,
-  theme,
-  updateCellsByID,
-  updateTableNode,
-  rows,
-  setSortingOptions,
-  sortingOptions
-}) {
-  const [showMenu, setShowMenu] = React.useState(false);
-  const menuRootRef = React.useRef(null);
-  const isHeader = cell.type !== 'normal';
-  const editorStateJSON = cell.json;
-  const CellComponent = isHeader ? 'th' : 'td';
-  const cellWidth = cell.width;
-  const menuElem = menuRootRef.current;
-  const coords = cellCoordMap.get(cell.id);
-  const isSorted = sortingOptions !== null && coords !== undefined && coords[0] === sortingOptions.x && coords[1] === 0;
-  React.useEffect(() => {
-    if (isEditing || !isPrimarySelected) {
-      setShowMenu(false);
-    }
-  }, [isEditing, isPrimarySelected]);
-  return /*#__PURE__*/React.createElement(CellComponent, {
-    className: `${theme.tableCell} ${isHeader ? theme.tableCellHeader : ''} ${isSelected ? theme.tableCellSelected : ''}`,
-    "data-id": cell.id,
-    tabIndex: -1,
-    style: {
-      width: cellWidth !== null ? cellWidth : undefined
-    }
-  }, isPrimarySelected && /*#__PURE__*/React.createElement("div", {
-    className: `${theme.tableCellPrimarySelected} ${isEditing ? theme.tableCellEditing : ''}`
-  }), isPrimarySelected && isEditing ? /*#__PURE__*/React.createElement(TableCellEditor, {
-    cellEditor: cellEditor
-  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: editorStateJSON === '' ? createEmptyParagraphHTML(theme) : generateHTMLFromJSON(editorStateJSON, cellEditor)
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: theme.tableCellResizer,
-    "data-table-resize": "true"
-  })), isPrimarySelected && !isEditing && /*#__PURE__*/React.createElement("div", {
-    className: theme.tableCellActionButtonContainer,
-    ref: menuRootRef
-  }, /*#__PURE__*/React.createElement("button", {
-    className: theme.tableCellActionButton,
-    onClick: e => {
-      setShowMenu(!showMenu);
-      e.stopPropagation();
-    }
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "chevron-down"
-  }))), showMenu && menuElem !== null && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(TableActionMenu, {
-    cell: cell,
-    menuElem: menuElem,
-    updateCellsByID: updateCellsByID,
-    onClose: () => setShowMenu(false),
-    updateTableNode: updateTableNode,
-    cellCoordMap: cellCoordMap,
-    rows: rows,
-    setSortingOptions: setSortingOptions,
-    sortingOptions: sortingOptions
-  }), document.body), isSorted && /*#__PURE__*/React.createElement("div", {
-    className: theme.tableCellSortedIndicator
-  }));
-}
-
-function TableComponent({
-  nodeKey,
-  rows: rawRows,
-  theme
-}) {
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
-  const resizeMeasureRef = React.useRef({
-    point: 0,
-    size: 0
-  });
-  const [sortingOptions, setSortingOptions] = React.useState(null);
-  const addRowsRef = React.useRef(null);
-  const lastCellIDRef = React.useRef(null);
-  const tableResizerRulerRef = React.useRef(null);
-  const {
-    cellEditorConfig
-  } = React.useContext(CellContext);
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [showAddColumns, setShowAddColumns] = React.useState(false);
-  const [showAddRows, setShowAddRows] = React.useState(false);
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const mouseDownRef = React.useRef(false);
-  const [resizingID, setResizingID] = React.useState(null);
-  const tableRef = React.useRef(null);
-  const cellCoordMap = React.useMemo(() => {
-    const map = new Map();
-
-    for (let y = 0; y < rawRows.length; y++) {
-      const row = rawRows[y];
-      const cells = row.cells;
-
-      for (let x = 0; x < cells.length; x++) {
-        const cell = cells[x];
-        map.set(cell.id, [x, y]);
-      }
-    }
-
-    return map;
-  }, [rawRows]);
-  const rows = React.useMemo(() => {
-    if (sortingOptions === null) {
-      return rawRows;
-    }
-
-    const _rows = rawRows.slice(1);
-
-    _rows.sort((a, b) => {
-      const aCells = a.cells;
-      const bCells = b.cells;
-      const x = sortingOptions.x;
-      const aContent = cellTextContentCache.get(aCells[x].json) || '';
-      const bContent = cellTextContentCache.get(bCells[x].json) || '';
-
-      if (aContent === '' || bContent === '') {
-        return 1;
-      }
-
-      if (sortingOptions.type === 'ascending') {
-        return aContent.localeCompare(bContent);
-      }
-
-      return bContent.localeCompare(aContent);
-    });
-
-    _rows.unshift(rawRows[0]);
-
-    return _rows;
-  }, [rawRows, sortingOptions]);
-  const [primarySelectedCellID, setPrimarySelectedCellID] = React.useState(null);
-  const cellEditor = React.useMemo(() => {
-    if (cellEditorConfig === null) {
-      return null;
-    }
-
-    const _cellEditor = lexical.createEditor({
-      namespace: cellEditorConfig.namespace,
-      nodes: cellEditorConfig.nodes,
-      onError: error => cellEditorConfig.onError(error, _cellEditor),
-      theme: cellEditorConfig.theme
-    });
-
-    return _cellEditor;
-  }, [cellEditorConfig]);
-  const [selectedCellIDs, setSelectedCellIDs] = React.useState([]);
-  const selectedCellSet = React.useMemo(() => new Set(selectedCellIDs), [selectedCellIDs]);
-  React.useEffect(() => {
-    const tableElem = tableRef.current;
-
-    if (isSelected && document.activeElement === document.body && tableElem !== null) {
-      tableElem.focus();
-    }
-  }, [isSelected]);
-  const updateTableNode = React.useCallback(fn => {
-    editor.update(() => {
-      const tableNode = lexical.$getNodeByKey(nodeKey);
-
-      if ($isTableNode(tableNode)) {
-        fn(tableNode);
-      }
-    });
-  }, [editor, nodeKey]);
-
-  const addColumns = () => {
-    updateTableNode(tableNode => {
-      lexical.$addUpdateTag('history-push');
-      tableNode.addColumns(1);
-    });
-  };
-
-  const addRows = () => {
-    updateTableNode(tableNode => {
-      lexical.$addUpdateTag('history-push');
-      tableNode.addRows(1);
-    });
-  };
-
-  const modifySelectedCells = React.useCallback((x, y, extend) => {
-    const id = rows[y].cells[x].id;
-    lastCellIDRef.current = id;
-
-    if (extend) {
-      const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, id, cellCoordMap);
-      setSelectedCellIDs(selectedIDs);
-    } else {
-      setPrimarySelectedCellID(id);
-      setSelectedCellIDs(NO_CELLS);
-      focusCell(tableRef.current, id);
-    }
-  }, [cellCoordMap, primarySelectedCellID, rows]);
-  const saveEditorToJSON = React.useCallback(() => {
-    if (cellEditor !== null && primarySelectedCellID !== null) {
-      const json = JSON.stringify(cellEditor.getEditorState());
-      updateTableNode(tableNode => {
-        const coords = cellCoordMap.get(primarySelectedCellID);
-
-        if (coords === undefined) {
-          return;
-        }
-
-        lexical.$addUpdateTag('history-push');
-        const [x, y] = coords;
-        tableNode.updateCellJSON(x, y, json);
-      });
-    }
-  }, [cellCoordMap, cellEditor, primarySelectedCellID, updateTableNode]);
-  const selectTable = React.useCallback(() => {
-    setTimeout(() => {
-      const parentRootElement = editor.getRootElement();
-
-      if (parentRootElement !== null) {
-        parentRootElement.focus({
-          preventScroll: true
-        });
-        window.getSelection()?.removeAllRanges();
-      }
-    }, 20);
-  }, [editor]);
-  React.useEffect(() => {
-    const tableElem = tableRef.current;
-
-    if (tableElem === null) {
-      return;
-    }
-
-    const doc = getCurrentDocument(editor);
-
-    const isAtEdgeOfTable = event => {
-      const x = event.clientX - tableRect.x;
-      const y = event.clientY - tableRect.y;
-      return x < 5 || y < 5;
-    };
-
-    const handlePointerDown = event => {
-      const possibleID = getCellID(event.target);
-
-      if (possibleID !== null && editor.isEditable() && tableElem.contains(event.target)) {
-        if (isAtEdgeOfTable(event)) {
-          setSelected(true);
-          setPrimarySelectedCellID(null);
-          selectTable();
-          return;
-        }
-
-        setSelected(false);
-
-        if (isStartingResize(event.target)) {
-          setResizingID(possibleID);
-          tableElem.style.userSelect = 'none';
-          resizeMeasureRef.current = {
-            point: event.clientX,
-            size: getTableCellWidth(event.target)
-          };
-          return;
-        }
-
-        mouseDownRef.current = true;
-
-        if (primarySelectedCellID !== possibleID) {
-          if (isEditing) {
-            saveEditorToJSON();
-          }
-
-          setPrimarySelectedCellID(possibleID);
-          setIsEditing(false);
-          lastCellIDRef.current = possibleID;
-        } else {
-          lastCellIDRef.current = null;
-        }
-
-        setSelectedCellIDs(NO_CELLS);
-      } else if (primarySelectedCellID !== null && !isTargetOnPossibleUIControl(event.target)) {
-        setSelected(false);
-        mouseDownRef.current = false;
-
-        if (isEditing) {
-          saveEditorToJSON();
-        }
-
-        setPrimarySelectedCellID(null);
-        setSelectedCellIDs(NO_CELLS);
-        setIsEditing(false);
-        lastCellIDRef.current = null;
-      }
-    };
-
-    const tableRect = tableElem.getBoundingClientRect();
-
-    const handlePointerMove = event => {
-      if (resizingID !== null) {
-        const tableResizerRulerElem = tableResizerRulerRef.current;
-
-        if (tableResizerRulerElem !== null) {
-          const {
-            size,
-            point
-          } = resizeMeasureRef.current;
-          const diff = event.clientX - point;
-          const newWidth = size + diff;
-          let x = event.clientX - tableRect.x;
-
-          if (x < 10) {
-            x = 10;
-          } else if (x > tableRect.width - 10) {
-            x = tableRect.width - 10;
-          } else if (newWidth < 20) {
-            x = point - size + 20 - tableRect.x;
-          }
-
-          tableResizerRulerElem.style.left = `${x}px`;
-        }
-
-        return;
-      }
-
-      if (!isEditing) {
-        const {
-          clientX,
-          clientY
-        } = event;
-        const {
-          width,
-          x,
-          y,
-          height
-        } = tableRect;
-        const isOnRightEdge = clientX > x + width * 0.9 && clientX < x + width + 40 && !mouseDownRef.current;
-        setShowAddColumns(isOnRightEdge);
-        const isOnBottomEdge = event.target === addRowsRef.current || clientY > y + height * 0.85 && clientY < y + height + 5 && !mouseDownRef.current;
-        setShowAddRows(isOnBottomEdge);
-      }
-
-      if (isEditing || !mouseDownRef.current || primarySelectedCellID === null) {
-        return;
-      }
-
-      const possibleID = getCellID(event.target);
-
-      if (possibleID !== null && possibleID !== lastCellIDRef.current) {
-        if (selectedCellIDs.length === 0) {
-          tableElem.style.userSelect = 'none';
-        }
-
-        const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, possibleID, cellCoordMap);
-
-        if (selectedIDs.length === 1) {
-          setSelectedCellIDs(NO_CELLS);
-        } else {
-          setSelectedCellIDs(selectedIDs);
-        }
-
-        lastCellIDRef.current = possibleID;
-      }
-    };
-
-    const handlePointerUp = event => {
-      if (resizingID !== null) {
-        const {
-          size,
-          point
-        } = resizeMeasureRef.current;
-        const diff = event.clientX - point;
-        let newWidth = size + diff;
-
-        if (newWidth < 10) {
-          newWidth = 10;
-        }
-
-        updateTableNode(tableNode => {
-          const [x] = cellCoordMap.get(resizingID);
-          lexical.$addUpdateTag('history-push');
-          tableNode.updateColumnWidth(x, newWidth);
-        });
-        setResizingID(null);
-      }
-
-      if (tableElem !== null && selectedCellIDs.length > 1 && mouseDownRef.current) {
-        tableElem.style.userSelect = 'text';
-        window.getSelection()?.removeAllRanges();
-      }
-
-      mouseDownRef.current = false;
-    };
-
-    doc.addEventListener('pointerdown', handlePointerDown);
-    doc.addEventListener('pointermove', handlePointerMove);
-    doc.addEventListener('pointerup', handlePointerUp);
-    return () => {
-      doc.removeEventListener('pointerdown', handlePointerDown);
-      doc.removeEventListener('pointermove', handlePointerMove);
-      doc.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [cellEditor, editor, isEditing, rows, saveEditorToJSON, primarySelectedCellID, selectedCellSet, selectedCellIDs, cellCoordMap, resizingID, updateTableNode, setSelected, selectTable]);
-  React.useEffect(() => {
-    if (!isEditing && primarySelectedCellID !== null) {
-      const doc = getCurrentDocument(editor);
-
-      const loadContentIntoCell = cell => {
-        if (cell !== null && cellEditor !== null) {
-          const editorStateJSON = cell.json;
-          const editorState = cellEditor.parseEditorState(editorStateJSON);
-          cellEditor.setEditorState(editorState);
-        }
-      };
-
-      const handleDblClick = event => {
-        const possibleID = getCellID(event.target);
-
-        if (possibleID === primarySelectedCellID && editor.isEditable()) {
-          const cell = getCell(rows, possibleID, cellCoordMap);
-          loadContentIntoCell(cell);
-          setIsEditing(true);
-          setSelectedCellIDs(NO_CELLS);
-        }
-      };
-
-      const handleKeyDown = event => {
-        // Ignore arrow keys, escape or tab
-        const keyCode = event.keyCode;
-
-        if (keyCode === 16 || keyCode === 27 || keyCode === 9 || keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 || keyCode === 8 || keyCode === 46 || !editor.isEditable()) {
-          return;
-        }
-
-        if (keyCode === 13) {
-          event.preventDefault();
-        }
-
-        if (!isEditing && primarySelectedCellID !== null && editor.getEditorState().read(() => lexical.$getSelection() === null) && event.target.contentEditable !== 'true') {
-          if (isCopy(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
-            editor.dispatchCommand(lexical.COPY_COMMAND, event);
-            return;
-          }
-
-          if (isCut(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
-            editor.dispatchCommand(lexical.CUT_COMMAND, event);
-            return;
-          }
-
-          if (isPaste(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
-            editor.dispatchCommand(lexical.PASTE_COMMAND, event);
-            return;
-          }
-        }
-
-        if (event.metaKey || event.ctrlKey || event.altKey) {
-          return;
-        }
-
-        const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
-        loadContentIntoCell(cell);
-        setIsEditing(true);
-        setSelectedCellIDs(NO_CELLS);
-      };
-
-      doc.addEventListener('dblclick', handleDblClick);
-      doc.addEventListener('keydown', handleKeyDown);
-      return () => {
-        doc.removeEventListener('dblclick', handleDblClick);
-        doc.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [cellEditor, editor, isEditing, rows, primarySelectedCellID, cellCoordMap]);
-  const updateCellsByID = React.useCallback((ids, fn) => {
-    $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn);
-  }, [cellCoordMap, cellEditor, rows, updateTableNode]);
-  const clearCellsCommand = React.useCallback(() => {
-    if (primarySelectedCellID !== null && !isEditing) {
-      updateCellsByID([primarySelectedCellID, ...selectedCellIDs], () => {
-        const root = lexical.$getRoot();
-        root.clear();
-        root.append(lexical.$createParagraphNode());
-      });
-      return true;
-    } else if (isSelected) {
-      updateTableNode(tableNode => {
-        lexical.$addUpdateTag('history-push');
-        tableNode.selectNext();
-        tableNode.remove();
-      });
-    }
-
-    return false;
-  }, [isEditing, isSelected, primarySelectedCellID, selectedCellIDs, updateCellsByID, updateTableNode]);
-  React.useEffect(() => {
-    const tableElem = tableRef.current;
-
-    if (tableElem === null) {
-      return;
-    }
-
-    const copyDataToClipboard = (event, htmlString, lexicalString, plainTextString) => {
-      const clipboardData = event instanceof KeyboardEvent ? null : event.clipboardData;
-      event.preventDefault();
-
-      if (clipboardData != null) {
-        clipboardData.setData('text/html', htmlString);
-        clipboardData.setData('text/plain', plainTextString);
-        clipboardData.setData('application/x-lexical-editor', lexicalString);
-      } else {
-        const clipboard = navigator.clipboard;
-
-        if (clipboard != null) {
-          // Most browsers only support a single item in the clipboard at one time.
-          // So we optimize by only putting in HTML.
-          const data = [new ClipboardItem({
-            'text/html': new Blob([htmlString], {
-              type: 'text/html'
-            })
-          })];
-          clipboard.write(data);
-        }
-      }
-    };
-
-    const getTypeFromObject = async (clipboardData, type) => {
-      try {
-        return clipboardData instanceof DataTransfer ? clipboardData.getData(type) : clipboardData instanceof ClipboardItem ? await (await clipboardData.getType(type)).text() : '';
-      } catch {
-        return '';
-      }
-    };
-
-    const pasteContent = async event => {
-      let clipboardData = (event instanceof InputEvent ? null : event.clipboardData) || null;
-
-      if (primarySelectedCellID !== null && cellEditor !== null) {
-        event.preventDefault();
-
-        if (clipboardData === null) {
-          try {
-            const items = await navigator.clipboard.read();
-            clipboardData = items[0];
-          } catch {// NO-OP
-          }
-        }
-
-        const lexicalString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'application/x-lexical-editor') : '';
-
-        if (lexicalString) {
-          try {
-            const payload = JSON.parse(lexicalString);
-
-            if (payload.namespace === editor._config.namespace && Array.isArray(payload.nodes)) {
-              $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
-                const root = lexical.$getRoot();
-                root.clear();
-                root.append(lexical.$createParagraphNode());
-                root.selectEnd();
-                const nodes = clipboard.$generateNodesFromSerializedNodes(payload.nodes);
-                const sel = lexical.$getSelection();
-
-                if (lexical.$isRangeSelection(sel)) {
-                  clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
-                }
-              });
-              return;
-            } // eslint-disable-next-line no-empty
-
-          } catch {}
-        }
-
-        const htmlString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/html') : '';
-
-        if (htmlString) {
-          try {
-            const parser = new DOMParser();
-            const dom = parser.parseFromString(htmlString, 'text/html');
-            const possibleTableElement = dom.querySelector('table');
-
-            if (possibleTableElement != null) {
-              const pasteRows = extractRowsFromHTML(possibleTableElement);
-              updateTableNode(tableNode => {
-                const [x, y] = cellCoordMap.get(primarySelectedCellID);
-                lexical.$addUpdateTag('history-push');
-                tableNode.mergeRows(x, y, pasteRows);
-              });
-              return;
-            }
-
-            $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
-              const root = lexical.$getRoot();
-              root.clear();
-              root.append(lexical.$createParagraphNode());
-              root.selectEnd();
-              const nodes = html.$generateNodesFromDOM(editor, dom);
-              const sel = lexical.$getSelection();
-
-              if (lexical.$isRangeSelection(sel)) {
-                clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
-              }
-            });
-            return; // eslint-disable-next-line no-empty
-          } catch {}
-        } // Multi-line plain text in rich text mode pasted as separate paragraphs
-        // instead of single paragraph with linebreaks.
-
-
-        const text = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/plain') : '';
-
-        if (text != null) {
-          $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
-            const root = lexical.$getRoot();
-            root.clear();
-            root.selectEnd();
-            const sel = lexical.$getSelection();
-
-            if (sel !== null) {
-              sel.insertRawText(text);
-            }
-          });
-        }
-      }
-    };
-
-    const copyPrimaryCell = event => {
-      if (primarySelectedCellID !== null && cellEditor !== null) {
-        const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
-        const json = cell.json;
-        const htmlString = cellHTMLCache.get(json) || null;
-
-        if (htmlString === null) {
-          return;
-        }
-
-        const editorState = cellEditor.parseEditorState(json);
-        const plainTextString = editorState.read(() => lexical.$getRoot().getTextContent());
-        const lexicalString = editorState.read(() => {
-          return JSON.stringify(clipboard.$generateJSONFromSelectedNodes(cellEditor, null));
-        });
-        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
-      }
-    };
-
-    const copyCellRange = event => {
-      const lastCellID = lastCellIDRef.current;
-
-      if (primarySelectedCellID !== null && cellEditor !== null && lastCellID !== null) {
-        const rect = getSelectedRect(primarySelectedCellID, lastCellID, cellCoordMap);
-
-        if (rect === null) {
-          return;
-        }
-
-        const dom = exportTableCellsToHTML(rows, rect);
-        const htmlString = dom.outerHTML;
-        const plainTextString = dom.outerText;
-        const tableNodeJSON = editor.getEditorState().read(() => {
-          const tableNode = lexical.$getNodeByKey(nodeKey);
-          return tableNode.exportJSON();
-        });
-        tableNodeJSON.rows = extractCellsFromRows(rows, rect);
-        const lexicalJSON = {
-          namespace: cellEditor._config.namespace,
-          nodes: [tableNodeJSON]
-        };
-        const lexicalString = JSON.stringify(lexicalJSON);
-        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
-      }
-    };
-
-    const handlePaste = (event, activeEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
-        pasteContent(event);
-        mouseDownRef.current = false;
-        setSelectedCellIDs(NO_CELLS);
-        return true;
-      }
-
-      return false;
-    };
-
-    const handleCopy = (event, activeEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
-        if (selectedCellIDs.length === 0) {
-          copyPrimaryCell(event);
-        } else {
-          copyCellRange(event);
-        }
-
-        return true;
-      }
-
-      return false;
-    };
-
-    return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, payload => {
-      const selection = lexical.$getSelection();
-
-      if (lexical.$isNodeSelection(selection)) {
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.PASTE_COMMAND, handlePaste, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.COPY_COMMAND, handleCopy, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.CUT_COMMAND, (event, activeEditor) => {
-      if (handleCopy(event, activeEditor)) {
-        clearCellsCommand();
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.FORMAT_TEXT_COMMAND, payload => {
-      if (primarySelectedCellID !== null && !isEditing) {
-        $updateCells(rows, [primarySelectedCellID, ...selectedCellIDs], cellCoordMap, cellEditor, updateTableNode, () => {
-          const sel = $createSelectAll();
-          sel.formatText(payload);
-        });
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ENTER_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (primarySelectedCellID === null && !isEditing && lexical.$isNodeSelection(selection) && selection.has(nodeKey) && selection.getNodes().length === 1 && targetEditor === editor) {
-        const firstCellID = rows[0].cells[0].id;
-        setPrimarySelectedCellID(firstCellID);
-        focusCell(tableElem, firstCellID);
-        event.preventDefault();
-        event.stopPropagation();
-        clearSelection();
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_TAB_COMMAND, event => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null && primarySelectedCellID !== null) {
-        const isBackward = event.shiftKey;
-        const [x, y] = cellCoordMap.get(primarySelectedCellID);
-        event.preventDefault();
-        let nextX = null;
-        let nextY = null;
-
-        if (x === 0 && isBackward) {
-          if (y !== 0) {
-            nextY = y - 1;
-            nextX = rows[nextY].cells.length - 1;
-          }
-        } else if (x === rows[y].cells.length - 1 && !isBackward) {
-          if (y !== rows.length - 1) {
-            nextY = y + 1;
-            nextX = 0;
-          }
-        } else if (!isBackward) {
-          nextX = x + 1;
-          nextY = y;
-        } else {
-          nextX = x - 1;
-          nextY = y;
-        }
-
-        if (nextX !== null && nextY !== null) {
-          modifySelectedCells(nextX, nextY, false);
-          return true;
-        }
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_UP_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null) {
-        const extend = event.shiftKey;
-        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
-        if (cellID !== null) {
-          const [x, y] = cellCoordMap.get(cellID);
-
-          if (y !== 0) {
-            modifySelectedCells(x, y - 1, extend);
-            return true;
-          }
-        }
-      }
-
-      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
-        return false;
-      }
-
-      if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getPreviousSibling() === null) {
-        event.preventDefault();
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_DOWN_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null) {
-        const extend = event.shiftKey;
-        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
-        if (cellID !== null) {
-          const [x, y] = cellCoordMap.get(cellID);
-
-          if (y !== rows.length - 1) {
-            modifySelectedCells(x, y + 1, extend);
-            return true;
-          }
-        }
-      }
-
-      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
-        return false;
-      }
-
-      if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getNextSibling() === null) {
-        event.preventDefault();
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_LEFT_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null) {
-        const extend = event.shiftKey;
-        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
-        if (cellID !== null) {
-          const [x, y] = cellCoordMap.get(cellID);
-
-          if (x !== 0) {
-            modifySelectedCells(x - 1, y, extend);
-            return true;
-          }
-        }
-      }
-
-      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
-        return false;
-      }
-
-      if (selection.isCollapsed() && selection.anchor.offset === 0) {
-        event.preventDefault();
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_RIGHT_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null) {
-        const extend = event.shiftKey;
-        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
-
-        if (cellID !== null) {
-          const [x, y] = cellCoordMap.get(cellID);
-
-          if (x !== rows[y].cells.length - 1) {
-            modifySelectedCells(x + 1, y, extend);
-            return true;
-          }
-        }
-      }
-
-      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
-        return false;
-      }
-
-      if (selection.isCollapsed()) {
-        const anchor = selection.anchor;
-
-        if (anchor.type === 'text' && anchor.offset === anchor.getNode().getTextContentSize() || anchor.type === 'element' && anchor.offset === anchor.getNode().getChildrenSize()) {
-          event.preventDefault();
-          return true;
-        }
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ESCAPE_COMMAND, (event, targetEditor) => {
-      const selection = lexical.$getSelection();
-
-      if (!isEditing && selection === null && targetEditor === editor) {
-        setSelected(true);
-        setPrimarySelectedCellID(null);
-        selectTable();
-        return true;
-      }
-
-      if (!lexical.$isRangeSelection(selection)) {
-        return false;
-      }
-
-      if (isEditing) {
-        saveEditorToJSON();
-        setIsEditing(false);
-
-        if (primarySelectedCellID !== null) {
-          setTimeout(() => {
-            focusCell(tableElem, primarySelectedCellID);
-          }, 20);
-        }
-
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW));
-  }, [cellCoordMap, cellEditor, clearCellsCommand, clearSelection, editor, isEditing, modifySelectedCells, nodeKey, primarySelectedCellID, rows, saveEditorToJSON, selectTable, selectedCellIDs, setSelected, updateTableNode]);
-
-  if (cellEditor === null) {
-    return;
-  }
-
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: 'relative'
-    }
-  }, /*#__PURE__*/React.createElement("table", {
-    className: `${theme.table} ${isSelected ? theme.tableSelected : ''}`,
-    ref: tableRef,
-    tabIndex: -1
-  }, /*#__PURE__*/React.createElement("tbody", null, rows.map(row => /*#__PURE__*/React.createElement("tr", {
-    key: row.id,
-    className: theme.tableRow
-  }, row.cells.map(cell => {
-    const {
-      id
-    } = cell;
-    return /*#__PURE__*/React.createElement(TableCell, {
-      key: id,
-      cell: cell,
-      theme: theme,
-      isSelected: selectedCellSet.has(id),
-      isPrimarySelected: primarySelectedCellID === id,
-      isEditing: isEditing,
-      sortingOptions: sortingOptions,
-      cellEditor: cellEditor,
-      updateCellsByID: updateCellsByID,
-      updateTableNode: updateTableNode,
-      cellCoordMap: cellCoordMap,
-      rows: rows,
-      setSortingOptions: setSortingOptions
-    });
-  }))))), showAddColumns && /*#__PURE__*/React.createElement("button", {
-    className: theme.tableAddColumns,
-    onClick: addColumns
-  }), showAddRows && /*#__PURE__*/React.createElement("button", {
-    className: theme.tableAddRows,
-    onClick: addRows,
-    ref: addRowsRef
-  }), resizingID !== null && /*#__PURE__*/React.createElement("div", {
-    className: theme.tableResizeRuler,
-    ref: tableResizerRulerRef
-  }));
-}
-
-var TableComponent$1 = {
-  __proto__: null,
-  'default': TableComponent
 };
 
 /* eslint-disable */
@@ -28790,6 +27315,1442 @@ function StickyComponent({
 var StickyComponent$1 = {
   __proto__: null,
   'default': StickyComponent
+};
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
+const CellContext = /*#__PURE__*/React.createContext({
+  cellEditorConfig: null,
+  cellEditorPlugins: null,
+  set: () => {// Empty
+  }
+});
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const NO_CELLS = [];
+
+function $createSelectAll() {
+  const sel = lexical.$createRangeSelection();
+  sel.focus.set('root', lexical.$getRoot().getChildrenSize(), 'element');
+  return sel;
+}
+
+function createEmptyParagraphHTML(theme) {
+  return `<p class="${theme.paragraph}"><br></p>`;
+}
+
+function focusCell(tableElem, id) {
+  const cellElem = tableElem.querySelector(`[data-id=${id}]`);
+
+  if (cellElem == null) {
+    return;
+  }
+
+  cellElem.focus();
+}
+
+function isStartingResize(target) {
+  return target.nodeType === 1 && target.hasAttribute('data-table-resize');
+}
+
+function generateHTMLFromJSON(editorStateJSON, cellEditor) {
+  const editorState = cellEditor.parseEditorState(editorStateJSON);
+  let html$1 = cellHTMLCache.get(editorStateJSON);
+
+  if (html$1 === undefined) {
+    html$1 = editorState.read(() => html.$generateHtmlFromNodes(cellEditor, null));
+    const textContent = editorState.read(() => lexical.$getRoot().getTextContent());
+    cellHTMLCache.set(editorStateJSON, html$1);
+    cellTextContentCache.set(editorStateJSON, textContent);
+  }
+
+  return html$1;
+}
+
+function getCurrentDocument(editor) {
+  const rootElement = editor.getRootElement();
+  return rootElement !== null ? rootElement.ownerDocument : document;
+}
+
+function isCopy(keyCode, shiftKey, metaKey, ctrlKey) {
+  if (shiftKey) {
+    return false;
+  }
+
+  if (keyCode === 67) {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function isCut(keyCode, shiftKey, metaKey, ctrlKey) {
+  if (shiftKey) {
+    return false;
+  }
+
+  if (keyCode === 88) {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function isPaste(keyCode, shiftKey, metaKey, ctrlKey) {
+  if (shiftKey) {
+    return false;
+  }
+
+  if (keyCode === 86) {
+    return IS_APPLE ? metaKey : ctrlKey;
+  }
+
+  return false;
+}
+
+function getCellID(domElement) {
+  let node = domElement;
+
+  while (node !== null) {
+    const possibleID = node.getAttribute('data-id');
+
+    if (possibleID != null) {
+      return possibleID;
+    }
+
+    node = node.parentElement;
+  }
+
+  return null;
+}
+
+function getTableCellWidth(domElement) {
+  let node = domElement;
+
+  while (node !== null) {
+    if (node.nodeName === 'TH' || node.nodeName === 'TD') {
+      return node.getBoundingClientRect().width;
+    }
+
+    node = node.parentElement;
+  }
+
+  return 0;
+}
+
+function $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn) {
+  for (const id of ids) {
+    const cell = getCell(rows, id, cellCoordMap);
+
+    if (cell !== null && cellEditor !== null) {
+      const editorState = cellEditor.parseEditorState(cell.json);
+      cellEditor._headless = true;
+      cellEditor.setEditorState(editorState);
+      cellEditor.update(fn, {
+        discrete: true
+      });
+      cellEditor._headless = false;
+      const newJSON = JSON.stringify(cellEditor.getEditorState());
+      updateTableNode(tableNode => {
+        const [x, y] = cellCoordMap.get(id);
+        lexical.$addUpdateTag('history-push');
+        tableNode.updateCellJSON(x, y, newJSON);
+      });
+    }
+  }
+}
+
+function isTargetOnPossibleUIControl(target) {
+  let node = target;
+
+  while (node !== null) {
+    const nodeName = node.nodeName;
+
+    if (nodeName === 'BUTTON' || nodeName === 'INPUT' || nodeName === 'TEXTAREA') {
+      return true;
+    }
+
+    node = node.parentElement;
+  }
+
+  return false;
+}
+
+function getSelectedRect(startID, endID, cellCoordMap) {
+  const startCoords = cellCoordMap.get(startID);
+  const endCoords = cellCoordMap.get(endID);
+
+  if (startCoords === undefined || endCoords === undefined) {
+    return null;
+  }
+
+  const startX = Math.min(startCoords[0], endCoords[0]);
+  const endX = Math.max(startCoords[0], endCoords[0]);
+  const startY = Math.min(startCoords[1], endCoords[1]);
+  const endY = Math.max(startCoords[1], endCoords[1]);
+  return {
+    endX,
+    endY,
+    startX,
+    startY
+  };
+}
+
+function getSelectedIDs(rows, startID, endID, cellCoordMap) {
+  const rect = getSelectedRect(startID, endID, cellCoordMap);
+
+  if (rect === null) {
+    return [];
+  }
+
+  const {
+    startX,
+    endY,
+    endX,
+    startY
+  } = rect;
+  const ids = [];
+
+  for (let x = startX; x <= endX; x++) {
+    for (let y = startY; y <= endY; y++) {
+      ids.push(rows[y].cells[x].id);
+    }
+  }
+
+  return ids;
+}
+
+function extractCellsFromRows(rows, rect) {
+  const {
+    startX,
+    endY,
+    endX,
+    startY
+  } = rect;
+  const newRows = [];
+
+  for (let y = startY; y <= endY; y++) {
+    const row = rows[y];
+    const newRow = createRow();
+
+    for (let x = startX; x <= endX; x++) {
+      const cellClone = { ...row.cells[x]
+      };
+      cellClone.id = createUID();
+      newRow.cells.push(cellClone);
+    }
+
+    newRows.push(newRow);
+  }
+
+  return newRows;
+}
+
+function TableCellEditor({
+  cellEditor
+}) {
+  const {
+    cellEditorConfig,
+    cellEditorPlugins
+  } = React.useContext(CellContext);
+
+  if (cellEditorPlugins === null || cellEditorConfig === null) {
+    return null;
+  }
+
+  return /*#__PURE__*/React.createElement(LexicalNestedComposer.LexicalNestedComposer, {
+    initialEditor: cellEditor,
+    initialTheme: cellEditorConfig.theme,
+    initialNodes: cellEditorConfig.nodes,
+    skipCollabChecks: true
+  }, cellEditorPlugins);
+}
+
+function getCell(rows, cellID, cellCoordMap) {
+  const coords = cellCoordMap.get(cellID);
+
+  if (coords === undefined) {
+    return null;
+  }
+
+  const [x, y] = coords;
+  const row = rows[y];
+  return row.cells[x];
+}
+
+function TableActionMenu({
+  cell,
+  rows,
+  cellCoordMap,
+  menuElem,
+  updateCellsByID,
+  onClose,
+  updateTableNode,
+  setSortingOptions,
+  sortingOptions
+}) {
+  const dropDownRef = React.useRef(null);
+  React.useEffect(() => {
+    const dropdownElem = dropDownRef.current;
+
+    if (dropdownElem !== null) {
+      const rect = menuElem.getBoundingClientRect();
+      dropdownElem.style.top = `${rect.y}px`;
+      dropdownElem.style.left = `${rect.x}px`;
+    }
+  }, [menuElem]);
+  React.useEffect(() => {
+    const handleClickOutside = event => {
+      const dropdownElem = dropDownRef.current;
+
+      if (dropdownElem !== null && !dropdownElem.contains(event.target)) {
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, [onClose]);
+  const coords = cellCoordMap.get(cell.id);
+
+  if (coords === undefined) {
+    return null;
+  }
+
+  const [x, y] = coords;
+  return (
+    /*#__PURE__*/
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    React.createElement("div", {
+      className: "dropdowns Tabledropdown",
+      ref: dropDownRef,
+      onPointerMove: e => {
+        e.stopPropagation();
+      },
+      onPointerDown: e => {
+        e.stopPropagation();
+      },
+      onPointerUp: e => {
+        e.stopPropagation();
+      },
+      onClick: e => {
+        e.stopPropagation();
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.updateCellType(x, y, cell.type === 'normal' ? 'header' : 'normal');
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, cell.type === 'normal' ? 'Make header' : 'Remove header')), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateCellsByID([cell.id], () => {
+          const root = lexical.$getRoot();
+          root.clear();
+          root.append(lexical.$createParagraphNode());
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Clear cell")), /*#__PURE__*/React.createElement("hr", null), cell.type === 'header' && y === 0 && /*#__PURE__*/React.createElement(React.Fragment, null, sortingOptions !== null && sortingOptions.x === x && /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        setSortingOptions(null);
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Remove sorting")), (sortingOptions === null || sortingOptions.x !== x || sortingOptions.type === 'descending') && /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        setSortingOptions({
+          type: 'ascending',
+          x
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Sort ascending")), (sortingOptions === null || sortingOptions.x !== x || sortingOptions.type === 'ascending') && /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        setSortingOptions({
+          type: 'descending',
+          x
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Sort descending")), /*#__PURE__*/React.createElement("hr", null)), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.insertRowAt(y);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert row above")), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.insertRowAt(y + 1);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert row below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.insertColumnAt(x);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert column left")), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.insertColumnAt(x + 1);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert column right")), /*#__PURE__*/React.createElement("hr", null), rows[0].cells.length !== 1 && /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.deleteColumnAt(x);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete column")), rows.length !== 1 && /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.deleteRowAt(y);
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete row")), /*#__PURE__*/React.createElement("button", {
+      className: "item",
+      onClick: () => {
+        updateTableNode(tableNode => {
+          lexical.$addUpdateTag('history-push');
+          tableNode.selectNext();
+          tableNode.remove();
+        });
+        onClose();
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete table")))
+  );
+}
+
+function TableCell({
+  cell,
+  cellCoordMap,
+  cellEditor,
+  isEditing,
+  isSelected,
+  isPrimarySelected,
+  theme,
+  updateCellsByID,
+  updateTableNode,
+  rows,
+  setSortingOptions,
+  sortingOptions
+}) {
+  const [showMenu, setShowMenu] = React.useState(false);
+  const menuRootRef = React.useRef(null);
+  const isHeader = cell.type !== 'normal';
+  const editorStateJSON = cell.json;
+  const CellComponent = isHeader ? 'th' : 'td';
+  const cellWidth = cell.width;
+  const menuElem = menuRootRef.current;
+  const coords = cellCoordMap.get(cell.id);
+  const isSorted = sortingOptions !== null && coords !== undefined && coords[0] === sortingOptions.x && coords[1] === 0;
+  React.useEffect(() => {
+    if (isEditing || !isPrimarySelected) {
+      setShowMenu(false);
+    }
+  }, [isEditing, isPrimarySelected]);
+  return /*#__PURE__*/React.createElement(CellComponent, {
+    className: `${theme.tableCell} ${isHeader ? theme.tableCellHeader : ''} ${isSelected ? theme.tableCellSelected : ''}`,
+    "data-id": cell.id,
+    tabIndex: -1,
+    style: {
+      width: cellWidth !== null ? cellWidth : undefined
+    }
+  }, isPrimarySelected && /*#__PURE__*/React.createElement("div", {
+    className: `${theme.tableCellPrimarySelected} ${isEditing ? theme.tableCellEditing : ''}`
+  }), isPrimarySelected && isEditing ? /*#__PURE__*/React.createElement(TableCellEditor, {
+    cellEditor: cellEditor
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: editorStateJSON === '' ? createEmptyParagraphHTML(theme) : generateHTMLFromJSON(editorStateJSON, cellEditor)
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: theme.tableCellResizer,
+    "data-table-resize": "true"
+  })), isPrimarySelected && !isEditing && /*#__PURE__*/React.createElement("div", {
+    className: theme.tableCellActionButtonContainer,
+    ref: menuRootRef
+  }, /*#__PURE__*/React.createElement("button", {
+    className: theme.tableCellActionButton,
+    onClick: e => {
+      setShowMenu(!showMenu);
+      e.stopPropagation();
+    }
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "chevron-down"
+  }))), showMenu && menuElem !== null && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(TableActionMenu, {
+    cell: cell,
+    menuElem: menuElem,
+    updateCellsByID: updateCellsByID,
+    onClose: () => setShowMenu(false),
+    updateTableNode: updateTableNode,
+    cellCoordMap: cellCoordMap,
+    rows: rows,
+    setSortingOptions: setSortingOptions,
+    sortingOptions: sortingOptions
+  }), document.body), isSorted && /*#__PURE__*/React.createElement("div", {
+    className: theme.tableCellSortedIndicator
+  }));
+}
+
+function TableComponent({
+  nodeKey,
+  rows: rawRows,
+  theme
+}) {
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
+  const resizeMeasureRef = React.useRef({
+    point: 0,
+    size: 0
+  });
+  const [sortingOptions, setSortingOptions] = React.useState(null);
+  const addRowsRef = React.useRef(null);
+  const lastCellIDRef = React.useRef(null);
+  const tableResizerRulerRef = React.useRef(null);
+  const {
+    cellEditorConfig
+  } = React.useContext(CellContext);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [showAddColumns, setShowAddColumns] = React.useState(false);
+  const [showAddRows, setShowAddRows] = React.useState(false);
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const mouseDownRef = React.useRef(false);
+  const [resizingID, setResizingID] = React.useState(null);
+  const tableRef = React.useRef(null);
+  const cellCoordMap = React.useMemo(() => {
+    const map = new Map();
+
+    for (let y = 0; y < rawRows.length; y++) {
+      const row = rawRows[y];
+      const cells = row.cells;
+
+      for (let x = 0; x < cells.length; x++) {
+        const cell = cells[x];
+        map.set(cell.id, [x, y]);
+      }
+    }
+
+    return map;
+  }, [rawRows]);
+  const rows = React.useMemo(() => {
+    if (sortingOptions === null) {
+      return rawRows;
+    }
+
+    const _rows = rawRows.slice(1);
+
+    _rows.sort((a, b) => {
+      const aCells = a.cells;
+      const bCells = b.cells;
+      const x = sortingOptions.x;
+      const aContent = cellTextContentCache.get(aCells[x].json) || '';
+      const bContent = cellTextContentCache.get(bCells[x].json) || '';
+
+      if (aContent === '' || bContent === '') {
+        return 1;
+      }
+
+      if (sortingOptions.type === 'ascending') {
+        return aContent.localeCompare(bContent);
+      }
+
+      return bContent.localeCompare(aContent);
+    });
+
+    _rows.unshift(rawRows[0]);
+
+    return _rows;
+  }, [rawRows, sortingOptions]);
+  const [primarySelectedCellID, setPrimarySelectedCellID] = React.useState(null);
+  const cellEditor = React.useMemo(() => {
+    if (cellEditorConfig === null) {
+      return null;
+    }
+
+    const _cellEditor = lexical.createEditor({
+      namespace: cellEditorConfig.namespace,
+      nodes: cellEditorConfig.nodes,
+      onError: error => cellEditorConfig.onError(error, _cellEditor),
+      theme: cellEditorConfig.theme
+    });
+
+    return _cellEditor;
+  }, [cellEditorConfig]);
+  const [selectedCellIDs, setSelectedCellIDs] = React.useState([]);
+  const selectedCellSet = React.useMemo(() => new Set(selectedCellIDs), [selectedCellIDs]);
+  React.useEffect(() => {
+    const tableElem = tableRef.current;
+
+    if (isSelected && document.activeElement === document.body && tableElem !== null) {
+      tableElem.focus();
+    }
+  }, [isSelected]);
+  const updateTableNode = React.useCallback(fn => {
+    editor.update(() => {
+      const tableNode = lexical.$getNodeByKey(nodeKey);
+
+      if ($isTableNode(tableNode)) {
+        fn(tableNode);
+      }
+    });
+  }, [editor, nodeKey]);
+
+  const addColumns = () => {
+    updateTableNode(tableNode => {
+      lexical.$addUpdateTag('history-push');
+      tableNode.addColumns(1);
+    });
+  };
+
+  const addRows = () => {
+    updateTableNode(tableNode => {
+      lexical.$addUpdateTag('history-push');
+      tableNode.addRows(1);
+    });
+  };
+
+  const modifySelectedCells = React.useCallback((x, y, extend) => {
+    const id = rows[y].cells[x].id;
+    lastCellIDRef.current = id;
+
+    if (extend) {
+      const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, id, cellCoordMap);
+      setSelectedCellIDs(selectedIDs);
+    } else {
+      setPrimarySelectedCellID(id);
+      setSelectedCellIDs(NO_CELLS);
+      focusCell(tableRef.current, id);
+    }
+  }, [cellCoordMap, primarySelectedCellID, rows]);
+  const saveEditorToJSON = React.useCallback(() => {
+    if (cellEditor !== null && primarySelectedCellID !== null) {
+      const json = JSON.stringify(cellEditor.getEditorState());
+      updateTableNode(tableNode => {
+        const coords = cellCoordMap.get(primarySelectedCellID);
+
+        if (coords === undefined) {
+          return;
+        }
+
+        lexical.$addUpdateTag('history-push');
+        const [x, y] = coords;
+        tableNode.updateCellJSON(x, y, json);
+      });
+    }
+  }, [cellCoordMap, cellEditor, primarySelectedCellID, updateTableNode]);
+  const selectTable = React.useCallback(() => {
+    setTimeout(() => {
+      const parentRootElement = editor.getRootElement();
+
+      if (parentRootElement !== null) {
+        parentRootElement.focus({
+          preventScroll: true
+        });
+        window.getSelection()?.removeAllRanges();
+      }
+    }, 20);
+  }, [editor]);
+  React.useEffect(() => {
+    const tableElem = tableRef.current;
+
+    if (tableElem === null) {
+      return;
+    }
+
+    const doc = getCurrentDocument(editor);
+
+    const isAtEdgeOfTable = event => {
+      const x = event.clientX - tableRect.x;
+      const y = event.clientY - tableRect.y;
+      return x < 5 || y < 5;
+    };
+
+    const handlePointerDown = event => {
+      const possibleID = getCellID(event.target);
+
+      if (possibleID !== null && editor.isEditable() && tableElem.contains(event.target)) {
+        if (isAtEdgeOfTable(event)) {
+          setSelected(true);
+          setPrimarySelectedCellID(null);
+          selectTable();
+          return;
+        }
+
+        setSelected(false);
+
+        if (isStartingResize(event.target)) {
+          setResizingID(possibleID);
+          tableElem.style.userSelect = 'none';
+          resizeMeasureRef.current = {
+            point: event.clientX,
+            size: getTableCellWidth(event.target)
+          };
+          return;
+        }
+
+        mouseDownRef.current = true;
+
+        if (primarySelectedCellID !== possibleID) {
+          if (isEditing) {
+            saveEditorToJSON();
+          }
+
+          setPrimarySelectedCellID(possibleID);
+          setIsEditing(false);
+          lastCellIDRef.current = possibleID;
+        } else {
+          lastCellIDRef.current = null;
+        }
+
+        setSelectedCellIDs(NO_CELLS);
+      } else if (primarySelectedCellID !== null && !isTargetOnPossibleUIControl(event.target)) {
+        setSelected(false);
+        mouseDownRef.current = false;
+
+        if (isEditing) {
+          saveEditorToJSON();
+        }
+
+        setPrimarySelectedCellID(null);
+        setSelectedCellIDs(NO_CELLS);
+        setIsEditing(false);
+        lastCellIDRef.current = null;
+      }
+    };
+
+    const tableRect = tableElem.getBoundingClientRect();
+
+    const handlePointerMove = event => {
+      if (resizingID !== null) {
+        const tableResizerRulerElem = tableResizerRulerRef.current;
+
+        if (tableResizerRulerElem !== null) {
+          const {
+            size,
+            point
+          } = resizeMeasureRef.current;
+          const diff = event.clientX - point;
+          const newWidth = size + diff;
+          let x = event.clientX - tableRect.x;
+
+          if (x < 10) {
+            x = 10;
+          } else if (x > tableRect.width - 10) {
+            x = tableRect.width - 10;
+          } else if (newWidth < 20) {
+            x = point - size + 20 - tableRect.x;
+          }
+
+          tableResizerRulerElem.style.left = `${x}px`;
+        }
+
+        return;
+      }
+
+      if (!isEditing) {
+        const {
+          clientX,
+          clientY
+        } = event;
+        const {
+          width,
+          x,
+          y,
+          height
+        } = tableRect;
+        const isOnRightEdge = clientX > x + width * 0.9 && clientX < x + width + 40 && !mouseDownRef.current;
+        setShowAddColumns(isOnRightEdge);
+        const isOnBottomEdge = event.target === addRowsRef.current || clientY > y + height * 0.85 && clientY < y + height + 5 && !mouseDownRef.current;
+        setShowAddRows(isOnBottomEdge);
+      }
+
+      if (isEditing || !mouseDownRef.current || primarySelectedCellID === null) {
+        return;
+      }
+
+      const possibleID = getCellID(event.target);
+
+      if (possibleID !== null && possibleID !== lastCellIDRef.current) {
+        if (selectedCellIDs.length === 0) {
+          tableElem.style.userSelect = 'none';
+        }
+
+        const selectedIDs = getSelectedIDs(rows, primarySelectedCellID, possibleID, cellCoordMap);
+
+        if (selectedIDs.length === 1) {
+          setSelectedCellIDs(NO_CELLS);
+        } else {
+          setSelectedCellIDs(selectedIDs);
+        }
+
+        lastCellIDRef.current = possibleID;
+      }
+    };
+
+    const handlePointerUp = event => {
+      if (resizingID !== null) {
+        const {
+          size,
+          point
+        } = resizeMeasureRef.current;
+        const diff = event.clientX - point;
+        let newWidth = size + diff;
+
+        if (newWidth < 10) {
+          newWidth = 10;
+        }
+
+        updateTableNode(tableNode => {
+          const [x] = cellCoordMap.get(resizingID);
+          lexical.$addUpdateTag('history-push');
+          tableNode.updateColumnWidth(x, newWidth);
+        });
+        setResizingID(null);
+      }
+
+      if (tableElem !== null && selectedCellIDs.length > 1 && mouseDownRef.current) {
+        tableElem.style.userSelect = 'text';
+        window.getSelection()?.removeAllRanges();
+      }
+
+      mouseDownRef.current = false;
+    };
+
+    doc.addEventListener('pointerdown', handlePointerDown);
+    doc.addEventListener('pointermove', handlePointerMove);
+    doc.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      doc.removeEventListener('pointerdown', handlePointerDown);
+      doc.removeEventListener('pointermove', handlePointerMove);
+      doc.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [cellEditor, editor, isEditing, rows, saveEditorToJSON, primarySelectedCellID, selectedCellSet, selectedCellIDs, cellCoordMap, resizingID, updateTableNode, setSelected, selectTable]);
+  React.useEffect(() => {
+    if (!isEditing && primarySelectedCellID !== null) {
+      const doc = getCurrentDocument(editor);
+
+      const loadContentIntoCell = cell => {
+        if (cell !== null && cellEditor !== null) {
+          const editorStateJSON = cell.json;
+          const editorState = cellEditor.parseEditorState(editorStateJSON);
+          cellEditor.setEditorState(editorState);
+        }
+      };
+
+      const handleDblClick = event => {
+        const possibleID = getCellID(event.target);
+
+        if (possibleID === primarySelectedCellID && editor.isEditable()) {
+          const cell = getCell(rows, possibleID, cellCoordMap);
+          loadContentIntoCell(cell);
+          setIsEditing(true);
+          setSelectedCellIDs(NO_CELLS);
+        }
+      };
+
+      const handleKeyDown = event => {
+        // Ignore arrow keys, escape or tab
+        const keyCode = event.keyCode;
+
+        if (keyCode === 16 || keyCode === 27 || keyCode === 9 || keyCode === 37 || keyCode === 38 || keyCode === 39 || keyCode === 40 || keyCode === 8 || keyCode === 46 || !editor.isEditable()) {
+          return;
+        }
+
+        if (keyCode === 13) {
+          event.preventDefault();
+        }
+
+        if (!isEditing && primarySelectedCellID !== null && editor.getEditorState().read(() => lexical.$getSelection() === null) && event.target.contentEditable !== 'true') {
+          if (isCopy(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(lexical.COPY_COMMAND, event);
+            return;
+          }
+
+          if (isCut(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(lexical.CUT_COMMAND, event);
+            return;
+          }
+
+          if (isPaste(keyCode, event.shiftKey, event.metaKey, event.ctrlKey)) {
+            editor.dispatchCommand(lexical.PASTE_COMMAND, event);
+            return;
+          }
+        }
+
+        if (event.metaKey || event.ctrlKey || event.altKey) {
+          return;
+        }
+
+        const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
+        loadContentIntoCell(cell);
+        setIsEditing(true);
+        setSelectedCellIDs(NO_CELLS);
+      };
+
+      doc.addEventListener('dblclick', handleDblClick);
+      doc.addEventListener('keydown', handleKeyDown);
+      return () => {
+        doc.removeEventListener('dblclick', handleDblClick);
+        doc.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [cellEditor, editor, isEditing, rows, primarySelectedCellID, cellCoordMap]);
+  const updateCellsByID = React.useCallback((ids, fn) => {
+    $updateCells(rows, ids, cellCoordMap, cellEditor, updateTableNode, fn);
+  }, [cellCoordMap, cellEditor, rows, updateTableNode]);
+  const clearCellsCommand = React.useCallback(() => {
+    if (primarySelectedCellID !== null && !isEditing) {
+      updateCellsByID([primarySelectedCellID, ...selectedCellIDs], () => {
+        const root = lexical.$getRoot();
+        root.clear();
+        root.append(lexical.$createParagraphNode());
+      });
+      return true;
+    } else if (isSelected) {
+      updateTableNode(tableNode => {
+        lexical.$addUpdateTag('history-push');
+        tableNode.selectNext();
+        tableNode.remove();
+      });
+    }
+
+    return false;
+  }, [isEditing, isSelected, primarySelectedCellID, selectedCellIDs, updateCellsByID, updateTableNode]);
+  React.useEffect(() => {
+    const tableElem = tableRef.current;
+
+    if (tableElem === null) {
+      return;
+    }
+
+    const copyDataToClipboard = (event, htmlString, lexicalString, plainTextString) => {
+      const clipboardData = event instanceof KeyboardEvent ? null : event.clipboardData;
+      event.preventDefault();
+
+      if (clipboardData != null) {
+        clipboardData.setData('text/html', htmlString);
+        clipboardData.setData('text/plain', plainTextString);
+        clipboardData.setData('application/x-lexical-editor', lexicalString);
+      } else {
+        const clipboard = navigator.clipboard;
+
+        if (clipboard != null) {
+          // Most browsers only support a single item in the clipboard at one time.
+          // So we optimize by only putting in HTML.
+          const data = [new ClipboardItem({
+            'text/html': new Blob([htmlString], {
+              type: 'text/html'
+            })
+          })];
+          clipboard.write(data);
+        }
+      }
+    };
+
+    const getTypeFromObject = async (clipboardData, type) => {
+      try {
+        return clipboardData instanceof DataTransfer ? clipboardData.getData(type) : clipboardData instanceof ClipboardItem ? await (await clipboardData.getType(type)).text() : '';
+      } catch {
+        return '';
+      }
+    };
+
+    const pasteContent = async event => {
+      let clipboardData = (event instanceof InputEvent ? null : event.clipboardData) || null;
+
+      if (primarySelectedCellID !== null && cellEditor !== null) {
+        event.preventDefault();
+
+        if (clipboardData === null) {
+          try {
+            const items = await navigator.clipboard.read();
+            clipboardData = items[0];
+          } catch {// NO-OP
+          }
+        }
+
+        const lexicalString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'application/x-lexical-editor') : '';
+
+        if (lexicalString) {
+          try {
+            const payload = JSON.parse(lexicalString);
+
+            if (payload.namespace === editor._config.namespace && Array.isArray(payload.nodes)) {
+              $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
+                const root = lexical.$getRoot();
+                root.clear();
+                root.append(lexical.$createParagraphNode());
+                root.selectEnd();
+                const nodes = clipboard.$generateNodesFromSerializedNodes(payload.nodes);
+                const sel = lexical.$getSelection();
+
+                if (lexical.$isRangeSelection(sel)) {
+                  clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
+                }
+              });
+              return;
+            } // eslint-disable-next-line no-empty
+
+          } catch {}
+        }
+
+        const htmlString = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/html') : '';
+
+        if (htmlString) {
+          try {
+            const parser = new DOMParser();
+            const dom = parser.parseFromString(htmlString, 'text/html');
+            const possibleTableElement = dom.querySelector('table');
+
+            if (possibleTableElement != null) {
+              const pasteRows = extractRowsFromHTML(possibleTableElement);
+              updateTableNode(tableNode => {
+                const [x, y] = cellCoordMap.get(primarySelectedCellID);
+                lexical.$addUpdateTag('history-push');
+                tableNode.mergeRows(x, y, pasteRows);
+              });
+              return;
+            }
+
+            $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
+              const root = lexical.$getRoot();
+              root.clear();
+              root.append(lexical.$createParagraphNode());
+              root.selectEnd();
+              const nodes = html.$generateNodesFromDOM(editor, dom);
+              const sel = lexical.$getSelection();
+
+              if (lexical.$isRangeSelection(sel)) {
+                clipboard.$insertGeneratedNodes(cellEditor, nodes, sel);
+              }
+            });
+            return; // eslint-disable-next-line no-empty
+          } catch {}
+        } // Multi-line plain text in rich text mode pasted as separate paragraphs
+        // instead of single paragraph with linebreaks.
+
+
+        const text = clipboardData !== null ? await getTypeFromObject(clipboardData, 'text/plain') : '';
+
+        if (text != null) {
+          $updateCells(rows, [primarySelectedCellID], cellCoordMap, cellEditor, updateTableNode, () => {
+            const root = lexical.$getRoot();
+            root.clear();
+            root.selectEnd();
+            const sel = lexical.$getSelection();
+
+            if (sel !== null) {
+              sel.insertRawText(text);
+            }
+          });
+        }
+      }
+    };
+
+    const copyPrimaryCell = event => {
+      if (primarySelectedCellID !== null && cellEditor !== null) {
+        const cell = getCell(rows, primarySelectedCellID, cellCoordMap);
+        const json = cell.json;
+        const htmlString = cellHTMLCache.get(json) || null;
+
+        if (htmlString === null) {
+          return;
+        }
+
+        const editorState = cellEditor.parseEditorState(json);
+        const plainTextString = editorState.read(() => lexical.$getRoot().getTextContent());
+        const lexicalString = editorState.read(() => {
+          return JSON.stringify(clipboard.$generateJSONFromSelectedNodes(cellEditor, null));
+        });
+        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
+      }
+    };
+
+    const copyCellRange = event => {
+      const lastCellID = lastCellIDRef.current;
+
+      if (primarySelectedCellID !== null && cellEditor !== null && lastCellID !== null) {
+        const rect = getSelectedRect(primarySelectedCellID, lastCellID, cellCoordMap);
+
+        if (rect === null) {
+          return;
+        }
+
+        const dom = exportTableCellsToHTML(rows, rect);
+        const htmlString = dom.outerHTML;
+        const plainTextString = dom.outerText;
+        const tableNodeJSON = editor.getEditorState().read(() => {
+          const tableNode = lexical.$getNodeByKey(nodeKey);
+          return tableNode.exportJSON();
+        });
+        tableNodeJSON.rows = extractCellsFromRows(rows, rect);
+        const lexicalJSON = {
+          namespace: cellEditor._config.namespace,
+          nodes: [tableNodeJSON]
+        };
+        const lexicalString = JSON.stringify(lexicalJSON);
+        copyDataToClipboard(event, htmlString, lexicalString, plainTextString);
+      }
+    };
+
+    const handlePaste = (event, activeEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
+        pasteContent(event);
+        mouseDownRef.current = false;
+        setSelectedCellIDs(NO_CELLS);
+        return true;
+      }
+
+      return false;
+    };
+
+    const handleCopy = (event, activeEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (primarySelectedCellID !== null && !isEditing && selection === null && activeEditor === editor) {
+        if (selectedCellIDs.length === 0) {
+          copyPrimaryCell(event);
+        } else {
+          copyCellRange(event);
+        }
+
+        return true;
+      }
+
+      return false;
+    };
+
+    return utils.mergeRegister(editor.registerCommand(lexical.CLICK_COMMAND, payload => {
+      const selection = lexical.$getSelection();
+
+      if (lexical.$isNodeSelection(selection)) {
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.PASTE_COMMAND, handlePaste, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.COPY_COMMAND, handleCopy, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.CUT_COMMAND, (event, activeEditor) => {
+      if (handleCopy(event, activeEditor)) {
+        clearCellsCommand();
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, clearCellsCommand, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.FORMAT_TEXT_COMMAND, payload => {
+      if (primarySelectedCellID !== null && !isEditing) {
+        $updateCells(rows, [primarySelectedCellID, ...selectedCellIDs], cellCoordMap, cellEditor, updateTableNode, () => {
+          const sel = $createSelectAll();
+          sel.formatText(payload);
+        });
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ENTER_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (primarySelectedCellID === null && !isEditing && lexical.$isNodeSelection(selection) && selection.has(nodeKey) && selection.getNodes().length === 1 && targetEditor === editor) {
+        const firstCellID = rows[0].cells[0].id;
+        setPrimarySelectedCellID(firstCellID);
+        focusCell(tableElem, firstCellID);
+        event.preventDefault();
+        event.stopPropagation();
+        clearSelection();
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_TAB_COMMAND, event => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null && primarySelectedCellID !== null) {
+        const isBackward = event.shiftKey;
+        const [x, y] = cellCoordMap.get(primarySelectedCellID);
+        event.preventDefault();
+        let nextX = null;
+        let nextY = null;
+
+        if (x === 0 && isBackward) {
+          if (y !== 0) {
+            nextY = y - 1;
+            nextX = rows[nextY].cells.length - 1;
+          }
+        } else if (x === rows[y].cells.length - 1 && !isBackward) {
+          if (y !== rows.length - 1) {
+            nextY = y + 1;
+            nextX = 0;
+          }
+        } else if (!isBackward) {
+          nextX = x + 1;
+          nextY = y;
+        } else {
+          nextX = x - 1;
+          nextY = y;
+        }
+
+        if (nextX !== null && nextY !== null) {
+          modifySelectedCells(nextX, nextY, false);
+          return true;
+        }
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_UP_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null) {
+        const extend = event.shiftKey;
+        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
+
+        if (cellID !== null) {
+          const [x, y] = cellCoordMap.get(cellID);
+
+          if (y !== 0) {
+            modifySelectedCells(x, y - 1, extend);
+            return true;
+          }
+        }
+      }
+
+      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
+        return false;
+      }
+
+      if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getPreviousSibling() === null) {
+        event.preventDefault();
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_DOWN_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null) {
+        const extend = event.shiftKey;
+        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
+
+        if (cellID !== null) {
+          const [x, y] = cellCoordMap.get(cellID);
+
+          if (y !== rows.length - 1) {
+            modifySelectedCells(x, y + 1, extend);
+            return true;
+          }
+        }
+      }
+
+      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
+        return false;
+      }
+
+      if (selection.isCollapsed() && selection.anchor.getNode().getTopLevelElementOrThrow().getNextSibling() === null) {
+        event.preventDefault();
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_LEFT_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null) {
+        const extend = event.shiftKey;
+        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
+
+        if (cellID !== null) {
+          const [x, y] = cellCoordMap.get(cellID);
+
+          if (x !== 0) {
+            modifySelectedCells(x - 1, y, extend);
+            return true;
+          }
+        }
+      }
+
+      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
+        return false;
+      }
+
+      if (selection.isCollapsed() && selection.anchor.offset === 0) {
+        event.preventDefault();
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ARROW_RIGHT_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null) {
+        const extend = event.shiftKey;
+        const cellID = extend ? lastCellIDRef.current || primarySelectedCellID : primarySelectedCellID;
+
+        if (cellID !== null) {
+          const [x, y] = cellCoordMap.get(cellID);
+
+          if (x !== rows[y].cells.length - 1) {
+            modifySelectedCells(x + 1, y, extend);
+            return true;
+          }
+        }
+      }
+
+      if (!lexical.$isRangeSelection(selection) || targetEditor !== cellEditor) {
+        return false;
+      }
+
+      if (selection.isCollapsed()) {
+        const anchor = selection.anchor;
+
+        if (anchor.type === 'text' && anchor.offset === anchor.getNode().getTextContentSize() || anchor.type === 'element' && anchor.offset === anchor.getNode().getChildrenSize()) {
+          event.preventDefault();
+          return true;
+        }
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_ESCAPE_COMMAND, (event, targetEditor) => {
+      const selection = lexical.$getSelection();
+
+      if (!isEditing && selection === null && targetEditor === editor) {
+        setSelected(true);
+        setPrimarySelectedCellID(null);
+        selectTable();
+        return true;
+      }
+
+      if (!lexical.$isRangeSelection(selection)) {
+        return false;
+      }
+
+      if (isEditing) {
+        saveEditorToJSON();
+        setIsEditing(false);
+
+        if (primarySelectedCellID !== null) {
+          setTimeout(() => {
+            focusCell(tableElem, primarySelectedCellID);
+          }, 20);
+        }
+
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW));
+  }, [cellCoordMap, cellEditor, clearCellsCommand, clearSelection, editor, isEditing, modifySelectedCells, nodeKey, primarySelectedCellID, rows, saveEditorToJSON, selectTable, selectedCellIDs, setSelected, updateTableNode]);
+
+  if (cellEditor === null) {
+    return;
+  }
+
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: 'relative'
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    className: `${theme.table} ${isSelected ? theme.tableSelected : ''}`,
+    ref: tableRef,
+    tabIndex: -1
+  }, /*#__PURE__*/React.createElement("tbody", null, rows.map(row => /*#__PURE__*/React.createElement("tr", {
+    key: row.id,
+    className: theme.tableRow
+  }, row.cells.map(cell => {
+    const {
+      id
+    } = cell;
+    return /*#__PURE__*/React.createElement(TableCell, {
+      key: id,
+      cell: cell,
+      theme: theme,
+      isSelected: selectedCellSet.has(id),
+      isPrimarySelected: primarySelectedCellID === id,
+      isEditing: isEditing,
+      sortingOptions: sortingOptions,
+      cellEditor: cellEditor,
+      updateCellsByID: updateCellsByID,
+      updateTableNode: updateTableNode,
+      cellCoordMap: cellCoordMap,
+      rows: rows,
+      setSortingOptions: setSortingOptions
+    });
+  }))))), showAddColumns && /*#__PURE__*/React.createElement("button", {
+    className: theme.tableAddColumns,
+    onClick: addColumns
+  }), showAddRows && /*#__PURE__*/React.createElement("button", {
+    className: theme.tableAddRows,
+    onClick: addRows,
+    ref: addRowsRef
+  }), resizingID !== null && /*#__PURE__*/React.createElement("div", {
+    className: theme.tableResizeRuler,
+    ref: tableResizerRulerRef
+  }));
+}
+
+var TableComponent$1 = {
+  __proto__: null,
+  'default': TableComponent
 };
 
 exports.Editor = Editor;
