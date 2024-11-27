@@ -1730,7 +1730,7 @@ class OfficeNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     p.appendChild(a);
     p.appendChild(space);
     return {
-      element: p
+      element: a
     };
   }
 
@@ -1936,7 +1936,7 @@ class PdfNode extends LexicalDecoratorBlockNode.DecoratorBlockNode {
     p.appendChild(a);
     p.appendChild(space);
     return {
-      element: p
+      element: a
     };
   }
 
@@ -5318,7 +5318,6 @@ function ComponentPickerMenuPlugin({
       closeMenu();
     });
   }, [editor]);
-  console.log(config, options);
   return /*#__PURE__*/React.createElement(React.Fragment, null, modal, /*#__PURE__*/React.createElement(LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
@@ -8404,7 +8403,6 @@ const DocumentMentionsRegex = {
   NAME,
   PUNCTUATION
 };
-const CapitalizedNameMentionsRegex = new RegExp('(^|[^#])((?:' + DocumentMentionsRegex.NAME + '{' + 1 + ',})$)');
 const PUNC = DocumentMentionsRegex.PUNCTUATION;
 const TRIGGERS = ['@'].join(''); // Chars we expect to see in a mention (non-space, non-punctuation).
 
@@ -8430,14 +8428,20 @@ function useMentionLookupService(dummyMentionsData, mentionString) {
   const dummyLookupService = {
     search(string, callback) {
       setTimeout(() => {
-        const results = dummyMentionsData.filter(mention => mention.toLowerCase().includes(string.toLowerCase()));
+        // If no search string (just '@'), return all users
+        const results = string === null ? dummyMentionsData : dummyMentionsData.filter(mention => mention.toLowerCase().includes(string.toLowerCase()));
         callback(results);
       }, 500);
     }
 
   };
   React.useEffect(() => {
-    const cachedResults = mentionsCache.get(mentionString);
+    const cachedResults = mentionsCache.get(mentionString); // If mentionString is an empty string (just '@'), reset to show all
+
+    if (mentionString === '') {
+      setResults(dummyMentionsData);
+      return;
+    }
 
     if (mentionString == null) {
       setResults([]);
@@ -8456,29 +8460,8 @@ function useMentionLookupService(dummyMentionsData, mentionString) {
       mentionsCache.set(mentionString, newResults);
       setResults(newResults);
     });
-  }, [mentionString]);
+  }, [mentionString, dummyMentionsData]);
   return results;
-}
-
-function checkForCapitalizedNameMentions(text, minMatchLength) {
-  const match = CapitalizedNameMentionsRegex.exec(text);
-
-  if (match !== null) {
-    // The strategy ignores leading whitespace but we need to know it's
-    // length to add it to the leadOffset
-    const maybeLeadingWhitespace = match[1];
-    const matchingString = match[2];
-
-    if (matchingString != null && matchingString.length >= minMatchLength) {
-      return {
-        leadOffset: match.index + maybeLeadingWhitespace.length,
-        matchingString,
-        replaceableString: matchingString
-      };
-    }
-  }
-
-  return null;
 }
 
 function checkForAtSignMentions(text, minMatchLength) {
@@ -8489,12 +8472,12 @@ function checkForAtSignMentions(text, minMatchLength) {
   }
 
   if (match !== null) {
-    // The strategy ignores leading whitespace but we need to know it's
+    // The strategy ignores leading whitespace but we need to know its
     // length to add it to the leadOffset
     const maybeLeadingWhitespace = match[1];
-    const matchingString = match[3];
+    const matchingString = match[3]; // If only '@' is typed, allow match
 
-    if (matchingString.length >= minMatchLength) {
+    if (matchingString.length === 0 || matchingString.length >= minMatchLength) {
       return {
         leadOffset: match.index + maybeLeadingWhitespace.length,
         matchingString,
@@ -8507,8 +8490,7 @@ function checkForAtSignMentions(text, minMatchLength) {
 }
 
 function getPossibleQueryMatch(text) {
-  const match = checkForAtSignMentions(text, 1);
-  return match === null ? checkForCapitalizedNameMentions(text, 3) : match;
+  return checkForAtSignMentions(text, 1);
 }
 
 class MentionTypeaheadOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
@@ -8560,9 +8542,6 @@ function MentionsPlugin({
   const [queryString, setQueryString] = React.useState(null);
   const [userData, setUserData] = React.useState([]);
   const results = useMentionLookupService(userData, queryString);
-  const checkForSlashTriggerMatch = LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch('/', {
-    minLength: 0
-  });
   const options = React.useMemo(() => results.map(result => new MentionTypeaheadOption(result, /*#__PURE__*/React.createElement("i", {
     className: "icon user"
   }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT), [results]);
@@ -8579,13 +8558,11 @@ function MentionsPlugin({
     });
   }, [editor]);
   const checkForMentionMatch = React.useCallback(text => {
-    const mentionMatch = getPossibleQueryMatch(text);
-    const slashMatch = checkForSlashTriggerMatch(text, editor);
-    return !slashMatch && mentionMatch ? mentionMatch : null;
-  }, [checkForSlashTriggerMatch, editor]);
+    return getPossibleQueryMatch(text);
+  }, []);
   React.useEffect(() => {
     setUserData(dummyMentionsDatas || []);
-  }, []);
+  }, [dummyMentionsDatas]);
   return /*#__PURE__*/React.createElement(LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
