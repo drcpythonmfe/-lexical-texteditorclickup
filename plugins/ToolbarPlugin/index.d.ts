@@ -11,5 +11,6 @@ export declare type ToolbarPluginProps = {
     config: ToolbarConfig;
     handleClick?: ((data: any) => void | undefined | any) | undefined;
     floatingText?: boolean;
+    anchorElem?: HTMLElement;
 };
-export default function ToolbarPlugin({ config, handleClick, floatingText, }: ToolbarPluginProps): JSX.Element;
+export default function ToolbarPlugin({ config, handleClick, anchorElem, floatingText, }: ToolbarPluginProps): JSX.Element;

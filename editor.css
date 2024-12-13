@@ -6,6 +6,45 @@
  *
  *
  */
+.StickyNode__contentEditable {
+  min-height: 20px;
+  border: 0;
+  resize: none;
+  cursor: text;
+  font-size: 24px;
+  caret-color: rgb(5, 5, 5);
+  display: block;
+  position: relative;
+  tab-size: 1;
+  outline: 0;
+  padding: 10px;
+  user-select: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.StickyNode__placeholder {
+  font-size: 24px;
+  color: #999;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  top: 30px;
+  left: 20px;
+  width: 120px;
+  user-select: none;
+  white-space: nowrap;
+  display: inline-block;
+  pointer-events: none;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ *
+ */
 
 .ImageNode__contentEditable {
   min-height: 20px;
@@ -41,45 +80,6 @@
 
 .image-control-wrapper--resizing {
   touch-action: none;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- *
- */
-.StickyNode__contentEditable {
-  min-height: 20px;
-  border: 0;
-  resize: none;
-  cursor: text;
-  font-size: 24px;
-  caret-color: rgb(5, 5, 5);
-  display: block;
-  position: relative;
-  tab-size: 1;
-  outline: 0;
-  padding: 10px;
-  user-select: text;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-.StickyNode__placeholder {
-  font-size: 24px;
-  color: #999;
-  overflow: hidden;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: 30px;
-  left: 20px;
-  width: 120px;
-  user-select: none;
-  white-space: nowrap;
-  display: inline-block;
-  pointer-events: none;
 }
 
 /**
@@ -2178,6 +2178,10 @@ span[data-lexical-mention="true"] {
   cursor: pointer;
 }
 
+
+.typeahead-popovers ul {
+  grid-template-columns: repeat(1, 1fr) !important;
+}
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

@@ -32,7 +32,6 @@ var yjs$1 = require('@lexical/yjs');
 var lexical = require('lexical');
 var ReactDOM = require('react-dom');
 var LexicalHorizontalRuleNode = require('@lexical/react/LexicalHorizontalRuleNode');
-var table = require('@lexical/table');
 var LexicalBlockWithAlignableContents = require('@lexical/react/LexicalBlockWithAlignableContents');
 var LexicalDecoratorBlockNode = require('@lexical/react/LexicalDecoratorBlockNode');
 var selection = require('@lexical/selection');
@@ -76,11 +75,12 @@ const CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- *
  */
 const url = new URL(window.location.href);
-const params = new URLSearchParams(url.search);
-const WEBSOCKET_ENDPOINT = params.get('collabEndpoint') || 'ws://localhost:1234';
+const params = new URLSearchParams(url.search); // Updated WebSocket endpoint for Truflux stage environment
+
+const WEBSOCKET_ENDPOINT = params.get('collabEndpoint') || 'wss://stage.truflux.drcsystems.ooo/ws'; //'ws://localhost:1234';
+
 const WEBSOCKET_SLUG = 'playground';
 const WEBSOCKET_ID = params.get('collabId') || '0'; // parent dom -> child doc
 
@@ -324,6 +324,778 @@ function Button({
     'data-test-id': dataTestId
   }), children);
 }
+
+const TableCellHeaderStates = {
+  BOTH: 3,
+  COLUMN: 2,
+  NO_STATUS: 0,
+  ROW: 1
+};
+
+/** @noInheritDoc */
+class TableCellNode extends lexical.DEPRECATED_GridCellNode {
+  /** @internal */
+
+  /** @internal */
+  static getType() {
+    return 'tablecell';
+  }
+
+  static clone(node) {
+    return new TableCellNode(node.__headerState, node.__colSpan, node.__width, node.__key);
+  }
+
+  static importDOM() {
+    return {
+      td: node => ({
+        conversion: convertTableCellNodeElement,
+        priority: 0
+      }),
+      th: node => ({
+        conversion: convertTableCellNodeElement,
+        priority: 0
+      })
+    };
+  }
+
+  static importJSON(serializedNode) {
+    return $createTableCellNode(serializedNode.headerState, serializedNode.colSpan, serializedNode.width || undefined);
+  }
+
+  constructor(headerState = TableCellHeaderStates.NO_STATUS, colSpan = 1, width, key) {
+    super(colSpan, key);
+
+    _defineProperty(this, "__headerState", void 0);
+
+    _defineProperty(this, "__width", void 0);
+
+    this.__headerState = headerState;
+    this.__width = width;
+  }
+
+  createDOM(config) {
+    const element = document.createElement(this.getTag());
+
+    if (this.__width) {
+      element.style.width = `${this.__width}px`;
+    }
+
+    utils.addClassNamesToElement(element, config.theme.tableCell, this.hasHeader() && config.theme.tableCellHeader);
+    return element;
+  }
+
+  exportDOM(editor) {
+    const {
+      element
+    } = super.exportDOM(editor);
+
+    if (element) {
+      const maxWidth = 700;
+      const colCount = this.getParentOrThrow().getChildrenSize();
+      element.style.border = '1px solid black';
+      element.style.width = `${this.getWidth() || Math.max(90, maxWidth / colCount)}px`;
+      element.style.verticalAlign = 'top';
+      element.style.textAlign = 'start';
+
+      if (this.hasHeader()) {
+        element.style.backgroundColor = '#f2f3f5';
+      }
+    }
+
+    return {
+      element
+    };
+  }
+
+  exportJSON() {
+    return { ...super.exportJSON(),
+      colSpan: super.__colSpan,
+      headerState: this.__headerState,
+      type: 'tablecell',
+      width: this.getWidth()
+    };
+  }
+
+  getTag() {
+    return this.hasHeader() ? 'th' : 'td';
+  }
+
+  setHeaderStyles(headerState) {
+    const self = this.getWritable();
+    self.__headerState = headerState;
+    return this.__headerState;
+  }
+
+  getHeaderStyles() {
+    return this.getLatest().__headerState;
+  }
+
+  setWidth(width) {
+    const self = this.getWritable();
+    self.__width = width;
+    return this.__width;
+  }
+
+  getWidth() {
+    return this.getLatest().__width;
+  }
+
+  toggleHeaderStyle(headerStateToToggle) {
+    const self = this.getWritable();
+
+    if ((self.__headerState & headerStateToToggle) === headerStateToToggle) {
+      self.__headerState -= headerStateToToggle;
+    } else {
+      self.__headerState += headerStateToToggle;
+    }
+
+    return self;
+  }
+
+  hasHeaderState(headerState) {
+    return (this.getHeaderStyles() & headerState) === headerState;
+  }
+
+  hasHeader() {
+    return this.getLatest().__headerState !== TableCellHeaderStates.NO_STATUS;
+  }
+
+  updateDOM(prevNode) {
+    return prevNode.__headerState !== this.__headerState || prevNode.__width !== this.__width;
+  }
+
+  isShadowRoot() {
+    return true;
+  }
+
+  collapseAtStart() {
+    return true;
+  }
+
+  canBeEmpty() {
+    return false;
+  }
+
+  canIndent() {
+    return false;
+  }
+
+}
+function convertTableCellNodeElement(domNode) {
+  const nodeName = domNode.nodeName.toLowerCase();
+  const tableCellNode = $createTableCellNode(nodeName === 'th' ? TableCellHeaderStates.ROW : TableCellHeaderStates.NO_STATUS);
+  return {
+    forChild: (lexicalNode, parentLexicalNode) => {
+      if ($isTableCellNode(parentLexicalNode) && !lexical.$isElementNode(lexicalNode)) {
+        const paragraphNode = lexical.$createParagraphNode();
+
+        if (lexical.$isLineBreakNode(lexicalNode) && lexicalNode.getTextContent() === '\n') {
+          return null;
+        }
+
+        paragraphNode.append(lexicalNode);
+        return paragraphNode;
+      }
+
+      return lexicalNode;
+    },
+    node: tableCellNode
+  };
+}
+function $createTableCellNode(headerState, colSpan = 1, width) {
+  return lexical.$applyNodeReplacement(new TableCellNode(headerState, colSpan, width));
+}
+function $isTableCellNode(node) {
+  return node instanceof TableCellNode;
+}
+
+/** @noInheritDoc */
+class TableRowNode extends lexical.DEPRECATED_GridRowNode {
+  /** @internal */
+  static getType() {
+    return 'tablerow';
+  }
+
+  static clone(node) {
+    return new TableRowNode(node.__height, node.__key);
+  }
+
+  static importDOM() {
+    return {
+      tr: node => ({
+        conversion: convertTableRowElement,
+        priority: 0
+      })
+    };
+  }
+
+  static importJSON(serializedNode) {
+    return $createTableRowNode(serializedNode.height);
+  }
+
+  constructor(height, key) {
+    super(key);
+
+    _defineProperty(this, "__height", void 0);
+
+    this.__height = height;
+  }
+
+  exportJSON() {
+    return { ...super.exportJSON(),
+      type: 'tablerow',
+      version: 1
+    };
+  }
+
+  createDOM(config) {
+    const element = document.createElement('tr');
+
+    if (this.__height) {
+      element.style.height = `${this.__height}px`;
+    }
+
+    utils.addClassNamesToElement(element, config.theme.tableRow);
+    return element;
+  }
+
+  isShadowRoot() {
+    return true;
+  }
+
+  setHeight(height) {
+    const self = this.getWritable();
+    self.__height = height;
+    return this.__height;
+  }
+
+  getHeight() {
+    return this.getLatest().__height;
+  }
+
+  updateDOM(prevNode) {
+    return prevNode.__height !== this.__height;
+  }
+
+  canBeEmpty() {
+    return false;
+  }
+
+  canIndent() {
+    return false;
+  }
+
+}
+function convertTableRowElement(domNode) {
+  return {
+    node: $createTableRowNode()
+  };
+}
+function $createTableRowNode(height) {
+  return lexical.$applyNodeReplacement(new TableRowNode(height));
+}
+function $isTableRowNode(node) {
+  return node instanceof TableRowNode;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const LEXICAL_ELEMENT_KEY = '__lexicalTableSelection';
+function getTableSelectionFromTableElement(tableElement) {
+  return tableElement[LEXICAL_ELEMENT_KEY];
+}
+function getCellFromTarget(node) {
+  let currentNode = node;
+
+  while (currentNode != null) {
+    const nodeName = currentNode.nodeName;
+
+    if (nodeName === 'TD' || nodeName === 'TH') {
+      // @ts-expect-error: internal field
+      const cell = currentNode._cell;
+
+      if (cell === undefined) {
+        return null;
+      }
+
+      return cell;
+    }
+
+    currentNode = currentNode.parentNode;
+  }
+
+  return null;
+}
+function getTableGrid(tableElement) {
+  const cells = [];
+  const grid = {
+    cells,
+    columns: 0,
+    rows: 0
+  };
+  let currentNode = tableElement.firstChild;
+  let x = 0;
+  let y = 0;
+  cells.length = 0;
+
+  while (currentNode != null) {
+    const nodeMame = currentNode.nodeName;
+
+    if (nodeMame === 'TD' || nodeMame === 'TH') {
+      const elem = currentNode;
+      const cell = {
+        elem,
+        highlighted: false,
+        x,
+        y
+      }; // @ts-expect-error: internal field
+
+      currentNode._cell = cell;
+
+      if (cells[y] === undefined) {
+        cells[y] = [];
+      }
+
+      cells[y][x] = cell;
+    } else {
+      const child = currentNode.firstChild;
+
+      if (child != null) {
+        currentNode = child;
+        continue;
+      }
+    }
+
+    const sibling = currentNode.nextSibling;
+
+    if (sibling != null) {
+      x++;
+      currentNode = sibling;
+      continue;
+    }
+
+    const parent = currentNode.parentNode;
+
+    if (parent != null) {
+      const parentSibling = parent.nextSibling;
+
+      if (parentSibling == null) {
+        break;
+      }
+
+      y++;
+      x = 0;
+      currentNode = parentSibling;
+    }
+  }
+
+  grid.columns = x + 1;
+  grid.rows = y + 1;
+  return grid;
+}
+
+/** @noInheritDoc */
+class TableNode$1 extends lexical.DEPRECATED_GridNode {
+  /** @internal */
+  static getType() {
+    return 'table';
+  }
+
+  static clone(node) {
+    return new TableNode$1(node.__key);
+  }
+
+  static importDOM() {
+    console.log("table import");
+    return {
+      table: _node => ({
+        conversion: convertTableElement$1,
+        priority: 1
+      })
+    };
+  }
+
+  static importJSON(_serializedNode) {
+    return $createTableNode$1();
+  }
+
+  constructor(key) {
+    super(key);
+
+    _defineProperty(this, "__grid", void 0);
+  }
+
+  exportJSON() {
+    return { ...super.exportJSON(),
+      type: 'table',
+      version: 1
+    };
+  }
+
+  createDOM(config, editor) {
+    const tableElement = document.createElement('table');
+    utils.addClassNamesToElement(tableElement, config.theme.table);
+    return tableElement;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  exportDOM(editor) {
+    return { ...super.exportDOM(editor),
+      after: tableElement => {
+        if (tableElement) {
+          console.log("Table export element:", tableElement);
+          const newElement = tableElement.cloneNode();
+          const colGroup = document.createElement('colgroup');
+          const tBody = document.createElement('tbody'); // Move children to tbody
+
+          tBody.append(...tableElement.children); // Find first row node using Lexical children
+
+          const children = this.getChildren();
+          const firstRowNode = children.find($isTableRowNode);
+
+          if (!firstRowNode) {
+            console.warn('No valid first row node found');
+            return tableElement;
+          } // Get column count from first row node
+
+
+          const colCount = firstRowNode.getChildren().length;
+
+          for (let i = 0; i < colCount; i++) {
+            const col = document.createElement('col');
+            colGroup.append(col);
+          }
+
+          newElement.replaceChildren(colGroup, tBody);
+          return newElement;
+        }
+
+        return tableElement;
+      }
+    };
+  }
+
+  canExtractContents() {
+    return false;
+  }
+
+  canBeEmpty() {
+    return false;
+  }
+
+  isShadowRoot() {
+    return true;
+  }
+
+  getCordsFromCellNode(tableCellNode, grid) {
+    const {
+      rows,
+      cells
+    } = grid;
+
+    for (let y = 0; y < rows; y++) {
+      const row = cells[y];
+
+      if (row == null) {
+        throw new Error(`Row not found at y:${y}`);
+      }
+
+      const x = row.findIndex(({
+        elem
+      }) => {
+        const cellNode = lexical.$getNearestNodeFromDOMNode(elem);
+        return cellNode === tableCellNode;
+      });
+
+      if (x !== -1) {
+        return {
+          x,
+          y
+        };
+      }
+    }
+
+    throw new Error('Cell not found in table.');
+  }
+
+  getCellFromCords(x, y, grid) {
+    const {
+      cells
+    } = grid;
+    const row = cells[y];
+
+    if (row == null) {
+      return null;
+    }
+
+    const cell = row[x];
+
+    if (cell == null) {
+      return null;
+    }
+
+    return cell;
+  }
+
+  getCellFromCordsOrThrow(x, y, grid) {
+    const cell = this.getCellFromCords(x, y, grid);
+
+    if (!cell) {
+      throw new Error('Cell not found at cords.');
+    }
+
+    return cell;
+  }
+
+  getCellNodeFromCords(x, y, grid) {
+    const cell = this.getCellFromCords(x, y, grid);
+
+    if (cell == null) {
+      return null;
+    }
+
+    const node = lexical.$getNearestNodeFromDOMNode(cell.elem);
+
+    if ($isTableCellNode(node)) {
+      return node;
+    }
+
+    return null;
+  }
+
+  getCellNodeFromCordsOrThrow(x, y, grid) {
+    const node = this.getCellNodeFromCords(x, y, grid);
+
+    if (!node) {
+      throw new Error('Node at cords not TableCellNode.');
+    }
+
+    return node;
+  }
+
+  canSelectBefore() {
+    return true;
+  }
+
+  canIndent() {
+    return false;
+  }
+
+}
+function $getElementGridForTableNode(editor, tableNode) {
+  const tableElement = editor.getElementByKey(tableNode.getKey());
+
+  if (tableElement == null) {
+    throw new Error('Table Element Not Found');
+  }
+
+  return getTableGrid(tableElement);
+}
+function convertTableElement$1(_domNode) {
+  console.log("stp1ssss", _domNode);
+  console.log("stp2", $createTableNode$1());
+  return {
+    node: $createTableNode$1()
+  };
+}
+function $createTableNode$1() {
+  return lexical.$applyNodeReplacement(new TableNode$1());
+}
+function $isTableNode$1(node) {
+  return node instanceof TableNode$1;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+function $getTableCellNodeFromLexicalNode(startingNode) {
+  const node = utils.$findMatchingParent(startingNode, n => $isTableCellNode(n));
+
+  if ($isTableCellNode(node)) {
+    return node;
+  }
+
+  return null;
+}
+function $getTableRowNodeFromTableCellNodeOrThrow(startingNode) {
+  const node = utils.$findMatchingParent(startingNode, n => $isTableRowNode(n));
+
+  if ($isTableRowNode(node)) {
+    return node;
+  }
+
+  throw new Error('Expected table cell to be inside of table row.');
+}
+function $getTableNodeFromLexicalNodeOrThrow(startingNode) {
+  const node = utils.$findMatchingParent(startingNode, n => $isTableNode$1(n));
+
+  if ($isTableNode$1(node)) {
+    return node;
+  }
+
+  throw new Error('Expected table cell to be inside of table.');
+}
+function $getTableRowIndexFromTableCellNode(tableCellNode) {
+  const tableRowNode = $getTableRowNodeFromTableCellNodeOrThrow(tableCellNode);
+  const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableRowNode);
+  return tableNode.getChildren().findIndex(n => n.is(tableRowNode));
+}
+function $getTableColumnIndexFromTableCellNode(tableCellNode) {
+  const tableRowNode = $getTableRowNodeFromTableCellNodeOrThrow(tableCellNode);
+  return tableRowNode.getChildren().findIndex(n => n.is(tableCellNode));
+}
+function $getTableCellSiblingsFromTableCellNode(tableCellNode, grid) {
+  const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+  const {
+    x,
+    y
+  } = tableNode.getCordsFromCellNode(tableCellNode, grid);
+  return {
+    above: tableNode.getCellNodeFromCords(x, y - 1, grid),
+    below: tableNode.getCellNodeFromCords(x, y + 1, grid),
+    left: tableNode.getCellNodeFromCords(x - 1, y, grid),
+    right: tableNode.getCellNodeFromCords(x + 1, y, grid)
+  };
+}
+function $removeTableRowAtIndex(tableNode, indexToDelete) {
+  const tableRows = tableNode.getChildren();
+
+  if (indexToDelete >= tableRows.length || indexToDelete < 0) {
+    throw new Error('Expected table cell to be inside of table row.');
+  }
+
+  const targetRowNode = tableRows[indexToDelete];
+  targetRowNode.remove();
+  return tableNode;
+}
+function $insertTableRow(tableNode, targetIndex, shouldInsertAfter = true, rowCount, grid) {
+  const tableRows = tableNode.getChildren();
+
+  if (targetIndex >= tableRows.length || targetIndex < 0) {
+    throw new Error('Table row target index out of range');
+  }
+
+  const targetRowNode = tableRows[targetIndex];
+
+  if ($isTableRowNode(targetRowNode)) {
+    for (let r = 0; r < rowCount; r++) {
+      const tableRowCells = targetRowNode.getChildren();
+      const tableColumnCount = tableRowCells.length;
+      const newTableRowNode = $createTableRowNode();
+
+      for (let c = 0; c < tableColumnCount; c++) {
+        const tableCellFromTargetRow = tableRowCells[c];
+
+        if (!$isTableCellNode(tableCellFromTargetRow)) {
+          throw Error(`Expected table cell`);
+        }
+
+        const {
+          above,
+          below
+        } = $getTableCellSiblingsFromTableCellNode(tableCellFromTargetRow, grid);
+        let headerState = TableCellHeaderStates.NO_STATUS;
+        const width = above && above.getWidth() || below && below.getWidth() || undefined;
+
+        if (above && above.hasHeaderState(TableCellHeaderStates.COLUMN) || below && below.hasHeaderState(TableCellHeaderStates.COLUMN)) {
+          headerState |= TableCellHeaderStates.COLUMN;
+        }
+
+        const tableCellNode = $createTableCellNode(headerState, 1, width);
+        tableCellNode.append(lexical.$createParagraphNode());
+        newTableRowNode.append(tableCellNode);
+      }
+
+      if (shouldInsertAfter) {
+        targetRowNode.insertAfter(newTableRowNode);
+      } else {
+        targetRowNode.insertBefore(newTableRowNode);
+      }
+    }
+  } else {
+    throw new Error('Row before insertion index does not exist.');
+  }
+
+  return tableNode;
+}
+function $insertTableColumn(tableNode, targetIndex, shouldInsertAfter = true, columnCount, grid) {
+  const tableRows = tableNode.getChildren();
+
+  for (let r = 0; r < tableRows.length; r++) {
+    const currentTableRowNode = tableRows[r];
+
+    if ($isTableRowNode(currentTableRowNode)) {
+      for (let c = 0; c < columnCount; c++) {
+        const tableRowChildren = currentTableRowNode.getChildren();
+
+        if (targetIndex >= tableRowChildren.length || targetIndex < 0) {
+          throw new Error('Table column target index out of range');
+        }
+
+        const targetCell = tableRowChildren[targetIndex];
+
+        if (!$isTableCellNode(targetCell)) {
+          throw Error(`Expected table cell`);
+        }
+
+        const {
+          left,
+          right
+        } = $getTableCellSiblingsFromTableCellNode(targetCell, grid);
+        let headerState = TableCellHeaderStates.NO_STATUS;
+
+        if (left && left.hasHeaderState(TableCellHeaderStates.ROW) || right && right.hasHeaderState(TableCellHeaderStates.ROW)) {
+          headerState |= TableCellHeaderStates.ROW;
+        }
+
+        const newTableCell = $createTableCellNode(headerState);
+        newTableCell.append(lexical.$createParagraphNode());
+
+        if (shouldInsertAfter) {
+          targetCell.insertAfter(newTableCell);
+        } else {
+          targetCell.insertBefore(newTableCell);
+        }
+      }
+    }
+  }
+
+  return tableNode;
+}
+function $deleteTableColumn(tableNode, targetIndex) {
+  const tableRows = tableNode.getChildren();
+
+  for (let i = 0; i < tableRows.length; i++) {
+    const currentTableRowNode = tableRows[i];
+
+    if ($isTableRowNode(currentTableRowNode)) {
+      const tableRowChildren = currentTableRowNode.getChildren();
+
+      if (targetIndex >= tableRowChildren.length || targetIndex < 0) {
+        throw new Error('Table column target index out of range');
+      }
+
+      tableRowChildren[targetIndex].remove();
+    }
+  }
+
+  return tableNode;
+}
+
+/** @module @lexical/table */
+const INSERT_TABLE_COMMAND = lexical.createCommand('INSERT_TABLE_COMMAND');
 
 const ImageComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
 () => Promise.resolve().then(function () { return ImageComponent$1; }));
@@ -793,9 +1565,9 @@ const TWEET = {
 const TABLE_ROW_REG_EXP = /^(?:\|)(.+)(?:\|)\s?$/;
 const TABLE = {
   // TODO: refactor transformer for new TableNode
-  dependencies: [table.TableNode, table.TableRowNode, table.TableCellNode],
+  dependencies: [TableNode$1, TableRowNode, TableCellNode],
   export: (node, exportChildren) => {
-    if (!table.$isTableNode(node)) {
+    if (!$isTableNode$1(node)) {
       return null;
     }
 
@@ -804,7 +1576,7 @@ const TABLE = {
     for (const row of node.getChildren()) {
       const rowOutput = [];
 
-      if (table.$isTableRowNode(row)) {
+      if ($isTableRowNode(row)) {
         for (const cell of row.getChildren()) {
           // It's TableCellNode (hence ElementNode) so it's just to make flow happy
           if (lexical.$isElementNode(cell)) {
@@ -858,11 +1630,11 @@ const TABLE = {
       sibling = previousSibling;
     }
 
-    const table$1 = table.$createTableNode();
+    const table = $createTableNode$1();
 
     for (const cells of rows) {
-      const tableRow = table.$createTableRowNode();
-      table$1.append(tableRow);
+      const tableRow = $createTableRowNode();
+      table.append(tableRow);
 
       for (let i = 0; i < maxCells; i++) {
         tableRow.append(i < cells.length ? cells[i] : createTableCell(null));
@@ -871,25 +1643,25 @@ const TABLE = {
 
     const previousSibling = parentNode.getPreviousSibling();
 
-    if (table.$isTableNode(previousSibling) && getTableColumnsSize(previousSibling) === maxCells) {
-      previousSibling.append(...table$1.getChildren());
+    if ($isTableNode$1(previousSibling) && getTableColumnsSize(previousSibling) === maxCells) {
+      previousSibling.append(...table.getChildren());
       parentNode.remove();
     } else {
-      parentNode.replace(table$1);
+      parentNode.replace(table);
     }
 
-    table$1.selectEnd();
+    table.selectEnd();
   },
   type: 'element'
 };
 
-function getTableColumnsSize(table$1) {
-  const row = table$1.getFirstChild();
-  return table.$isTableRowNode(row) ? row.getChildrenSize() : 0;
+function getTableColumnsSize(table) {
+  const row = table.getFirstChild();
+  return $isTableRowNode(row) ? row.getChildrenSize() : 0;
 }
 
 const createTableCell = textContent => {
-  const cell = table.$createTableCellNode(table.TableCellHeaderStates.NO_STATUS);
+  const cell = $createTableCellNode(TableCellHeaderStates.NO_STATUS);
   const paragraph = lexical.$createParagraphNode();
 
   if (textContent != null) {
@@ -5121,7 +5893,7 @@ function ComponentPickerMenuPlugin({
         }),
         keywords: ['table'],
         onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
-        editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
+        editor.dispatchCommand(INSERT_TABLE_COMMAND, {
           columns,
           rows
         })
@@ -5136,7 +5908,7 @@ function ComponentPickerMenuPlugin({
         }),
         keywords: ['table'],
         onSelect: () => // @ts-ignore Correct types, but since they're dynamic TS doesn't like it.
-        editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
+        editor.dispatchCommand(INSERT_TABLE_COMMAND, {
           columns,
           rows
         })
@@ -5177,7 +5949,7 @@ function ComponentPickerMenuPlugin({
         className: "icon table"
       }),
       keywords: ['table', 'grid', 'spreadsheet', 'rows', 'columns'],
-      onSelect: () => editor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
+      onSelect: () => editor.dispatchCommand(INSERT_TABLE_COMMAND, {
         columns: 3,
         rows: 3
       })
@@ -5910,6 +6682,7 @@ function useDraggableBlockMenu(editor, anchorElem, isEditable) {
   return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "icon draggable-block-menu",
     ref: menuRef,
+    id: "icon draggable-block-menus",
     draggable: true,
     onDragStart: onDragStart,
     onDragEnd: onDragEnd
@@ -6658,7 +7431,8 @@ function DropDownItem({
 function DropDownItems({
   children,
   dropDownRef,
-  onClose
+  onClose,
+  showDropDown
 }) {
   const [items, setItems] = React.useState();
   const [highlightedItem, setHighlightedItem] = React.useState();
@@ -6704,11 +7478,11 @@ function DropDownItems({
   }, [items, highlightedItem]);
   return /*#__PURE__*/React.createElement(DropDownContext.Provider, {
     value: contextValue
-  }, /*#__PURE__*/React.createElement("div", {
+  }, showDropDown && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "dropdowns all_dropdown",
     ref: dropDownRef,
     onKeyDown: handleKeyDown
-  }, children));
+  }, children)));
 }
 
 function DropDown({
@@ -6718,7 +7492,8 @@ function DropDown({
   buttonClassName,
   buttonIconClassName,
   children,
-  stopCloseOnClickSelf
+  stopCloseOnClickSelf,
+  anchorElem = document.body
 }) {
   const dropDownRef = React.useRef(null);
   const buttonRef = React.useRef(null);
@@ -6783,6 +7558,27 @@ function DropDown({
       };
     }
   }, [dropDownRef, buttonRef, showDropDown, stopCloseOnClickSelf]);
+  React.useEffect(() => {
+    const scrollerElem = anchorElem.parentElement;
+
+    const update = () => {
+      setShowDropDown(false);
+    };
+
+    window.addEventListener('resize', update);
+
+    if (scrollerElem) {
+      scrollerElem.addEventListener('scroll', update);
+    }
+
+    return () => {
+      window.removeEventListener('resize', update);
+
+      if (scrollerElem) {
+        scrollerElem.removeEventListener('scroll', update);
+      }
+    };
+  }, [anchorElem?.parentElement?.scrollTop, buttonRef, setShowDropDown, showDropDown]);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     disabled: disabled,
     "aria-label": buttonAriaLabel || buttonLabel,
@@ -6797,6 +7593,7 @@ function DropDown({
   }, buttonLabel), /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
   })), showDropDown && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
+    showDropDown: showDropDown,
     dropDownRef: dropDownRef,
     onClose: handleClose
   }, children), document.body));
@@ -7279,6 +8076,7 @@ function FontDropDown({
 function ToolbarPlugin({
   config,
   handleClick,
+  anchorElem = document.body,
   floatingText
 }) {
   const normFontFamilyOption = Array.isArray(config.fontFamilyOptions) ? config.fontFamilyOptions : FONT_FAMILY_OPTIONS;
@@ -7456,6 +8254,7 @@ function ToolbarPlugin({
   return /*#__PURE__*/React.createElement("div", {
     className: "toolbar"
   }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item code-language",
     buttonLabel: code.getLanguageFriendlyName(codeLanguage),
@@ -7548,7 +8347,8 @@ function ToolbarPlugin({
     onChange: onBgColorSelect,
     title: "bg color"
   })), config.align && /*#__PURE__*/React.createElement(DropDown, {
-    disabled: !isEditable // buttonLabel="Align"
+    disabled: !isEditable,
+    anchorElem: anchorElem // buttonLabel="Align"
     ,
     buttonIconClassName: "icon left-align",
     buttonClassName: "toolbar-item spaced alignment",
@@ -7614,6 +8414,7 @@ function ToolbarPlugin({
     editor: editor,
     options: FONT_SIZE_OPTIONS
   }), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "",
@@ -7662,6 +8463,7 @@ function ToolbarPlugin({
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Clear Formatting")))) : /*#__PURE__*/React.createElement(React.Fragment, null, config.editorshow && /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item code-language",
     buttonLabel: code.getLanguageFriendlyName(codeLanguage),
@@ -7754,6 +8556,7 @@ function ToolbarPlugin({
     onChange: onBgColorSelect,
     title: "bg color"
   })), config.align && /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable // buttonLabel="Align"
     ,
     buttonIconClassName: "icon left-align",
@@ -7820,6 +8623,7 @@ function ToolbarPlugin({
     editor: editor,
     options: FONT_SIZE_OPTIONS
   }), config?.insertOptions && /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced" // buttonLabel="Insert"
     ,
@@ -7839,6 +8643,7 @@ function ToolbarPlugin({
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Upload Document")))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+    anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
     buttonLabel: "",
@@ -7960,6 +8765,31 @@ function TextFormatFloatingToolbar({
     };
   }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
   React.useEffect(() => {
+    const scrollerElem = anchorElem.parentElement;
+
+    const update = () => {
+      const scrollPosition = scrollerElem?.scrollTop || 0;
+      localStorage.setItem("Currentscroll", String(scrollPosition));
+      editor.getEditorState().read(() => {
+        updateTextFormatFloatingToolbar();
+      });
+    };
+
+    window.addEventListener('resize', update);
+
+    if (scrollerElem) {
+      scrollerElem.addEventListener('scroll', update);
+    }
+
+    return () => {
+      window.removeEventListener('resize', update);
+
+      if (scrollerElem) {
+        scrollerElem.removeEventListener('scroll', update);
+      }
+    };
+  }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
+  React.useEffect(() => {
     editor.getEditorState().read(() => {
       updateTextFormatFloatingToolbar();
     });
@@ -7976,6 +8806,7 @@ function TextFormatFloatingToolbar({
   }, [editor, updateTextFormatFloatingToolbar]);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     ref: popupCharStylesEditorRef,
+    id: "floating-text-format-popups",
     className: "floating-text-format-popup"
   }, isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
     config: config,
@@ -8306,11 +9137,18 @@ function MaxLengthPlugin({
   return null;
 }
 
+function extractMentionData(htmlString) {
+  if (htmlString) {
+    return htmlString.getAttribute('uemail');
+  }
+}
+
 function convertMentionElement(domNode) {
+  const data = extractMentionData(domNode);
   const textContent = domNode.textContent;
 
   if (textContent !== null) {
-    const node = $createMentionNode(textContent);
+    const node = $createMentionNode(textContent, String(data));
     return {
       node
     };
@@ -8326,11 +9164,11 @@ class MentionNode extends lexical.TextNode {
   }
 
   static clone(node) {
-    return new MentionNode(node.__mention, node.__text, node.__key);
+    return new MentionNode(node.__mention, node.__email, node.__text, node.__key);
   }
 
   static importJSON(serializedNode) {
-    const node = $createMentionNode(serializedNode.mentionName);
+    const node = $createMentionNode(serializedNode.mentionName, serializedNode.mentionEmail || '');
     node.setTextContent(serializedNode.text);
     node.setFormat(serializedNode.format);
     node.setDetail(serializedNode.detail);
@@ -8339,17 +9177,21 @@ class MentionNode extends lexical.TextNode {
     return node;
   }
 
-  constructor(mentionName, text, key) {
+  constructor(mentionName, email, text, key) {
     super(text ?? mentionName, key);
 
     _defineProperty(this, "__mention", void 0);
 
+    _defineProperty(this, "__email", void 0);
+
     this.__mention = mentionName;
+    this.__email = email || '';
   }
 
   exportJSON() {
     return { ...super.exportJSON(),
       mentionName: this.__mention,
+      mentionEmail: this.__email,
       type: 'mention',
       version: 1
     };
@@ -8357,6 +9199,18 @@ class MentionNode extends lexical.TextNode {
 
   createDOM(config) {
     const dom = super.createDOM(config);
+    const attributes = {
+      'id': String(this.__email),
+      'data-lexical-mention': String(this.__email),
+      'uemail': this.__email,
+      'data-mention-name': this.__mention,
+      'data-user-email': this.__email
+    };
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        dom.setAttribute(key, value);
+      }
+    });
     dom.style.cssText = mentionStyle;
     dom.className = 'mention';
     return dom;
@@ -8364,8 +9218,21 @@ class MentionNode extends lexical.TextNode {
 
   exportDOM() {
     const element = document.createElement('span');
-    element.setAttribute('data-lexical-mention', 'true');
+    const attributes = {
+      'id': String(this.__email),
+      'data-lexical-mention': String(this.__email),
+      'uemail': this.__email,
+      'data-mention-name': this.__mention,
+      'data-user-email': this.__email
+    };
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        element.setAttribute(key, value);
+      }
+    });
     element.textContent = this.__text;
+    element.className = 'mention';
+    element.style.cssText = mentionStyle;
     return {
       element
     };
@@ -8391,8 +9258,8 @@ class MentionNode extends lexical.TextNode {
   }
 
 }
-function $createMentionNode(mentionName) {
-  const mentionNode = new MentionNode(mentionName);
+function $createMentionNode(mentionName, email) {
+  const mentionNode = new MentionNode(mentionName, email);
   mentionNode.setMode('segmented').toggleDirectionless();
   return lexical.$applyNodeReplacement(mentionNode);
 }
@@ -8429,7 +9296,7 @@ function useMentionLookupService(dummyMentionsData, mentionString) {
     search(string, callback) {
       setTimeout(() => {
         // If no search string (just '@'), return all users
-        const results = string === null ? dummyMentionsData : dummyMentionsData.filter(mention => mention.toLowerCase().includes(string.toLowerCase()));
+        const results = string === null ? dummyMentionsData : dummyMentionsData.filter(mention => mention.name.toLowerCase().includes(string.toLowerCase()));
         callback(results);
       }, 500);
     }
@@ -8494,14 +9361,17 @@ function getPossibleQueryMatch(text) {
 }
 
 class MentionTypeaheadOption extends LexicalTypeaheadMenuPlugin.TypeaheadOption {
-  constructor(name, picture) {
+  constructor(name, email, picture) {
     super(name);
 
     _defineProperty(this, "name", void 0);
 
+    _defineProperty(this, "email", void 0);
+
     _defineProperty(this, "picture", void 0);
 
     this.name = name;
+    this.email = email;
     this.picture = picture;
   }
 
@@ -8532,7 +9402,9 @@ function MentionsTypeaheadMenuItem({
     onClick: onClick
   }, option.picture, /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, option.name));
+  }, option.name), /*#__PURE__*/React.createElement("span", {
+    className: "email"
+  }, option.email));
 }
 
 function MentionsPlugin({
@@ -8542,12 +9414,13 @@ function MentionsPlugin({
   const [queryString, setQueryString] = React.useState(null);
   const [userData, setUserData] = React.useState([]);
   const results = useMentionLookupService(userData, queryString);
-  const options = React.useMemo(() => results.map(result => new MentionTypeaheadOption(result, /*#__PURE__*/React.createElement("i", {
-    className: "icon user"
+  const options = React.useMemo(() => results.map(result => new MentionTypeaheadOption(result.name, result.email, /*#__PURE__*/React.createElement("i", {
+    className: "icon user",
+    "data-email": result.email
   }))).slice(0, SUGGESTION_LIST_LENGTH_LIMIT), [results]);
   const onSelectOption = React.useCallback((selectedOption, nodeToReplace, closeMenu) => {
     editor.update(() => {
-      const mentionNode = $createMentionNode(selectedOption.name);
+      const mentionNode = $createMentionNode(selectedOption.name, selectedOption?.email); //selectedOption?.email
 
       if (nodeToReplace) {
         nodeToReplace.replace(mentionNode);
@@ -9083,7 +9956,7 @@ function TableActionMenu$1({
     rows: 1
   });
   React.useEffect(() => {
-    return editor.registerMutationListener(table.TableCellNode, nodeMutations => {
+    return editor.registerMutationListener(TableCellNode, nodeMutations => {
       const nodeUpdated = nodeMutations.get(tableCellNode.getKey()) === 'updated';
 
       if (nodeUpdated) {
@@ -9143,14 +10016,14 @@ function TableActionMenu$1({
   const clearTableSelection = React.useCallback(() => {
     editor.update(() => {
       if (tableCellNode.isAttached()) {
-        const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+        const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
         const tableElement = editor.getElementByKey(tableNode.getKey());
 
         if (!tableElement) {
           throw new Error('Expected to find tableElement in DOM');
         }
 
-        const tableSelection = table.getTableSelectionFromTableElement(tableElement);
+        const tableSelection = getTableSelectionFromTableElement(tableElement);
 
         if (tableSelection !== null) {
           tableSelection.clearHighlight();
@@ -9167,18 +10040,18 @@ function TableActionMenu$1({
   const insertTableRowAtSelection = React.useCallback(shouldInsertAfter => {
     editor.update(() => {
       const selection = lexical.$getSelection();
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       let tableRowIndex;
 
       if (lexical.DEPRECATED_$isGridSelection(selection)) {
         const selectionShape = selection.getShape();
         tableRowIndex = shouldInsertAfter ? selectionShape.toY : selectionShape.fromY;
       } else {
-        tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
+        tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
       }
 
-      const grid = table.$getElementGridForTableNode(editor, tableNode);
-      table.$insertTableRow(tableNode, tableRowIndex, shouldInsertAfter, selectionCounts.rows, grid);
+      const grid = $getElementGridForTableNode(editor, tableNode);
+      $insertTableRow(tableNode, tableRowIndex, shouldInsertAfter, selectionCounts.rows, grid);
       clearTableSelection();
       onClose();
     });
@@ -9186,34 +10059,34 @@ function TableActionMenu$1({
   const insertTableColumnAtSelection = React.useCallback(shouldInsertAfter => {
     editor.update(() => {
       const selection = lexical.$getSelection();
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       let tableColumnIndex;
 
       if (lexical.DEPRECATED_$isGridSelection(selection)) {
         const selectionShape = selection.getShape();
         tableColumnIndex = shouldInsertAfter ? selectionShape.toX : selectionShape.fromX;
       } else {
-        tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
+        tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
       }
 
-      const grid = table.$getElementGridForTableNode(editor, tableNode);
-      table.$insertTableColumn(tableNode, tableColumnIndex, shouldInsertAfter, selectionCounts.columns, grid);
+      const grid = $getElementGridForTableNode(editor, tableNode);
+      $insertTableColumn(tableNode, tableColumnIndex, shouldInsertAfter, selectionCounts.columns, grid);
       clearTableSelection();
       onClose();
     });
   }, [editor, tableCellNode, selectionCounts.columns, clearTableSelection, onClose]);
   const deleteTableRowAtSelection = React.useCallback(() => {
     editor.update(() => {
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
-      table.$removeTableRowAtIndex(tableNode, tableRowIndex);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
+      $removeTableRowAtIndex(tableNode, tableRowIndex);
       clearTableSelection();
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const deleteTableAtSelection = React.useCallback(() => {
     editor.update(() => {
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
       tableNode.remove();
       clearTableSelection();
       onClose();
@@ -9221,17 +10094,17 @@ function TableActionMenu$1({
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const deleteTableColumnAtSelection = React.useCallback(() => {
     editor.update(() => {
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
-      table.$deleteTableColumn(tableNode, tableColumnIndex);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
+      $deleteTableColumn(tableNode, tableColumnIndex);
       clearTableSelection();
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const toggleTableRowIsHeader = React.useCallback(() => {
     editor.update(() => {
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
 
       if (tableRowIndex >= tableRows.length || tableRowIndex < 0) {
@@ -9240,16 +10113,16 @@ function TableActionMenu$1({
 
       const tableRow = tableRows[tableRowIndex];
 
-      if (!table.$isTableRowNode(tableRow)) {
+      if (!$isTableRowNode(tableRow)) {
         throw new Error('Expected table row');
       }
 
       tableRow.getChildren().forEach(tableCell => {
-        if (!table.$isTableCellNode(tableCell)) {
+        if (!$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
 
-        tableCell.toggleHeaderStyle(table.TableCellHeaderStates.ROW);
+        tableCell.toggleHeaderStyle(TableCellHeaderStates.ROW);
       });
       clearTableSelection();
       onClose();
@@ -9257,14 +10130,14 @@ function TableActionMenu$1({
   }, [editor, tableCellNode, clearTableSelection, onClose]);
   const toggleTableColumnIsHeader = React.useCallback(() => {
     editor.update(() => {
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
 
       for (let r = 0; r < tableRows.length; r++) {
         const tableRow = tableRows[r];
 
-        if (!table.$isTableRowNode(tableRow)) {
+        if (!$isTableRowNode(tableRow)) {
           throw new Error('Expected table row');
         }
 
@@ -9276,11 +10149,11 @@ function TableActionMenu$1({
 
         const tableCell = tableCells[tableColumnIndex];
 
-        if (!table.$isTableCellNode(tableCell)) {
+        if (!$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
 
-        tableCell.toggleHeaderStyle(table.TableCellHeaderStates.COLUMN);
+        tableCell.toggleHeaderStyle(TableCellHeaderStates.COLUMN);
       }
 
       clearTableSelection();
@@ -9344,13 +10217,13 @@ function TableActionMenu$1({
     onClick: () => toggleTableRowIsHeader()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
+  }, (tableCellNode.__headerState & TableCellHeaderStates.ROW) === TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "item",
     onClick: () => toggleTableColumnIsHeader()
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))), document.body);
+  }, (tableCellNode.__headerState & TableCellHeaderStates.COLUMN) === TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))), document.body);
 }
 
 function TableCellActionMenuContainer({
@@ -9375,7 +10248,7 @@ function TableCellActionMenuContainer({
     const rootElement = editor.getRootElement();
 
     if (lexical.$isRangeSelection(selection) && rootElement !== null && nativeSelection !== null && rootElement.contains(nativeSelection.anchorNode)) {
-      const tableCellNodeFromSelection = table.$getTableCellNodeFromLexicalNode(selection.anchor.getNode());
+      const tableCellNodeFromSelection = $getTableCellNodeFromLexicalNode(selection.anchor.getNode());
 
       if (tableCellNodeFromSelection == null) {
         setTableMenuCellNode(null);
@@ -9518,7 +10391,7 @@ function TableCellResizer({
 
         if (targetRef.current !== target) {
           targetRef.current = target;
-          const cell = table.getCellFromTarget(target);
+          const cell = getCellFromTarget(target);
 
           if (cell && activeCell !== cell) {
             editor.update(() => {
@@ -9528,7 +10401,7 @@ function TableCellResizer({
                 throw new Error('TableCellResizer: Table cell node not found.');
               }
 
-              const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+              const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
               const tableElement = editor.getElementByKey(tableNode.getKey());
 
               if (!tableElement) {
@@ -9565,12 +10438,12 @@ function TableCellResizer({
     editor.update(() => {
       const tableCellNode = lexical.$getNearestNodeFromDOMNode(activeCell.elem);
 
-      if (!table.$isTableCellNode(tableCellNode)) {
+      if (!$isTableCellNode(tableCellNode)) {
         throw new Error('TableCellResizer: Table cell node not found.');
       }
 
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableRowIndex = table.$getTableRowIndexFromTableCellNode(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableRowIndex = $getTableRowIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
 
       if (tableRowIndex >= tableRows.length || tableRowIndex < 0) {
@@ -9579,7 +10452,7 @@ function TableCellResizer({
 
       const tableRow = tableRows[tableRowIndex];
 
-      if (!table.$isTableRowNode(tableRow)) {
+      if (!$isTableRowNode(tableRow)) {
         throw new Error('Expected table row');
       }
 
@@ -9594,18 +10467,18 @@ function TableCellResizer({
     editor.update(() => {
       const tableCellNode = lexical.$getNearestNodeFromDOMNode(activeCell.elem);
 
-      if (!table.$isTableCellNode(tableCellNode)) {
+      if (!$isTableCellNode(tableCellNode)) {
         throw new Error('TableCellResizer: Table cell node not found.');
       }
 
-      const tableNode = table.$getTableNodeFromLexicalNodeOrThrow(tableCellNode);
-      const tableColumnIndex = table.$getTableColumnIndexFromTableCellNode(tableCellNode);
+      const tableNode = $getTableNodeFromLexicalNodeOrThrow(tableCellNode);
+      const tableColumnIndex = $getTableColumnIndexFromTableCellNode(tableCellNode);
       const tableRows = tableNode.getChildren();
 
       for (let r = 0; r < tableRows.length; r++) {
         const tableRow = tableRows[r];
 
-        if (!table.$isTableRowNode(tableRow)) {
+        if (!$isTableRowNode(tableRow)) {
           throw new Error('Expected table row');
         }
 
@@ -9617,7 +10490,7 @@ function TableCellResizer({
 
         const tableCell = tableCells[tableColumnIndex];
 
-        if (!table.$isTableCellNode(tableCell)) {
+        if (!$isTableCellNode(tableCell)) {
           throw new Error('Expected table cell');
         }
 
@@ -10111,10 +10984,11 @@ function Editor({
     maxLength: 5
   }), isAutocomplete && /*#__PURE__*/React.createElement(AutocompletePlugin, null), /*#__PURE__*/React.createElement("div", null, showTableOfContents && /*#__PURE__*/React.createElement(TableOfContentsPlugin, null)), /*#__PURE__*/React.createElement(ActionsPlugin, {
     isRichText: isRichText
-  })), isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
+  })), floatingAnchorElem && !isSmallWidthViewport && isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
     config: normToolbarConfig,
     handleClick: handleFileUpload,
-    floatingText: false
+    floatingText: false,
+    anchorElem: floatingAnchorElem
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
 }
 
@@ -10832,7 +11706,7 @@ function $createTableNode(rows) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode, PdfNode, OfficeNode];
+const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, TableNode$1, TableCellNode, TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode, PdfNode, OfficeNode];
 var PlaygroundNodes$1 = PlaygroundNodes;
 
 /* eslint-disable header/header */

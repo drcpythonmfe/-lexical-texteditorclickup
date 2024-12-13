@@ -28,6 +28,9 @@ export declare type EditorProps = {
     }>;
     rootClassName?: string;
     containerClassName?: string;
-    dummyMentionsDatas?: string[];
+    dummyMentionsDatas?: [{
+        name: string;
+        email: string;
+    }];
 };
 export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, onDataSend, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas, }: EditorProps): JSX.Element;
