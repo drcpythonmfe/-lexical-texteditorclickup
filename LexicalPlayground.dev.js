@@ -6743,22 +6743,20 @@ function DropDown({
       const dropDown = dropDownRef.current;
 
       if (showDropDown && button !== null && dropDown !== null) {
-        const {
-          top,
-          left
-        } = button.getBoundingClientRect();
-        dropDown.style.top = `43px`;
-        dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth)}px`;
+        button.getBoundingClientRect();
+        dropDown.style.top = `43px`; // dropDown.style.left = `${Math.min(
+        //   left,
+        //   window.innerWidth - dropDown.offsetWidth,
+        // )}px`;
       }
 
       const handleScroll = () => {
         if (showDropDown && button !== null && dropDown !== null) {
-          const {
-            top,
-            left
-          } = button.getBoundingClientRect();
-          dropDown.style.top = `43px`;
-          dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth)}px`;
+          button.getBoundingClientRect();
+          dropDown.style.top = `43px`; // dropDown.style.left = `${Math.min(
+          //   left,
+          //   window.innerWidth - dropDown.offsetWidth,
+          // )}px`;
         }
       };
 
@@ -6860,23 +6858,13 @@ function DropDown({
     dropDownRef: dropDownRef,
     anchorElem: anchorElem,
     onClose: handleClose
-  }, children) : showDropDown && /*#__PURE__*/React.createElement(DropDownItems, {
+  }, children) : showDropDown && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
     showDropDown: showDropDown,
     dropDownRef: dropDownRef,
     anchorElem: anchorElem,
     onClose: handleClose
-  }, children));
-} // showDropDown &&
-//           createPortal(
-//             <DropDownItems
-//               showDropDown={showDropDown}
-//               dropDownRef={dropDownRef}
-//               anchorElem={anchorElem}
-//               onClose={handleClose}>
-//               {children}
-//             </DropDownItems>,
-//             document.body,
-//           )
+  }, children), document.body));
+}
 
 const basicColors = ['#d0021b', '#f5a623', '#f8e71c', '#8b572a', '#7ed321', '#417505', '#bd10e0', '#9013fe', '#4a90e2', '#50e3c2', '#b8e986', '#000000', '#4a4a4a', '#9b9b9b', '#ffffff'];
 const WIDTH = 214;
@@ -9280,13 +9268,13 @@ function TableActionMenu$1({
 
     const updateDropdownPosition = () => {
       if (menuButtonElement && dropDownElement) {
-        const menuButtonRect = menuButtonElement.getBoundingClientRect();
+        menuButtonElement.getBoundingClientRect();
         dropDownElement.style.opacity = '1'; // dropDownElement.style.left = `${
         //   menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5
         // }px`;
-
-        dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset - 48 // -50
-        }px`;
+        // dropDownElement.style.top = `${
+        //   menuButtonRect.top + window.pageYOffset       
+        // }px`;
       }
     };
 
