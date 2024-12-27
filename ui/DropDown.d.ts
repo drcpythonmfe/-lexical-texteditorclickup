@@ -13,7 +13,7 @@ export declare function DropDownItem({ children, className, onClick, title, }: {
     onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     title?: string;
 }): JSX.Element;
-export default function DropDown({ disabled, buttonLabel, buttonAriaLabel, buttonClassName, buttonIconClassName, children, stopCloseOnClickSelf, anchorElem, }: {
+export default function DropDown({ disabled, buttonLabel, buttonAriaLabel, buttonClassName, buttonIconClassName, children, stopCloseOnClickSelf, anchorElem, bit, }: {
     disabled?: boolean;
     buttonAriaLabel?: string;
     buttonClassName: string;
@@ -22,4 +22,5 @@ export default function DropDown({ disabled, buttonLabel, buttonAriaLabel, butto
     children: ReactNode;
     stopCloseOnClickSelf?: boolean;
     anchorElem?: HTMLElement;
+    bit?: boolean;
 }): JSX.Element;

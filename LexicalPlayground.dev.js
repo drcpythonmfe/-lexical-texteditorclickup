@@ -6660,7 +6660,8 @@ function DropDownItems({
   children,
   dropDownRef,
   onClose,
-  showDropDown
+  showDropDown,
+  anchorElem = document.body
 }) {
   const [items, setItems] = React.useState();
   const [highlightedItem, setHighlightedItem] = React.useState();
@@ -6703,7 +6704,7 @@ function DropDownItems({
     if (highlightedItem && highlightedItem.current) {
       highlightedItem.current.focus();
     }
-  }, [items, highlightedItem]);
+  }, [items, highlightedItem, anchorElem]);
   return /*#__PURE__*/React.createElement(DropDownContext.Provider, {
     value: contextValue
   }, showDropDown && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -6721,7 +6722,8 @@ function DropDown({
   buttonIconClassName,
   children,
   stopCloseOnClickSelf,
-  anchorElem = document.body
+  anchorElem = document.body,
+  bit = false
 }) {
   const dropDownRef = React.useRef(null);
   const buttonRef = React.useRef(null);
@@ -6736,19 +6738,38 @@ function DropDown({
   };
 
   React.useEffect(() => {
-    const button = buttonRef.current;
-    const dropDown = dropDownRef.current;
+    if (bit) {
+      const button = buttonRef.current;
+      const dropDown = dropDownRef.current;
 
-    if (showDropDown && button !== null && dropDown !== null) {
-      const {
-        top,
-        left
-      } = button.getBoundingClientRect();
-      dropDown.style.top = `${top + 40}px`;
-      dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
-    }
+      if (showDropDown && button !== null && dropDown !== null) {
+        const {
+          top,
+          left
+        } = button.getBoundingClientRect();
+        dropDown.style.top = `43px`;
+        dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth)}px`;
+      }
 
-    const handleScroll = () => {
+      const handleScroll = () => {
+        if (showDropDown && button !== null && dropDown !== null) {
+          const {
+            top,
+            left
+          } = button.getBoundingClientRect();
+          dropDown.style.top = `43px`;
+          dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth)}px`;
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    } else {
+      const button = buttonRef.current;
+      const dropDown = dropDownRef.current;
+
       if (showDropDown && button !== null && dropDown !== null) {
         const {
           top,
@@ -6757,13 +6778,24 @@ function DropDown({
         dropDown.style.top = `${top + 40}px`;
         dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
       }
-    };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [dropDownRef, buttonRef, showDropDown]);
+      const handleScroll = () => {
+        if (showDropDown && button !== null && dropDown !== null) {
+          const {
+            top,
+            left
+          } = button.getBoundingClientRect();
+          dropDown.style.top = `${top + 40}px`;
+          dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
+    }
+  }, [dropDownRef, buttonRef, anchorElem.parentElement?.scrollTop, showDropDown]);
   React.useEffect(() => {
     const button = buttonRef.current;
 
@@ -6785,12 +6817,15 @@ function DropDown({
         document.removeEventListener('click', handle);
       };
     }
-  }, [dropDownRef, buttonRef, showDropDown, stopCloseOnClickSelf]);
+  }, [dropDownRef, buttonRef, showDropDown, anchorElem.parentElement?.scrollTop, stopCloseOnClickSelf]);
   React.useEffect(() => {
     const scrollerElem = anchorElem.parentElement;
 
     const update = () => {
-      setShowDropDown(false);
+
+      if (scrollerElem?.scrollTop) {
+        console.log('hiiii');
+      }
     };
 
     window.addEventListener('resize', update);
@@ -6820,12 +6855,28 @@ function DropDown({
     className: "text dropdowns-button-text"
   }, buttonLabel), /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
-  })), showDropDown && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
+  })), bit ? showDropDown && /*#__PURE__*/React.createElement(DropDownItems, {
     showDropDown: showDropDown,
     dropDownRef: dropDownRef,
+    anchorElem: anchorElem,
     onClose: handleClose
-  }, children), document.body));
-}
+  }, children) : showDropDown && /*#__PURE__*/React.createElement(DropDownItems, {
+    showDropDown: showDropDown,
+    dropDownRef: dropDownRef,
+    anchorElem: anchorElem,
+    onClose: handleClose
+  }, children));
+} // showDropDown &&
+//           createPortal(
+//             <DropDownItems
+//               showDropDown={showDropDown}
+//               dropDownRef={dropDownRef}
+//               anchorElem={anchorElem}
+//               onClose={handleClose}>
+//               {children}
+//             </DropDownItems>,
+//             document.body,
+//           )
 
 const basicColors = ['#d0021b', '#f5a623', '#f8e71c', '#8b572a', '#7ed321', '#417505', '#bd10e0', '#9013fe', '#4a90e2', '#50e3c2', '#b8e986', '#000000', '#4a4a4a', '#9b9b9b', '#ffffff'];
 const WIDTH = 214;
@@ -6834,6 +6885,7 @@ function ColorPicker({
   color,
   children,
   onChange,
+  bit,
   disabled = false,
   ...rest
 }) {
@@ -6894,7 +6946,9 @@ function ColorPicker({
     setSelfColor(newColor);
     setInputColor(newColor.hex);
   }, [color]);
-  return /*#__PURE__*/React.createElement(DropDown, _extends({}, rest, {
+  return /*#__PURE__*/React.createElement(DropDown, _extends({
+    bit: bit
+  }, rest, {
     disabled: disabled
   }), /*#__PURE__*/React.createElement("div", {
     className: "color-picker-wrapper",
@@ -7159,6 +7213,7 @@ function dropDownActiveClass(active) {
 function BlockFormatDropDown({
   editor,
   blockType,
+  bit,
   disabled = false
 }) {
   const formatParagraph = () => {
@@ -7199,6 +7254,7 @@ function BlockFormatDropDown({
   };
 
   return /*#__PURE__*/React.createElement(DropDown, {
+    bit: bit,
     disabled: disabled,
     buttonClassName: "toolbar-item blocks-controls",
     buttonIconClassName: 'icon block-type ' + blockType // buttonLabel={blockTypeToBlockName[blockType]}
@@ -7259,6 +7315,7 @@ function FontDropDown({
   editor,
   value,
   style,
+  bit,
   disabled = false,
   options
 }) {
@@ -7275,6 +7332,7 @@ function FontDropDown({
   }, [editor, style]);
   const buttonAriaLabel = style === 'font-family' ? 'Formatting options for font family' : 'Formatting options for font size';
   return /*#__PURE__*/React.createElement(React.Fragment, null, style === 'font-size' ? /*#__PURE__*/React.createElement(DropDown, {
+    bit: bit,
     disabled: disabled,
     buttonClassName: 'toolbar-item ' + style // buttonLabel={value}
     ,
@@ -7287,6 +7345,7 @@ function FontDropDown({
   }, /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, text)))) : /*#__PURE__*/React.createElement(DropDown, {
+    bit: bit,
     disabled: disabled,
     buttonClassName: 'toolbar-item ' + style // buttonLabel={value}
     ,
@@ -7483,6 +7542,7 @@ function ToolbarPlugin({
     className: "toolbar"
   }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
     anchorElem: anchorElem,
+    bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item code-language",
     buttonLabel: code.getLanguageFriendlyName(codeLanguage),
@@ -7496,12 +7556,14 @@ function ToolbarPlugin({
       className: "text"
     }, name));
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, Boolean(config.fontFamilyOptions) && /*#__PURE__*/React.createElement(FontDropDown, {
+    bit: true,
     disabled: !isEditable,
     style: 'font-family',
     value: fontFamily,
     editor: editor,
     options: normFontFamilyOption
   }), config.formatBlockOptions && blockType in blockTypeToBlockName && activeEditor === editor && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(BlockFormatDropDown, {
+    bit: true,
     disabled: !isEditable,
     blockType: blockType,
     editor: editor
@@ -7559,6 +7621,7 @@ function ToolbarPlugin({
   }, /*#__PURE__*/React.createElement("i", {
     className: "format link"
   })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
     buttonAriaLabel: "Formatting text color",
@@ -7567,6 +7630,7 @@ function ToolbarPlugin({
     onChange: onFontColorSelect,
     title: "text color"
   }), config.bgColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
     buttonAriaLabel: "Formatting background color",
@@ -7575,6 +7639,7 @@ function ToolbarPlugin({
     onChange: onBgColorSelect,
     title: "bg color"
   })), config.align && /*#__PURE__*/React.createElement(DropDown, {
+    bit: true,
     disabled: !isEditable,
     anchorElem: anchorElem // buttonLabel="Align"
     ,
@@ -7636,12 +7701,14 @@ function ToolbarPlugin({
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
   }, "Indent"))), config.fontSizeOptions && /*#__PURE__*/React.createElement(FontDropDown, {
+    bit: true,
     disabled: !isEditable,
     style: 'font-size',
     value: fontSize,
     editor: editor,
     options: FONT_SIZE_OPTIONS
   }), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+    bit: true,
     anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
@@ -7859,7 +7926,7 @@ function ToolbarPlugin({
     buttonIconClassName: "icon plus"
   }, handleClick && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
     onClick: () => {
-      showModal('Insert Image', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
+      showModal('Upload Document', onClose => /*#__PURE__*/React.createElement(InsertImageDialog, {
         activeEditor: activeEditor,
         onClose: onClose,
         handleClick: handleClick
@@ -9214,9 +9281,12 @@ function TableActionMenu$1({
     const updateDropdownPosition = () => {
       if (menuButtonElement && dropDownElement) {
         const menuButtonRect = menuButtonElement.getBoundingClientRect();
-        dropDownElement.style.opacity = '1';
-        dropDownElement.style.left = `${menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5}px`;
-        dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset}px`;
+        dropDownElement.style.opacity = '1'; // dropDownElement.style.left = `${
+        //   menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5
+        // }px`;
+
+        dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset - 48 // -50
+        }px`;
       }
     };
 
@@ -9388,70 +9458,71 @@ function TableActionMenu$1({
       onClose();
     });
   }, [editor, tableCellNode, clearTableSelection, onClose]);
-  return /*#__PURE__*/ReactDOM.createPortal(
-  /*#__PURE__*/
-  // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-  React.createElement("div", {
-    className: "dropdowns dropdown1",
-    ref: dropDownRef,
-    onClick: e => {
-      e.stopPropagation();
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => insertTableRowAtSelection(false)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "above")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => insertTableRowAtSelection(true)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => insertTableColumnAtSelection(false)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "left")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => insertTableColumnAtSelection(true)
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "right")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => deleteTableColumnAtSelection()
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Delete column")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => deleteTableRowAtSelection()
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Delete row")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => deleteTableAtSelection()
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, "Delete table")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => toggleTableRowIsHeader()
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "item",
-    onClick: () => toggleTableColumnIsHeader()
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text"
-  }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))), document.body);
+  return (
+    /*#__PURE__*/
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+    React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "dropdowns dropdown1",
+      ref: dropDownRef,
+      onClick: e => {
+        e.stopPropagation();
+      }
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => insertTableRowAtSelection(false)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "above")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => insertTableRowAtSelection(true)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => insertTableColumnAtSelection(false)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "left")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => insertTableColumnAtSelection(true)
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "right")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => deleteTableColumnAtSelection()
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete column")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => deleteTableRowAtSelection()
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete row")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => deleteTableAtSelection()
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, "Delete table")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => toggleTableRowIsHeader()
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "item",
+      onClick: () => toggleTableColumnIsHeader()
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text"
+    }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))))
+  );
 }
 
 function TableCellActionMenuContainer({

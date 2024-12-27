@@ -17,8 +17,9 @@ interface ColorPickerProps {
     children?: ReactNode;
     onChange?: (color: string) => void;
     title?: string;
+    bit?: boolean;
 }
-export default function ColorPicker({ color, children, onChange, disabled, ...rest }: Readonly<ColorPickerProps>): JSX.Element;
+export default function ColorPicker({ color, children, onChange, bit, disabled, ...rest }: Readonly<ColorPickerProps>): JSX.Element;
 export interface Position {
     x: number;
     y: number;

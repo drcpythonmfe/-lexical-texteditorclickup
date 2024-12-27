@@ -121,24 +121,15 @@ function App({
 ```tsx
 
 const dummyMentionsData = [
-  'Aayla Secura',
-  'Adi Gallia',
-  'Admiral Dodd Rancit',
-  'Admiral Firmus Piett',
-  'Admiral Gial Ackbar',
-  'Admiral Ozzel',
-  'Admiral Raddus',
-  'Admiral Terrinald Screed',
-  'Admiral Trench',
-  'Walrus Man',
-  'Warok',
-  'Wat Tambor',
-  'Watto',
-  'Wedge Antilles',
-  'Wes Janson',
-  'Wicket W. Warrick',
-  'Wilhuff Tarkin',
-];
+  {
+    name: 'Aayla Secura',
+    email: 'aayla.secura@example.com',
+  },
+  {
+    name: 'Adi Gallia',
+    email: 'adi.gallia@example.com',
+  },
+]
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -211,15 +202,79 @@ function App({
   );
 }
 
+
+function validateParagraphs(htmlText: string): boolean {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlText.trim();
+
+  if (tempDiv.querySelectorAll('img').length > 0) {
+    return false;
+  }
+
+  if (tempDiv.querySelectorAll('table').length > 0) {
+    return false;
+  }
+
+  if (tempDiv.querySelectorAll('h1').length > 0) {
+    return false;
+  }
+
+  if (tempDiv.querySelectorAll('h2').length > 0) {
+    return false;
+  }
+
+  if (tempDiv.querySelectorAll('h3').length > 0) {
+    return false;
+  }
+
+  if (tempDiv.querySelectorAll('li').length > 0) {
+    return false;
+  }
+
+  
+  const paragraphs = tempDiv.querySelectorAll('p');
+
+  if (paragraphs.length === 0) {
+      return false;
+  }
+
+  let nonEmptyTextCount = 0;
+
+  for (const paragraph of Array.from(paragraphs)) {
+      const directTextContent = Array.from(paragraph.childNodes)
+          .filter(node => node.nodeType === Node.TEXT_NODE)
+          .map(node => node.textContent?.trim())
+          .filter(text => text && text !== '');
+
+      if (directTextContent.length > 0) {
+          nonEmptyTextCount++;
+      }
+
+      const childTextContent = paragraph.textContent?.trim() || '';
+
+      if (childTextContent !== '') {
+          nonEmptyTextCount++;
+      }
+  }
+
+  return nonEmptyTextCount <= 0;
+}
+
 export default function PlaygroundApp1(): JSX.Element {
  
   const [html, setHtml] = useState(``);
+
+   React.useEffect(()=>{
+    validateParagraphs(html)
+   },[html])
   
   return (
     <>
     <EditorComposer>
         <App html={html}  setHtml={setHtml}   userList={dummyMentionsData} />
       </EditorComposer>
+            <button disabled={ validateParagraphs(html)}> Button </button>
+
       <div dangerouslySetInnerHTML={{__html: html}} />
     </>
   );
