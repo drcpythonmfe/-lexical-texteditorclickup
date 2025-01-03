@@ -7526,6 +7526,49 @@ function ToolbarPlugin({
       }
     });
   }, [activeEditor, selectedElementKey]);
+  const applyStyleTexts = React.useCallback((styles, merge = true) => {
+    activeEditor.update(() => {
+      const selection$1 = lexical.$getSelection();
+
+      if (lexical.$isRangeSelection(selection$1)) {
+        if (merge) {
+          const currentStyles = selection$1.getNodes().reduce((styles, node) => {
+            if (lexical.$isTextNode(node)) {
+              const nodeStyles = node.getStyle();
+
+              if (nodeStyles) {
+                return { ...styles,
+                  ...parseStyles(nodeStyles)
+                };
+              }
+            }
+
+            return styles;
+          }, {});
+          selection.$patchStyleText(selection$1, { ...currentStyles,
+            ...styles
+          });
+        } else {
+          selection.$patchStyleText(selection$1, styles);
+        }
+      }
+    });
+  }, [activeEditor]);
+
+  const parseStyles = styleString => {
+    return styleString.split(';').filter(style => style.trim()).reduce((styles, style) => {
+      const [property, value] = style.split(':').map(str => str.trim());
+      return { ...styles,
+        [property]: value
+      };
+    }, {});
+  };
+
+  const handleTextTransform = React.useCallback(transform => {
+    applyStyleTexts({
+      'text-transform': transform
+    });
+  }, [applyStyleText]);
   return /*#__PURE__*/React.createElement("div", {
     className: "toolbar"
   }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
@@ -7608,7 +7651,34 @@ function ToolbarPlugin({
     type: "button"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format link"
-  })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+  })), config.uppercase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('uppercase'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Format text as uppercase",
+    title: "UPPERCASE",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format uppercase"
+  }))), config.lowercase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('lowercase'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Format text as lowercase",
+    title: "lowercase",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format lowercase"
+  }))), config.capitalize && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('capitalize'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Capitalize text",
+    title: "Capitalize",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format capitalize"
+  }))), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
     bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
@@ -10112,7 +10182,10 @@ const defaultToolbarConfig = {
   alignCenter: true,
   alignRight: true,
   alignJustify: true,
-  editorshow: true
+  editorshow: true,
+  uppercase: true,
+  lowercase: true,
+  capitalize: true
 };
 function Editor({
   isCollab,
@@ -10148,8 +10221,9 @@ function Editor({
 
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
   const editorContext = useEditorComposerContext();
+  let toolbarConfigdata = JSON.parse(JSON.stringify(localStorage.getItem("toolbarConfig"))) || toolbarConfig;
   const normToolbarConfig = React.useMemo(() => ({ ...defaultToolbarConfig,
-    ...toolbarConfig
+    ...toolbarConfigdata
   }), [toolbarConfig]);
   React.useEffect(() => {
     const updateViewPortWidth = () => {

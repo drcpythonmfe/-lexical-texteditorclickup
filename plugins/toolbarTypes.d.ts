@@ -31,5 +31,8 @@ export declare type ToolbarConfig = {
     alignRight?: boolean;
     alignJustify?: boolean;
     editorshow?: boolean;
+    uppercase?: boolean;
+    lowercase?: boolean;
+    capitalize?: boolean;
 };
 export {};

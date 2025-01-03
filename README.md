@@ -48,6 +48,14 @@ Redo: Redo your last action.
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image7.png)
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image8.png)
 
+
+
+## text transformation functionality to the editor
+
+
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image14.png)
+
+
 ## /Slash Commands
 
 Use /Slash Commands, our custom shortcuts that quickly add rich text, attach images, move a task, change a due date, and more!
@@ -176,6 +184,9 @@ const toolbarConfig ={
   alignRight: false,
   alignJustify: false,
   editorshow:true, 
+  uppercase:true,
+  lowercase:true,
+  capitalize:true,
 }
 
 
