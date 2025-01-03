@@ -55,6 +55,9 @@ Redo: Redo your last action.
 
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image14.png)
 
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image15.png)
+
+
 
 ## /Slash Commands
 
@@ -187,6 +190,8 @@ const toolbarConfig ={
   uppercase:true,
   lowercase:true,
   capitalize:true,
+  RTL:true,
+  LTR:true,
 }
 
 
