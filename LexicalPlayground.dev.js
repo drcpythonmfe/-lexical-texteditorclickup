@@ -7594,6 +7594,21 @@ function ToolbarPlugin({
       'text-transform': transform
     });
   }, [applyStyleText]);
+  const onRTLClick = React.useCallback(() => {
+    applyStyleTexts({
+      direction: 'rtl',
+      'unicode-bidi': 'bidi-override',
+      'text-align': 'right',
+      display: 'flex'
+    });
+  }, [applyStyleText]);
+  const onLTRClick = React.useCallback(() => {
+    applyStyleText({
+      direction: 'ltr',
+      'unicode-bidi': 'bidi-override',
+      'text-align': 'left'
+    });
+  }, [applyStyleText]);
   return /*#__PURE__*/React.createElement("div", {
     className: "toolbar"
   }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
@@ -7703,7 +7718,21 @@ function ToolbarPlugin({
     type: "button"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format capitalize"
-  }))), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+  }))), config.RTL && /*#__PURE__*/React.createElement("button", {
+    onClick: onRTLClick,
+    className: "toolbar-item",
+    title: "Right to Left",
+    "aria-label": "Switch text direction to right to left"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format rtl"
+  })), config.LTR && /*#__PURE__*/React.createElement("button", {
+    onClick: onLTRClick,
+    className: "toolbar-item",
+    title: "Left to Right",
+    "aria-label": "Switch text direction to left to right"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format ltr"
+  })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
     bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
@@ -7917,6 +7946,47 @@ function ToolbarPlugin({
     type: "button"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format link"
+  })), config.uppercase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('uppercase'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Format text as uppercase",
+    title: "UPPERCASE",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format uppercase"
+  }))), config.lowercase && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('lowercase'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Format text as lowercase",
+    title: "lowercase",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format lowercase"
+  }))), config.capitalize && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !isEditable,
+    onClick: () => handleTextTransform('capitalize'),
+    className: 'toolbar-item spaced ',
+    "aria-label": "Capitalize text",
+    title: "Capitalize",
+    type: "button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format capitalize"
+  }))), config.RTL && /*#__PURE__*/React.createElement("button", {
+    onClick: onRTLClick,
+    className: "toolbar-item",
+    title: "Right to Left",
+    "aria-label": "Switch text direction to right to left"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format rtl"
+  })), config.LTR && /*#__PURE__*/React.createElement("button", {
+    onClick: onLTRClick,
+    className: "toolbar-item",
+    title: "Left to Right",
+    "aria-label": "Switch text direction to left to right"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format ltr"
   })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
@@ -10319,7 +10389,9 @@ const defaultToolbarConfig = {
   editorshow: true,
   uppercase: true,
   lowercase: true,
-  capitalize: true
+  capitalize: true,
+  RTL: true,
+  LTR: true
 };
 function Editor({
   isCollab,

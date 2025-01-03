@@ -34,5 +34,7 @@ export declare type ToolbarConfig = {
     uppercase?: boolean;
     lowercase?: boolean;
     capitalize?: boolean;
+    RTL?: boolean;
+    LTR?: boolean;
 };
 export {};
