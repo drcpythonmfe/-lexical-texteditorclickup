@@ -6738,36 +6738,19 @@ function DropDown({
   };
 
   React.useEffect(() => {
-    if (bit) {
-      const button = buttonRef.current;
-      const dropDown = dropDownRef.current;
+    const button = buttonRef.current;
+    const dropDown = dropDownRef.current;
 
-      if (showDropDown && button !== null && dropDown !== null) {
-        button.getBoundingClientRect();
-        dropDown.style.top = `43px`; // dropDown.style.left = `${Math.min(
-        //   left,
-        //   window.innerWidth - dropDown.offsetWidth,
-        // )}px`;
-      }
+    if (showDropDown && button !== null && dropDown !== null) {
+      const {
+        top,
+        left
+      } = button.getBoundingClientRect();
+      dropDown.style.top = `${top + 40}px`;
+      dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
+    }
 
-      const handleScroll = () => {
-        if (showDropDown && button !== null && dropDown !== null) {
-          button.getBoundingClientRect();
-          dropDown.style.top = `43px`; // dropDown.style.left = `${Math.min(
-          //   left,
-          //   window.innerWidth - dropDown.offsetWidth,
-          // )}px`;
-        }
-      };
-
-      window.addEventListener('scroll', handleScroll);
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    } else {
-      const button = buttonRef.current;
-      const dropDown = dropDownRef.current;
-
+    const handleScroll = () => {
       if (showDropDown && button !== null && dropDown !== null) {
         const {
           top,
@@ -6776,24 +6759,71 @@ function DropDown({
         dropDown.style.top = `${top + 40}px`;
         dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
       }
+    };
 
-      const handleScroll = () => {
-        if (showDropDown && button !== null && dropDown !== null) {
-          const {
-            top,
-            left
-          } = button.getBoundingClientRect();
-          dropDown.style.top = `${top + 40}px`;
-          dropDown.style.left = `${Math.min(left, window.innerWidth - dropDown.offsetWidth - 20)}px`;
-        }
-      };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [dropDownRef, buttonRef, anchorElem.parentElement?.scrollTop, showDropDown]); // useEffect(() => {
+  //   if (bit) {
+  //     const button = buttonRef.current;
+  //     const dropDown = dropDownRef.current;
+  //     if (showDropDown && button !== null && dropDown !== null) {
+  //       const {top, left} = button.getBoundingClientRect();
+  //       dropDown.style.top = `43px`;
+  //       // dropDown.style.left = `${Math.min(
+  //       //   left,
+  //       //   window.innerWidth - dropDown.offsetWidth,
+  //       // )}px`;
+  //     }
+  //     const handleScroll = () => {
+  //       if (showDropDown && button !== null && dropDown !== null) {
+  //         const {top, left} = button.getBoundingClientRect();
+  //         dropDown.style.top = `43px`;
+  //         // dropDown.style.left = `${Math.min(
+  //         //   left,
+  //         //   window.innerWidth - dropDown.offsetWidth,
+  //         // )}px`;
+  //       }
+  //     };
+  //     window.addEventListener('scroll', handleScroll);
+  //     return () => {
+  //       window.removeEventListener('scroll', handleScroll);
+  //     };
+  //   } else {
+  //     const button = buttonRef.current;
+  //     const dropDown = dropDownRef.current;
+  //     if (showDropDown && button !== null && dropDown !== null) {
+  //       const {top, left} = button.getBoundingClientRect();
+  //       dropDown.style.top = `${top + 40}px`;
+  //       dropDown.style.left = `${Math.min(
+  //         left,
+  //         window.innerWidth - dropDown.offsetWidth - 20,
+  //       )}px`;
+  //     }
+  //     const handleScroll = () => {
+  //       if (showDropDown && button !== null && dropDown !== null) {
+  //         const {top, left} = button.getBoundingClientRect();
+  //         dropDown.style.top = `${top + 40}px`;
+  //         dropDown.style.left = `${Math.min(
+  //           left,
+  //           window.innerWidth - dropDown.offsetWidth - 20,
+  //         )}px`;
+  //       }
+  //     };
+  //     window.addEventListener('scroll', handleScroll);
+  //     return () => {
+  //       window.removeEventListener('scroll', handleScroll);
+  //     };
+  //   }
+  // }, [
+  //   dropDownRef,
+  //   buttonRef,
+  //   anchorElem.parentElement?.scrollTop,
+  //   showDropDown,
+  // ]);
 
-      window.addEventListener('scroll', handleScroll);
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, [dropDownRef, buttonRef, anchorElem.parentElement?.scrollTop, showDropDown]);
   React.useEffect(() => {
     const button = buttonRef.current;
 
@@ -6853,12 +6883,7 @@ function DropDown({
     className: "text dropdowns-button-text"
   }, buttonLabel), /*#__PURE__*/React.createElement("i", {
     className: "chevron-down"
-  })), bit ? showDropDown && /*#__PURE__*/React.createElement(DropDownItems, {
-    showDropDown: showDropDown,
-    dropDownRef: dropDownRef,
-    anchorElem: anchorElem,
-    onClose: handleClose
-  }, children) : showDropDown && /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
+  })), /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(DropDownItems, {
     showDropDown: showDropDown,
     dropDownRef: dropDownRef,
     anchorElem: anchorElem,
@@ -9338,13 +9363,17 @@ function TableActionMenu$1({
 
     const updateDropdownPosition = () => {
       if (menuButtonElement && dropDownElement) {
-        menuButtonElement.getBoundingClientRect();
-        dropDownElement.style.opacity = '1'; // dropDownElement.style.left = `${
+        const menuButtonRect = menuButtonElement.getBoundingClientRect();
+        dropDownElement.style.opacity = '1'; // hide Data
+        // dropDownElement.style.left = `${
         //   menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5
         // }px`;
         // dropDownElement.style.top = `${
         //   menuButtonRect.top + window.pageYOffset       
         // }px`;
+
+        dropDownElement.style.left = `${menuButtonRect.left + menuButtonRect.width + window.pageXOffset + 5}px`;
+        dropDownElement.style.top = `${menuButtonRect.top + window.pageYOffset}px`;
       }
     };
 
@@ -9515,72 +9544,177 @@ function TableActionMenu$1({
       clearTableSelection();
       onClose();
     });
-  }, [editor, tableCellNode, clearTableSelection, onClose]);
-  return (
-    /*#__PURE__*/
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      className: "dropdowns dropdown1",
-      ref: dropDownRef,
-      onClick: e => {
-        e.stopPropagation();
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => insertTableRowAtSelection(false)
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "above")), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => insertTableRowAtSelection(true)
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => insertTableColumnAtSelection(false)
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "left")), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => insertTableColumnAtSelection(true)
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "right")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => deleteTableColumnAtSelection()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete column")), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => deleteTableRowAtSelection()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete row")), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => deleteTableAtSelection()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, "Delete table")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => toggleTableRowIsHeader()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
-      type: "button",
-      className: "item",
-      onClick: () => toggleTableColumnIsHeader()
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "text"
-    }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))))
-  );
+  }, [editor, tableCellNode, clearTableSelection, onClose]); // hide data 
+  // return (
+  //     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+  //   <>
+  //     <div
+  //       className="dropdowns dropdown1"
+  //       ref={dropDownRef}
+  //       onClick={(e) => {
+  //         e.stopPropagation();
+  //       }}>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => insertTableRowAtSelection(false)}>
+  //         <span className="text">
+  //           Insert{' '}
+  //           {selectionCounts.rows === 1
+  //             ? 'row'
+  //             : `${selectionCounts.rows} rows`}{' '}
+  //           above
+  //         </span>
+  //       </button>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => insertTableRowAtSelection(true)}>
+  //         <span className="text">
+  //           Insert{' '}
+  //           {selectionCounts.rows === 1
+  //             ? 'row'
+  //             : `${selectionCounts.rows} rows`}{' '}
+  //           below
+  //         </span>
+  //       </button>
+  //       <hr />
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => insertTableColumnAtSelection(false)}>
+  //         <span className="text">
+  //           Insert{' '}
+  //           {selectionCounts.columns === 1
+  //             ? 'column'
+  //             : `${selectionCounts.columns} columns`}{' '}
+  //           left
+  //         </span>
+  //       </button>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => insertTableColumnAtSelection(true)}>
+  //         <span className="text">
+  //           Insert{' '}
+  //           {selectionCounts.columns === 1
+  //             ? 'column'
+  //             : `${selectionCounts.columns} columns`}{' '}
+  //           right
+  //         </span>
+  //       </button>
+  //       <hr />
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => deleteTableColumnAtSelection()}>
+  //         <span className="text">Delete column</span>
+  //       </button>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => deleteTableRowAtSelection()}>
+  //         <span className="text">Delete row</span>
+  //       </button>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => deleteTableAtSelection()}>
+  //         <span className="text">Delete table</span>
+  //       </button>
+  //       <hr />
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => toggleTableRowIsHeader()}>
+  //         <span className="text">
+  //           {(tableCellNode.__headerState & TableCellHeaderStates.ROW) ===
+  //           TableCellHeaderStates.ROW
+  //             ? 'Remove'
+  //             : 'Add'}{' '}
+  //           row header
+  //         </span>
+  //       </button>
+  //       <button
+  //         type="button"
+  //         className="item"
+  //         onClick={() => toggleTableColumnIsHeader()}>
+  //         <span className="text">
+  //           {(tableCellNode.__headerState & TableCellHeaderStates.COLUMN) ===
+  //           TableCellHeaderStates.COLUMN
+  //             ? 'Remove'
+  //             : 'Add'}{' '}
+  //           column header
+  //         </span>
+  //       </button>
+  //     </div>
+  //   </>
+  // );
+
+  return /*#__PURE__*/ReactDOM.createPortal(
+  /*#__PURE__*/
+  // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+  React.createElement("div", {
+    className: "dropdowns dropdown1",
+    ref: dropDownRef,
+    onClick: e => {
+      e.stopPropagation();
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => insertTableRowAtSelection(false)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "above")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => insertTableRowAtSelection(true)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Insert", ' ', selectionCounts.rows === 1 ? 'row' : `${selectionCounts.rows} rows`, ' ', "below")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => insertTableColumnAtSelection(false)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "left")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => insertTableColumnAtSelection(true)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Insert", ' ', selectionCounts.columns === 1 ? 'column' : `${selectionCounts.columns} columns`, ' ', "right")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => deleteTableColumnAtSelection()
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Delete column")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => deleteTableRowAtSelection()
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Delete row")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => deleteTableAtSelection()
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Delete table")), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => toggleTableRowIsHeader()
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, (tableCellNode.__headerState & table.TableCellHeaderStates.ROW) === table.TableCellHeaderStates.ROW ? 'Remove' : 'Add', ' ', "row header")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "item",
+    onClick: () => toggleTableColumnIsHeader()
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, (tableCellNode.__headerState & table.TableCellHeaderStates.COLUMN) === table.TableCellHeaderStates.COLUMN ? 'Remove' : 'Add', ' ', "column header"))), document.body);
 }
 
 function TableCellActionMenuContainer({
