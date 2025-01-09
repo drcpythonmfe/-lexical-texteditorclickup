@@ -27,9 +27,11 @@
     "quill",
     "editor",
     "ck editer",
-    "next rich-text editer"
+    "next rich-text editer",
+    "language translator rich text editor",
+    "language translator"
   ],
-  "version": "0.4.16",
+  "version": "0.4.17",
   "private": false,
   "main": "LexicalPlayground.js",
   "scripts": {

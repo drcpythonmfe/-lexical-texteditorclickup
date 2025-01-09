@@ -7182,6 +7182,51 @@ function transformColor(format, color) {
   };
 }
 
+async function translateText(text, targetLang, sourceLang = 'auto') {
+  if (text.length > 5000) {
+    throw new Error('Text is too long (max 5000 characters)');
+  }
+
+  const params = new URLSearchParams({
+    client: 'gtx',
+    sl: sourceLang,
+    tl: targetLang,
+    dt: 't',
+    q: text
+  });
+  const url = `https://translate.googleapis.com/translate_a/single?${params.toString()}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Translation failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let translatedText = '';
+
+    if (Array.isArray(data[0])) {
+      data[0].forEach(chunk => {
+        if (chunk[0]) translatedText += chunk[0];
+      });
+    }
+
+    return {
+      translatedText,
+      detectedLanguage: data[2],
+      confidence: data[6]?.[0]
+    };
+  } catch (error) {
+    throw new Error(`Translation error: ${error}`);
+  }
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7405,6 +7450,117 @@ function ToolbarPlugin({
   const [isEditable, setIsEditable] = React.useState(() => editor.isEditable());
   React.useState('5');
   React.useState('5');
+  const [selectedLang, setSelectedLang] = React.useState('');
+  const langs = {
+    auto: 'Detect Language',
+    af: 'Afrikaans',
+    sq: 'Albanian',
+    am: 'Amharic',
+    ar: 'Arabic',
+    hy: 'Armenian',
+    az: 'Azerbaijani',
+    eu: 'Basque',
+    be: 'Belarusian',
+    bn: 'Bengali',
+    bs: 'Bosnian',
+    bg: 'Bulgarian',
+    ca: 'Catalan',
+    ceb: 'Cebuano',
+    ny: 'Chichewa',
+    zh: 'Chinese',
+    co: 'Corsican',
+    hr: 'Croatian',
+    cs: 'Czech',
+    da: 'Danish',
+    nl: 'Dutch',
+    en: 'English',
+    eo: 'Esperanto',
+    et: 'Estonian',
+    tl: 'Filipino',
+    fi: 'Finnish',
+    fr: 'French',
+    fy: 'Frisian',
+    gl: 'Galician',
+    ka: 'Georgian',
+    de: 'German',
+    el: 'Greek',
+    gu: 'Gujarati',
+    ht: 'Haitian Creole',
+    ha: 'Hausa',
+    haw: 'Hawaiian',
+    iw: 'Hebrew',
+    hi: 'Hindi',
+    hmn: 'Hmong',
+    hu: 'Hungarian',
+    is: 'Icelandic',
+    ig: 'Igbo',
+    id: 'Indonesian',
+    ga: 'Irish',
+    it: 'Italian',
+    ja: 'Japanese',
+    jw: 'Javanese',
+    kn: 'Kannada',
+    kk: 'Kazakh',
+    km: 'Khmer',
+    ko: 'Korean',
+    ku: 'Kurdish',
+    ky: 'Kyrgyz',
+    lo: 'Lao',
+    la: 'Latin',
+    lv: 'Latvian',
+    lt: 'Lithuanian',
+    lb: 'Luxembourgish',
+    mk: 'Macedonian',
+    mg: 'Malagasy',
+    ms: 'Malay',
+    ml: 'Malayalam',
+    mt: 'Maltese',
+    mi: 'Maori',
+    mr: 'Marathi',
+    mn: 'Mongolian',
+    my: 'Myanmar',
+    ne: 'Nepali',
+    no: 'Norwegian',
+    ps: 'Pashto',
+    fa: 'Persian',
+    pl: 'Polish',
+    pt: 'Portuguese',
+    pa: 'Punjabi',
+    ro: 'Romanian',
+    ru: 'Russian',
+    sm: 'Samoan',
+    gd: 'Scots Gaelic',
+    sr: 'Serbian',
+    st: 'Sesotho',
+    sn: 'Shona',
+    sd: 'Sindhi',
+    si: 'Sinhala',
+    sk: 'Slovak',
+    sl: 'Slovenian',
+    so: 'Somali',
+    es: 'Spanish',
+    su: 'Sundanese',
+    sw: 'Swahili',
+    sv: 'Swedish',
+    tg: 'Tajik',
+    ta: 'Tamil',
+    te: 'Telugu',
+    th: 'Thai',
+    tr: 'Turkish',
+    uk: 'Ukrainian',
+    ur: 'Urdu',
+    uz: 'Uzbek',
+    vi: 'Vietnamese',
+    cy: 'Welsh',
+    xh: 'Xhosa',
+    yi: 'Yiddish',
+    yo: 'Yoruba',
+    zu: 'Zulu'
+  };
+  const langOptions = Object.entries(langs).map(([id, name]) => ({
+    id,
+    name
+  }));
   useEditorComposerContext();
   const updateToolbar = React.useCallback(() => {
     const selection$1 = lexical.$getSelection();
@@ -7609,6 +7765,50 @@ function ToolbarPlugin({
       'text-align': 'left'
     });
   }, [applyStyleText]);
+
+  const handleTextTranslibretranslateform = event => {
+    const selectedValue = event.target.value;
+    activeEditor.update(() => {
+      const selection = lexical.$getSelection();
+      setSelectedLang(selectedValue);
+
+      if (lexical.$isRangeSelection(selection)) {
+        const textContent = selection.getTextContent();
+        handleTranslate(textContent, selectedValue);
+      }
+    });
+  };
+
+  const handleTranslate = async (text, targetLang) => {
+    try {
+      if (text.length > 5000) {
+        return alert('Text is too long');
+      }
+
+      const result = await translateText(text, targetLang, "auto");
+
+      if (result?.translatedText) {
+        activeEditor.update(() => {
+          const selection = lexical.$getSelection();
+
+          if (lexical.$isRangeSelection(selection)) {
+            selection.insertText(result.translatedText);
+          }
+        });
+      } else {
+        activeEditor.update(() => {
+          const selection = lexical.$getSelection();
+
+          if (lexical.$isRangeSelection(selection)) {
+            selection.insertText(text);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error during translation:', error);
+    }
+  };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "toolbar"
   }, floatingText ? /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
@@ -7732,7 +7932,15 @@ function ToolbarPlugin({
     "aria-label": "Switch text direction to left to right"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format ltr"
-  })), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+  })), config.selectLang && /*#__PURE__*/React.createElement("select", {
+    value: selectedLang,
+    onChange: handleTextTranslibretranslateform,
+    className: "toolbar-item",
+    title: "Select Language"
+  }, langOptions.map(option => /*#__PURE__*/React.createElement("option", {
+    key: option.id,
+    value: option.id
+  }, option.name))), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
     bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
@@ -7869,7 +8077,29 @@ function ToolbarPlugin({
     className: "icon clear"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Clear Formatting")))) : /*#__PURE__*/React.createElement(React.Fragment, null, config.editorshow && /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
+  }, "Clear Formatting")))) : /*#__PURE__*/React.createElement(React.Fragment, null, config.undoRedo && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    disabled: !canUndo || !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.UNDO_COMMAND, undefined);
+    },
+    title: IS_APPLE ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)',
+    type: "button",
+    className: "toolbar-item spaced",
+    "aria-label": "Undo"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format undo"
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: !canRedo || !isEditable,
+    onClick: () => {
+      activeEditor.dispatchCommand(lexical.REDO_COMMAND, undefined);
+    },
+    title: IS_APPLE ? 'Redo (⌘Y)' : 'Redo (Ctrl+Y)',
+    type: "button",
+    className: "toolbar-item",
+    "aria-label": "Redo"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "format redo"
+  }))), config.editorshow && /*#__PURE__*/React.createElement(React.Fragment, null, blockType === 'code' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDown, {
     anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item code-language",
@@ -10391,7 +10621,8 @@ const defaultToolbarConfig = {
   lowercase: true,
   capitalize: true,
   RTL: true,
-  LTR: true
+  LTR: true,
+  selectLang: true
 };
 function Editor({
   isCollab,
