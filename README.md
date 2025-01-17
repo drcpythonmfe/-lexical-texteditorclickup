@@ -83,6 +83,13 @@ Add emojis to give your content some flair!
  language translator rich text editor
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image16.png)
 
+## 
+
+Select Language
+Powered by  Google Translate 
+(https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image17.png)
+
+```
 
 ```
 
