@@ -79,124 +79,19 @@ Add emojis to give your content some flair!
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image13.png)
 
 
-## language translator 
- language translator rich text editor
-![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image16.png)
+## AI
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image18.png)
 
-## Select Language Powered by  Google Translate 
-(https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image17.png)
+# You can use your own AI model implemented in a text editor.
 
-```
 
-```
+const handleAIData = async (data: string): Promise<any> => {
+  await delay(500);  // api call
+  return "AI Data";
+};
 
-  const langs = {
-    auto: 'Detect Language',
-    af: 'Afrikaans',
-    sq: 'Albanian',
-    am: 'Amharic',
-    ar: 'Arabic',
-    hy: 'Armenian',
-    az: 'Azerbaijani',
-    eu: 'Basque',
-    be: 'Belarusian',
-    bn: 'Bengali',
-    bs: 'Bosnian',
-    bg: 'Bulgarian',
-    ca: 'Catalan',
-    ceb: 'Cebuano',
-    ny: 'Chichewa',
-    zh: 'Chinese',
-    co: 'Corsican',
-    hr: 'Croatian',
-    cs: 'Czech',
-    da: 'Danish',
-    nl: 'Dutch',
-    en: 'English',
-    eo: 'Esperanto',
-    et: 'Estonian',
-    tl: 'Filipino',
-    fi: 'Finnish',
-    fr: 'French',
-    fy: 'Frisian',
-    gl: 'Galician',
-    ka: 'Georgian',
-    de: 'German',
-    el: 'Greek',
-    gu: 'Gujarati',
-    ht: 'Haitian Creole',
-    ha: 'Hausa',
-    haw: 'Hawaiian',
-    iw: 'Hebrew',
-    hi: 'Hindi',
-    hmn: 'Hmong',
-    hu: 'Hungarian',
-    is: 'Icelandic',
-    ig: 'Igbo',
-    id: 'Indonesian',
-    ga: 'Irish',
-    it: 'Italian',
-    ja: 'Japanese',
-    jw: 'Javanese',
-    kn: 'Kannada',
-    kk: 'Kazakh',
-    km: 'Khmer',
-    ko: 'Korean',
-    ku: 'Kurdish',
-    ky: 'Kyrgyz',
-    lo: 'Lao',
-    la: 'Latin',
-    lv: 'Latvian',
-    lt: 'Lithuanian',
-    lb: 'Luxembourgish',
-    mk: 'Macedonian',
-    mg: 'Malagasy',
-    ms: 'Malay',
-    ml: 'Malayalam',
-    mt: 'Maltese',
-    mi: 'Maori',
-    mr: 'Marathi',
-    mn: 'Mongolian',
-    my: 'Myanmar',
-    ne: 'Nepali',
-    no: 'Norwegian',
-    ps: 'Pashto',
-    fa: 'Persian',
-    pl: 'Polish',
-    pt: 'Portuguese',
-    pa: 'Punjabi',
-    ro: 'Romanian',
-    ru: 'Russian',
-    sm: 'Samoan',
-    gd: 'Scots Gaelic',
-    sr: 'Serbian',
-    st: 'Sesotho',
-    sn: 'Shona',
-    sd: 'Sindhi',
-    si: 'Sinhala',
-    sk: 'Slovak',
-    sl: 'Slovenian',
-    so: 'Somali',
-    es: 'Spanish',
-    su: 'Sundanese',
-    sw: 'Swahili',
-    sv: 'Swedish',
-    tg: 'Tajik',
-    ta: 'Tamil',
-    te: 'Telugu',
-    th: 'Thai',
-    tr: 'Turkish',
-    uk: 'Ukrainian',
-    ur: 'Urdu',
-    uz: 'Uzbek',
-    vi: 'Vietnamese',
-    cy: 'Welsh',
-    xh: 'Xhosa',
-    yi: 'Yiddish',
-    yo: 'Yoruba',
-    zu: 'Zulu'
-  };
-```
+
+
 
 ```tsx 
 const uploadImg = async (file: File, altText: string) => {
@@ -272,6 +167,12 @@ const uploadImg = async (file: File, altText: string) => {
   return data
 };
 
+//handleAIData 
+
+const handleAIData = async (data: string): Promise<any> => {
+  await delay(500);  // api call
+  return "AI Data";
+};
 
 
 const toolbarConfig ={
@@ -310,7 +211,7 @@ const toolbarConfig ={
   capitalize:true,
   RTL:true,
   LTR:true,
-  selectLang:true
+  ai:true  // handleAIData
 }
 
 
@@ -332,6 +233,7 @@ function App({
       onUpload={uploadImg}
       onChangeMode="html"
       toolbarConfig={toolbarConfig}
+      handleAIData={handleAIData}
       dummyMentionsDatas={userList || []}
     />
   );

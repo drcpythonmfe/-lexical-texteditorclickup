@@ -22,6 +22,7 @@ export declare type EditorProps = {
     onChangeMode?: 'html' | 'json';
     toolbarConfig?: ToolbarConfig;
     onUpload?: OnImageUpload;
+    handleAIData?: (data: string) => Promise<any>;
     onDataSend?: (img: File) => Promise<{
         url: string;
         id: number;
@@ -33,4 +34,4 @@ export declare type EditorProps = {
         email: string;
     }];
 };
-export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, onDataSend, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas, }: EditorProps): JSX.Element;
+export default function Editor({ isCollab, isAutocomplete, isMaxLength, isCharLimit, isCharLimitUtf8, isRichText, showTreeView, showTableOfContents, onChange, onChangeMode, onUpload, onDataSend, toolbarConfig, rootClassName, containerClassName, dummyMentionsDatas, handleAIData, }: EditorProps): JSX.Element;

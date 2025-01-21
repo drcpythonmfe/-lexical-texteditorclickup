@@ -104,10 +104,15 @@ declare const LANGUAGES: {
     yo: string;
     zu: string;
 };
+declare type TranslationResult = {
+    translatedText: string;
+    detectedSourceLang?: string;
+};
 declare function translateText(text: string, targetLang: string, sourceLang?: string): Promise<{
     translatedText: string;
     detectedLanguage: any;
     confidence: any;
 }>;
 declare function example(): Promise<void>;
-export { LANGUAGES, translateText, example };
+declare function translateTexts(text: string, targetLang: string, sourceLang?: string): Promise<any>;
+export { LANGUAGES, translateText, example, translateTexts, TranslationResult };

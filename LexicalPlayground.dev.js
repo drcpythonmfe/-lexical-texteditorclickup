@@ -7182,51 +7182,6 @@ function transformColor(format, color) {
   };
 }
 
-async function translateText(text, targetLang, sourceLang = 'auto') {
-  if (text.length > 5000) {
-    throw new Error('Text is too long (max 5000 characters)');
-  }
-
-  const params = new URLSearchParams({
-    client: 'gtx',
-    sl: sourceLang,
-    tl: targetLang,
-    dt: 't',
-    q: text
-  });
-  const url = `https://translate.googleapis.com/translate_a/single?${params.toString()}`;
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Translation failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    let translatedText = '';
-
-    if (Array.isArray(data[0])) {
-      data[0].forEach(chunk => {
-        if (chunk[0]) translatedText += chunk[0];
-      });
-    }
-
-    return {
-      translatedText,
-      detectedLanguage: data[2],
-      confidence: data[6]?.[0]
-    };
-  } catch (error) {
-    throw new Error(`Translation error: ${error}`);
-  }
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7422,7 +7377,8 @@ function ToolbarPlugin({
   config,
   handleClick,
   anchorElem = document.body,
-  floatingText
+  floatingText,
+  handleAIData
 }) {
   const normFontFamilyOption = Array.isArray(config.fontFamilyOptions) ? config.fontFamilyOptions : FONT_FAMILY_OPTIONS;
   const initFontFamily = normFontFamilyOption?.[0]?.[0] ?? FONT_FAMILY_OPTIONS[0][0];
@@ -7450,7 +7406,7 @@ function ToolbarPlugin({
   const [isEditable, setIsEditable] = React.useState(() => editor.isEditable());
   React.useState('5');
   React.useState('5');
-  const [selectedLang, setSelectedLang] = React.useState('');
+  React.useState('');
   const langs = {
     auto: 'Detect Language',
     af: 'Afrikaans',
@@ -7557,7 +7513,7 @@ function ToolbarPlugin({
     yo: 'Yoruba',
     zu: 'Zulu'
   };
-  const langOptions = Object.entries(langs).map(([id, name]) => ({
+  Object.entries(langs).map(([id, name]) => ({
     id,
     name
   }));
@@ -7766,47 +7722,37 @@ function ToolbarPlugin({
     });
   }, [applyStyleText]);
 
-  const handleTextTranslibretranslateform = event => {
-    const selectedValue = event.target.value;
+  const handleAIform = () => {
     activeEditor.update(() => {
       const selection = lexical.$getSelection();
-      setSelectedLang(selectedValue);
 
       if (lexical.$isRangeSelection(selection)) {
         const textContent = selection.getTextContent();
-        handleTranslate(textContent, selectedValue);
+        {
+          handleAIData && handleAIData(textContent).then(result => {
+            if (result) {
+              activeEditor.update(() => {
+                const selection = lexical.$getSelection();
+
+                if (lexical.$isRangeSelection(selection)) {
+                  selection.insertText(result);
+                }
+              });
+            } else {
+              activeEditor.update(() => {
+                const selection = lexical.$getSelection();
+
+                if (lexical.$isRangeSelection(selection)) {
+                  selection.insertText(textContent);
+                }
+              });
+            }
+          }).catch(error => {
+            console.error('AI processing failed:', error);
+          });
+        }
       }
     });
-  };
-
-  const handleTranslate = async (text, targetLang) => {
-    try {
-      if (text.length > 5000) {
-        return alert('Text is too long');
-      }
-
-      const result = await translateText(text, targetLang, "auto");
-
-      if (result?.translatedText) {
-        activeEditor.update(() => {
-          const selection = lexical.$getSelection();
-
-          if (lexical.$isRangeSelection(selection)) {
-            selection.insertText(result.translatedText);
-          }
-        });
-      } else {
-        activeEditor.update(() => {
-          const selection = lexical.$getSelection();
-
-          if (lexical.$isRangeSelection(selection)) {
-            selection.insertText(text);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error during translation:', error);
-    }
   };
 
   return /*#__PURE__*/React.createElement("div", {
@@ -7932,15 +7878,12 @@ function ToolbarPlugin({
     "aria-label": "Switch text direction to left to right"
   }, /*#__PURE__*/React.createElement("i", {
     className: "format ltr"
-  })), config.selectLang && /*#__PURE__*/React.createElement("select", {
-    value: selectedLang,
-    onChange: handleTextTranslibretranslateform,
+  })), config.ai && /*#__PURE__*/React.createElement("button", {
+    onClick: handleAIform,
     className: "toolbar-item",
-    title: "Select Language"
-  }, langOptions.map(option => /*#__PURE__*/React.createElement("option", {
-    key: option.id,
-    value: option.id
-  }, option.name))), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
+    title: "AI",
+    "aria-label": "Switch text direction to left to right"
+  }, "AI"), config.textColorPicker && /*#__PURE__*/React.createElement(ColorPicker, {
     bit: true,
     disabled: !isEditable,
     buttonClassName: "toolbar-item color-picker",
@@ -8393,7 +8336,8 @@ function TextFormatFloatingToolbar({
   isSuperscript,
   config,
   handleClick,
-  isRichText
+  isRichText,
+  handleAIData
 }) {
   const popupCharStylesEditorRef = React.useRef(null);
   React.useCallback(() => {
@@ -8487,13 +8431,14 @@ function TextFormatFloatingToolbar({
     id: "floating-text-format-popups",
     className: "floating-text-format-popup"
   }, isRichText && /*#__PURE__*/React.createElement(ToolbarPlugin, {
+    handleAIData: handleAIData,
     config: config,
     handleClick: handleClick,
     floatingText: true
   })));
 }
 
-function useFloatingTextFormatToolbar(editor, anchorElem, config, isRichText, handleClick) {
+function useFloatingTextFormatToolbar(editor, anchorElem, config, isRichText, handleClick, handleAIData) {
   const [isText, setIsText] = React.useState(false);
   const [isLink, setIsLink] = React.useState(false);
   const [isBold, setIsBold] = React.useState(false);
@@ -8581,7 +8526,8 @@ function useFloatingTextFormatToolbar(editor, anchorElem, config, isRichText, ha
     isUnderline: isUnderline,
     isCode: isCode,
     handleClick: handleClick,
-    isRichText: isRichText
+    isRichText: isRichText,
+    handleAIData: handleAIData
   }), anchorElem);
 }
 
@@ -8589,10 +8535,11 @@ function TextFormatFloatingToolbarPlugin({
   anchorElem = document.body,
   config,
   handleClick,
-  isRichText
+  isRichText,
+  handleAIData
 }) {
   const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  return useFloatingTextFormatToolbar(editor, anchorElem, config, isRichText, handleClick);
+  return useFloatingTextFormatToolbar(editor, anchorElem, config, isRichText, handleClick, handleAIData);
 }
 
 /**
@@ -10622,7 +10569,8 @@ const defaultToolbarConfig = {
   capitalize: true,
   RTL: true,
   LTR: true,
-  selectLang: true
+  selectLang: true,
+  ai: true
 };
 function Editor({
   isCollab,
@@ -10640,7 +10588,8 @@ function Editor({
   toolbarConfig,
   rootClassName,
   containerClassName,
-  dummyMentionsDatas
+  dummyMentionsDatas,
+  handleAIData
 }) {
   const {
     historyState
@@ -10768,7 +10717,8 @@ function Editor({
     anchorElem: floatingAnchorElem,
     config: normToolbarConfig,
     isRichText: isRichText,
-    handleClick: handleFileUpload
+    handleClick: handleFileUpload,
+    handleAIData: handleAIData
   })), editorContext.extensions.plugins.map(([extName, Plugin]) => /*#__PURE__*/React.createElement(Plugin, {
     key: extName
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(LexicalPlainTextPlugin.PlainTextPlugin, {
@@ -10786,7 +10736,8 @@ function Editor({
     config: normToolbarConfig,
     handleClick: handleFileUpload,
     floatingText: false,
-    anchorElem: floatingAnchorElem
+    anchorElem: floatingAnchorElem,
+    handleAIData: handleAIData
   }), showTreeView && /*#__PURE__*/React.createElement(TreeViewPlugin, null));
 }
 

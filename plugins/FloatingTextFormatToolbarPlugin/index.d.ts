@@ -8,9 +8,10 @@
  */
 import type { ToolbarConfig } from '../toolbarTypes';
 import './index.css';
-export default function TextFormatFloatingToolbarPlugin({ anchorElem, config, handleClick, isRichText }: {
+export default function TextFormatFloatingToolbarPlugin({ anchorElem, config, handleClick, isRichText, handleAIData }: {
     config: ToolbarConfig;
     anchorElem?: HTMLElement;
     isRichText?: boolean;
     handleClick?: ((data: any) => any | void | undefined) | undefined;
+    handleAIData?: (text: string) => Promise<any>;
 }): JSX.Element | null;
