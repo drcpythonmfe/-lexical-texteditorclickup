@@ -38,5 +38,11 @@ export declare type ToolbarConfig = {
     LTR?: boolean;
     selectLang?: boolean;
     ai?: boolean;
+    video?: boolean;
+    Sticky?: boolean;
+    Poll?: boolean;
+    Table?: boolean;
+    Collapsible?: boolean;
+    Horizontal?: boolean;
 };
 export {};

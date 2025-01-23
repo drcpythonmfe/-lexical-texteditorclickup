@@ -2405,16 +2405,6 @@ function YouTubePlugin() {
  *
  */
 
-function generateUUIDWithTimestamp() {
-  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : r & 0x3 | 0x8;
-    return v.toString(16);
-  });
-  const timestamp = new Date().toISOString();
-  return `${uuid}-${timestamp}`;
-}
-
 const YoutubeEmbedConfig = {
   contentName: 'Youtube Video',
   exampleUrl: 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
@@ -2442,99 +2432,12 @@ const YoutubeEmbedConfig = {
   },
   type: 'youtube-video'
 };
-const VideoEmbedConfig = {
-  contentName: 'Video',
-  exampleUrl: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-  // Icon for display.
-  icon: /*#__PURE__*/React.createElement("i", {
-    className: "icon videos"
-  }),
-  insertNode: (editor, result) => {
-    let data = generateUUIDWithTimestamp();
-    result.id = String(data);
-    editor.dispatchCommand(INSERT_VIDEO_COMMAND, result);
-  },
-  keywords: ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv', 'video'],
-  // Determine if a given URL is a match and return url data.
-  parseUrl: async url => {
-    const parts = url?.split('.');
-    const extension = parts[parts.length - 1]?.toLowerCase();
-    const validVideoTypes = ['mp4', 'webm', 'mov', 'avi', 'flv', 'mkv', 'wmv'];
-
-    if (validVideoTypes.includes(extension) && url != null) {
-      return {
-        id: '',
-        url
-      };
-    }
-
-    return null;
-  },
-  type: 'video'
-};
-const PdfEmbedConfig = {
-  contentName: 'Pdf',
-  exampleUrl: 'https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210101201653/PDF.pdf',
-  // Icon for display.
-  icon: /*#__PURE__*/React.createElement("i", {
-    className: "icon pdf"
-  }),
-  insertNode: (editor, result) => {
-    let data = generateUUIDWithTimestamp();
-    result.id = String(data);
-    editor.dispatchCommand(INSERT_PDF_COMMAND, result);
-  },
-  keywords: ['pdf'],
-  // Determine if a given URL is a match and return url data.
-  parseUrl: async url => {
-    const parts = url?.split('.');
-    const extension = parts[parts.length - 1]?.toLowerCase();
-    const validPdfTypes = ['pdf'];
-
-    if (validPdfTypes.includes(extension) && url != null) {
-      return {
-        id: '',
-        url
-      };
-    }
-
-    return null;
-  },
-  type: 'pdf'
-};
-const OfficeEmbedConfig = {
-  contentName: 'Office',
-  exampleUrl: 'https://media.stage.truflux.drcsystems.ooo/uploads/project/294/Timesheet%20report%20_1_.xlsx',
-  // Icon for display.
-  icon: /*#__PURE__*/React.createElement("i", {
-    className: "icon office"
-  }),
-  insertNode: (editor, result) => {
-    let data = generateUUIDWithTimestamp();
-    result.id = String(data);
-    editor.dispatchCommand(INSERT_OFFICE_COMMAND, result);
-  },
-  keywords: ['office', 'xlsx', 'docx', 'pptx', 'csv', 'ods'],
-  // Determine if a given URL is a match and return url data.
-  parseUrl: async url => {
-    const parts = url?.split('.');
-    const extension = parts[parts.length - 1]?.toLowerCase();
-    const validOfficeTypes = ['xlsx', 'docx', 'pptx', 'csv', 'ods'];
-
-    if (validOfficeTypes.includes(extension) && url != null) {
-      return {
-        id: '',
-        url
-      };
-    }
-
-    return null;
-  },
-  type: 'office'
-};
 const EmbedConfigs = [// TwitterEmbedConfig,
-YoutubeEmbedConfig, // FigmaEmbedConfig,
-VideoEmbedConfig, PdfEmbedConfig, OfficeEmbedConfig];
+YoutubeEmbedConfig // FigmaEmbedConfig,
+// VideoEmbedConfig,
+// PdfEmbedConfig,
+// OfficeEmbedConfig
+];
 
 function AutoEmbedMenuItem({
   index,
@@ -6618,6 +6521,104 @@ const IS_CHROME = CAN_USE_DOM && /^(?=.*Chrome).*/i.test(navigator.userAgent); /
 
 CAN_USE_DOM && /AppleWebKit\/[\d.]+/.test(navigator.userAgent) && !IS_CHROME;
 
+const StickyComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return StickyComponent$1; }));
+class StickyNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'sticky';
+  }
+
+  static clone(node) {
+    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
+    const caption = serializedNode.caption;
+    const nestedEditor = stickyNode.__caption;
+    const editorState = nestedEditor.parseEditorState(caption.editorState);
+
+    if (!editorState.isEmpty()) {
+      nestedEditor.setEditorState(editorState);
+    }
+
+    return stickyNode;
+  }
+
+  constructor(x, y, color, caption, key) {
+    super(key);
+
+    _defineProperty(this, "__x", void 0);
+
+    _defineProperty(this, "__y", void 0);
+
+    _defineProperty(this, "__color", void 0);
+
+    _defineProperty(this, "__caption", void 0);
+
+    this.__x = x;
+    this.__y = y;
+    this.__caption = caption || lexical.createEditor();
+    this.__color = color;
+  }
+
+  exportJSON() {
+    return {
+      caption: this.__caption.toJSON(),
+      color: this.__color,
+      type: 'sticky',
+      version: 1,
+      xOffset: this.__x,
+      yOffset: this.__y
+    };
+  }
+
+  createDOM(config) {
+    const div = document.createElement('div');
+    div.style.display = 'contents';
+    return div;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  setPosition(x, y) {
+    const writable = this.getWritable();
+    writable.__x = x;
+    writable.__y = y;
+    lexical.$setSelection(null);
+  }
+
+  toggleColor() {
+    const writable = this.getWritable();
+    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
+  }
+
+  decorate(editor, config) {
+    return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
+      color: this.__color,
+      x: this.__x,
+      y: this.__y,
+      nodeKey: this.getKey(),
+      caption: this.__caption
+    })), document.body);
+  }
+
+  isIsolated() {
+    return true;
+  }
+
+}
+function $isStickyNode(node) {
+  return node instanceof StickyNode;
+}
+function $createStickyNode(xOffset, yOffset) {
+  return new StickyNode(xOffset, yOffset, 'yellow');
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7182,6 +7183,642 @@ function transformColor(format, color) {
   };
 }
 
+const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return PollComponent$1; }));
+
+function createUID$1() {
+  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+}
+
+function createPollOption(text = '') {
+  return {
+    text,
+    uid: createUID$1(),
+    votes: []
+  };
+}
+
+function cloneOption(option, text, votes) {
+  return {
+    text,
+    uid: option.uid,
+    votes: votes || Array.from(option.votes)
+  };
+}
+
+function convertPollElement(domNode) {
+  const question = domNode.getAttribute('data-lexical-poll-question');
+
+  if (question !== null) {
+    const node = $createPollNode(question);
+    return {
+      node
+    };
+  }
+
+  return null;
+}
+
+class PollNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'poll';
+  }
+
+  static clone(node) {
+    return new PollNode(node.__question, node.__options, node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    const node = $createPollNode(serializedNode.question);
+    serializedNode.options.forEach(node.addOption);
+    return node;
+  }
+
+  constructor(question, options, key) {
+    super(key);
+
+    _defineProperty(this, "__question", void 0);
+
+    _defineProperty(this, "__options", void 0);
+
+    this.__question = question;
+    this.__options = options || [createPollOption(), createPollOption()];
+  }
+
+  exportJSON() {
+    return {
+      options: this.__options,
+      question: this.__question,
+      type: 'poll',
+      version: 1
+    };
+  }
+
+  addOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    options.push(option);
+    self.__options = options;
+  }
+
+  deleteOption(option) {
+    const self = this.getWritable();
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options.splice(index, 1);
+    self.__options = options;
+  }
+
+  setOptionText(option, text) {
+    const self = this.getWritable();
+    const clonedOption = cloneOption(option, text);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+
+  toggleVote(option, clientID) {
+    const self = this.getWritable();
+    const votes = option.votes;
+    const votesClone = Array.from(votes);
+    const voteIndex = votes.indexOf(clientID);
+
+    if (voteIndex === -1) {
+      votesClone.push(clientID);
+    } else {
+      votesClone.splice(voteIndex, 1);
+    }
+
+    const clonedOption = cloneOption(option, option.text, votesClone);
+    const options = Array.from(self.__options);
+    const index = options.indexOf(option);
+    options[index] = clonedOption;
+    self.__options = options;
+  }
+
+  static importDOM() {
+    return {
+      span: domNode => {
+        if (!domNode.hasAttribute('data-lexical-poll-question')) {
+          return null;
+        }
+
+        return {
+          conversion: convertPollElement,
+          priority: 2
+        };
+      }
+    };
+  }
+
+  exportDOM() {
+    const element = document.createElement('span');
+    element.setAttribute('data-lexical-poll-question', this.__question);
+    return {
+      element
+    };
+  }
+
+  createDOM() {
+    const elem = document.createElement('span');
+    elem.style.display = 'inline-block';
+    return elem;
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  decorate() {
+    return /*#__PURE__*/React.createElement(React.Suspense, {
+      fallback: null
+    }, /*#__PURE__*/React.createElement(PollComponent$2, {
+      question: this.__question,
+      options: this.__options,
+      nodeKey: this.__key
+    }));
+  }
+
+}
+function $createPollNode(question) {
+  return new PollNode(question);
+}
+function $isPollNode(node) {
+  return node instanceof PollNode;
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
+function InsertPollDialog({
+  activeEditor,
+  onClose
+}) {
+  const [question, setQuestion] = React.useState('');
+
+  const onClick = () => {
+    activeEditor.dispatchCommand(INSERT_POLL_COMMAND, question);
+    onClose();
+  };
+
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
+    label: "Question",
+    onChange: setQuestion,
+    value: question
+  }), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
+    disabled: question.trim() === '',
+    onClick: onClick
+  }, "Confirm")));
+}
+function PollPlugin() {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  React.useEffect(() => {
+    if (!editor.hasNodes([PollNode])) {
+      throw new Error('PollPlugin: PollNode not registered on editor');
+    }
+
+    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
+      const pollNode = $createPollNode(payload);
+      lexical.$insertNodes([pollNode]);
+
+      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
+        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
+      }
+
+      return true;
+    }, lexical.COMMAND_PRIORITY_EDITOR);
+  }, [editor]);
+  return null;
+}
+
+const cellHTMLCache = new Map();
+const cellTextContentCache = new Map();
+const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+
+const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":${text},"type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+
+const TableComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
+() => Promise.resolve().then(function () { return TableComponent$1; }));
+function createUID() {
+  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
+}
+
+function createCell(type) {
+  return {
+    colSpan: 1,
+    id: createUID(),
+    json: emptyEditorJSON,
+    type,
+    width: null
+  };
+}
+
+function createRow() {
+  return {
+    cells: [],
+    height: null,
+    id: createUID()
+  };
+}
+function extractRowsFromHTML(tableElem) {
+  const rowElems = tableElem.querySelectorAll('tr');
+  const rows = [];
+
+  for (let y = 0; y < rowElems.length; y++) {
+    const rowElem = rowElems[y];
+    const cellElems = rowElem.querySelectorAll('td,th');
+
+    if (!cellElems || cellElems.length === 0) {
+      continue;
+    }
+
+    const cells = [];
+
+    for (let x = 0; x < cellElems.length; x++) {
+      const cellElem = cellElems[x];
+      const isHeader = cellElem.nodeName === 'TH';
+      const cell = createCell(isHeader ? 'header' : 'normal');
+      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
+      cells.push(cell);
+    }
+
+    const row = createRow();
+    row.cells = cells;
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function convertTableElement(domNode) {
+  const rowElems = domNode.querySelectorAll('tr');
+
+  if (!rowElems || rowElems.length === 0) {
+    return null;
+  }
+
+  const rows = [];
+
+  for (let y = 0; y < rowElems.length; y++) {
+    const rowElem = rowElems[y];
+    const cellElems = rowElem.querySelectorAll('td,th');
+
+    if (!cellElems || cellElems.length === 0) {
+      continue;
+    }
+
+    const cells = [];
+
+    for (let x = 0; x < cellElems.length; x++) {
+      const cellElem = cellElems[x];
+      const isHeader = cellElem.nodeName === 'TH';
+      const cell = createCell(isHeader ? 'header' : 'normal');
+      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
+      cells.push(cell);
+    }
+
+    const row = createRow();
+    row.cells = cells;
+    rows.push(row);
+  }
+
+  return {
+    node: $createTableNode(rows)
+  };
+}
+
+function exportTableCellsToHTML(rows, rect) {
+  const table = document.createElement('table');
+  const colGroup = document.createElement('colgroup');
+  const tBody = document.createElement('tbody');
+  const firstRow = rows[0];
+
+  for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : firstRow.cells.length); x++) {
+    const col = document.createElement('col');
+    colGroup.append(col);
+  }
+
+  for (let y = rect != null ? rect.startY : 0; y < (rect != null ? rect.endY + 1 : rows.length); y++) {
+    const row = rows[y];
+    const cells = row.cells;
+    const rowElem = document.createElement('tr');
+
+    for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : cells.length); x++) {
+      const cell = cells[x];
+      const cellElem = document.createElement(cell.type === 'header' ? 'th' : 'td');
+      cellElem.innerHTML = cellHTMLCache.get(cell.json) || '';
+      rowElem.appendChild(cellElem);
+    }
+
+    tBody.appendChild(rowElem);
+  }
+
+  table.appendChild(colGroup);
+  table.appendChild(tBody);
+  return table;
+}
+class TableNode extends lexical.DecoratorNode {
+  static getType() {
+    return 'tablesheet';
+  }
+
+  static clone(node) {
+    return new TableNode(Array.from(node.__rows), node.__key);
+  }
+
+  static importJSON(serializedNode) {
+    return $createTableNode(serializedNode.rows);
+  }
+
+  exportJSON() {
+    return {
+      rows: this.__rows,
+      type: 'tablesheet',
+      version: 1
+    };
+  }
+
+  static importDOM() {
+    return {
+      table: _node => ({
+        conversion: convertTableElement,
+        priority: 0
+      })
+    };
+  }
+
+  exportDOM() {
+    return {
+      element: exportTableCellsToHTML(this.__rows)
+    };
+  }
+
+  constructor(rows, key) {
+    super(key);
+
+    _defineProperty(this, "__rows", void 0);
+
+    this.__rows = rows || [];
+  }
+
+  createDOM() {
+    return document.createElement('div');
+  }
+
+  updateDOM() {
+    return false;
+  }
+
+  mergeRows(startX, startY, mergeRows) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const endY = Math.min(rows.length, startY + mergeRows.length);
+
+    for (let y = startY; y < endY; y++) {
+      const row = rows[y];
+      const mergeRow = mergeRows[y - startY];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const mergeCells = mergeRow.cells;
+      const endX = Math.min(cells.length, startX + mergeCells.length);
+
+      for (let x = startX; x < endX; x++) {
+        const cell = cells[x];
+        const mergeCell = mergeCells[x - startX];
+        const cellClone = { ...cell,
+          json: mergeCell.json,
+          type: mergeCell.type
+        };
+        cellsClone[x] = cellClone;
+      }
+
+      rows[y] = rowClone;
+    }
+  }
+
+  updateCellJSON(x, y, json) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const row = rows[y];
+    const cells = row.cells;
+    const cell = cells[x];
+    const cellsClone = Array.from(cells);
+    const cellClone = { ...cell,
+      json
+    };
+    const rowClone = { ...row,
+      cells: cellsClone
+    };
+    cellsClone[x] = cellClone;
+    rows[y] = rowClone;
+  }
+
+  updateCellType(x, y, type) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const row = rows[y];
+    const cells = row.cells;
+    const cell = cells[x];
+    const cellsClone = Array.from(cells);
+    const cellClone = { ...cell,
+      type
+    };
+    const rowClone = { ...row,
+      cells: cellsClone
+    };
+    cellsClone[x] = cellClone;
+    rows[y] = rowClone;
+  }
+
+  insertColumnAt(x) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const type = (cells[x] || cells[x - 1]).type;
+      cellsClone.splice(x, 0, createCell(type));
+      rows[y] = rowClone;
+    }
+  }
+
+  deleteColumnAt(x) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      cellsClone.splice(x, 1);
+      rows[y] = rowClone;
+    }
+  }
+
+  addColumns(count) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      const type = cells[cells.length - 1].type;
+
+      for (let x = 0; x < count; x++) {
+        cellsClone.push(createCell(type));
+      }
+
+      rows[y] = rowClone;
+    }
+  }
+
+  insertRowAt(y) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[y] || rows[y - 1];
+    const cellCount = prevRow.cells.length;
+    const row = createRow();
+
+    for (let x = 0; x < cellCount; x++) {
+      const cell = createCell(prevRow.cells[x].type);
+      row.cells.push(cell);
+    }
+
+    rows.splice(y, 0, row);
+  }
+
+  deleteRowAt(y) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    rows.splice(y, 1);
+  }
+
+  addRows(count) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+    const prevRow = rows[rows.length - 1];
+    const cellCount = prevRow.cells.length;
+
+    for (let y = 0; y < count; y++) {
+      const row = createRow();
+
+      for (let x = 0; x < cellCount; x++) {
+        const cell = createCell(prevRow.cells[x].type);
+        row.cells.push(cell);
+      }
+
+      rows.push(row);
+    }
+  }
+
+  updateColumnWidth(x, width) {
+    const self = this.getWritable();
+    const rows = self.__rows;
+
+    for (let y = 0; y < rows.length; y++) {
+      const row = rows[y];
+      const cells = row.cells;
+      const cellsClone = Array.from(cells);
+      const rowClone = { ...row,
+        cells: cellsClone
+      };
+      cellsClone[x].width = width;
+      rows[y] = rowClone;
+    }
+  }
+
+  decorate(_, config) {
+    return /*#__PURE__*/React.createElement(React.Suspense, null, /*#__PURE__*/React.createElement(TableComponent$2, {
+      nodeKey: this.__key,
+      theme: config.theme,
+      rows: this.__rows
+    }));
+  }
+
+  isInline() {
+    return false;
+  }
+
+}
+function $isTableNode(node) {
+  return node instanceof TableNode;
+}
+function $createTableNode(rows) {
+  return new TableNode(rows);
+}
+
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ */
+lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
+const CellContext = /*#__PURE__*/React.createContext({
+  cellEditorConfig: null,
+  cellEditorPlugins: null,
+  set: () => {// Empty
+  }
+});
+function InsertTableDialog({
+  activeEditor,
+  onClose
+}) {
+  const [rows, setRows] = React.useState('5');
+  const [columns, setColumns] = React.useState('5');
+
+  const onClick = () => {
+    activeEditor.dispatchCommand(table.INSERT_TABLE_COMMAND, {
+      columns,
+      rows
+    });
+    onClose();
+  };
+
+  const newLocal = Number(columns) > 5 || Number(rows) > 5;
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TextInput, {
+    label: "No of rows",
+    type: "number",
+    onChange: setRows,
+    value: rows
+  }), /*#__PURE__*/React.createElement(TextInput, {
+    label: "No of columns",
+    type: "number",
+    onChange: setColumns,
+    value: columns
+  }), /*#__PURE__*/React.createElement(DialogActions, {
+    "data-test-id": "table-model-confirm-insert"
+  }, newLocal ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Button, {
+    onClick: onClick,
+    disabled: true
+  }, "Confirm"), ' ') : /*#__PURE__*/React.createElement(Button, {
+    onClick: onClick,
+    disabled: columns == '' || rows == '' ? true : false
+  }, "Confirm")));
+}
+
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -7517,7 +8154,7 @@ function ToolbarPlugin({
     id,
     name
   }));
-  useEditorComposerContext();
+  const editorContext = useEditorComposerContext();
   const updateToolbar = React.useCallback(() => {
     const selection$1 = lexical.$getSelection();
 
@@ -8263,7 +8900,74 @@ function ToolbarPlugin({
     className: "icon image"
   }), /*#__PURE__*/React.createElement("span", {
     className: "text"
-  }, "Upload Document")))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
+  }, "Upload Document"))), config?.Table && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      showModal('Insert Table', onClose => /*#__PURE__*/React.createElement(InsertTableDialog, {
+        activeEditor: activeEditor,
+        onClose: onClose
+      }));
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon table"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Table"))), config?.video && /*#__PURE__*/React.createElement(React.Fragment, null, EmbedConfigs.map(embedConfig => /*#__PURE__*/React.createElement(DropDownItem, {
+    key: embedConfig.type,
+    onClick: () => {
+      activeEditor.dispatchCommand(LexicalAutoEmbedPlugin.INSERT_EMBED_COMMAND, embedConfig.type);
+    },
+    className: "item"
+  }, embedConfig.icon, /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, embedConfig.contentName)))), editorContext.extensions.toolbarInsertsAfter.map(([extName, ExtDropDownItem]) => /*#__PURE__*/React.createElement(ExtDropDownItem, {
+    key: extName,
+    showModal: showModal,
+    activeEditor: activeEditor
+  })), config?.Collapsible && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      editor.dispatchCommand(INSERT_COLLAPSIBLE_COMMAND, undefined);
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon caret-right"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Collapsible container"))), config?.Horizontal && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      activeEditor.dispatchCommand(LexicalHorizontalRuleNode.INSERT_HORIZONTAL_RULE_COMMAND, undefined);
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon horizontal-rule"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Horizontal Rule"))), config?.Poll && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      showModal('Insert Poll', onClose => /*#__PURE__*/React.createElement(InsertPollDialog, {
+        activeEditor: activeEditor,
+        onClose: onClose
+      }));
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon poll"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Poll"))), config?.Sticky && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(DropDownItem, {
+    onClick: () => {
+      editor.update(() => {
+        const root = lexical.$getRoot();
+        const stickyNode = $createStickyNode(0, 0);
+        root.append(stickyNode);
+      });
+    },
+    className: "item"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "icon sticky"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text"
+  }, "Sticky Note")))), config.formatTextOptions && /*#__PURE__*/React.createElement(DropDown, {
     anchorElem: anchorElem,
     disabled: !isEditable,
     buttonClassName: "toolbar-item spaced",
@@ -9166,200 +9870,6 @@ function OnImageUploadPlugin({
       unregisterMutationListener();
     };
   }, [editor, onUpload]);
-  return null;
-}
-
-const PollComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return PollComponent$1; }));
-
-function createUID$1() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-}
-
-function createPollOption(text = '') {
-  return {
-    text,
-    uid: createUID$1(),
-    votes: []
-  };
-}
-
-function cloneOption(option, text, votes) {
-  return {
-    text,
-    uid: option.uid,
-    votes: votes || Array.from(option.votes)
-  };
-}
-
-function convertPollElement(domNode) {
-  const question = domNode.getAttribute('data-lexical-poll-question');
-
-  if (question !== null) {
-    const node = $createPollNode(question);
-    return {
-      node
-    };
-  }
-
-  return null;
-}
-
-class PollNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'poll';
-  }
-
-  static clone(node) {
-    return new PollNode(node.__question, node.__options, node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    const node = $createPollNode(serializedNode.question);
-    serializedNode.options.forEach(node.addOption);
-    return node;
-  }
-
-  constructor(question, options, key) {
-    super(key);
-
-    _defineProperty(this, "__question", void 0);
-
-    _defineProperty(this, "__options", void 0);
-
-    this.__question = question;
-    this.__options = options || [createPollOption(), createPollOption()];
-  }
-
-  exportJSON() {
-    return {
-      options: this.__options,
-      question: this.__question,
-      type: 'poll',
-      version: 1
-    };
-  }
-
-  addOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    options.push(option);
-    self.__options = options;
-  }
-
-  deleteOption(option) {
-    const self = this.getWritable();
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options.splice(index, 1);
-    self.__options = options;
-  }
-
-  setOptionText(option, text) {
-    const self = this.getWritable();
-    const clonedOption = cloneOption(option, text);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-
-  toggleVote(option, clientID) {
-    const self = this.getWritable();
-    const votes = option.votes;
-    const votesClone = Array.from(votes);
-    const voteIndex = votes.indexOf(clientID);
-
-    if (voteIndex === -1) {
-      votesClone.push(clientID);
-    } else {
-      votesClone.splice(voteIndex, 1);
-    }
-
-    const clonedOption = cloneOption(option, option.text, votesClone);
-    const options = Array.from(self.__options);
-    const index = options.indexOf(option);
-    options[index] = clonedOption;
-    self.__options = options;
-  }
-
-  static importDOM() {
-    return {
-      span: domNode => {
-        if (!domNode.hasAttribute('data-lexical-poll-question')) {
-          return null;
-        }
-
-        return {
-          conversion: convertPollElement,
-          priority: 2
-        };
-      }
-    };
-  }
-
-  exportDOM() {
-    const element = document.createElement('span');
-    element.setAttribute('data-lexical-poll-question', this.__question);
-    return {
-      element
-    };
-  }
-
-  createDOM() {
-    const elem = document.createElement('span');
-    elem.style.display = 'inline-block';
-    return elem;
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  decorate() {
-    return /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(PollComponent$2, {
-      question: this.__question,
-      options: this.__options,
-      nodeKey: this.__key
-    }));
-  }
-
-}
-function $createPollNode(question) {
-  return new PollNode(question);
-}
-function $isPollNode(node) {
-  return node instanceof PollNode;
-}
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-const INSERT_POLL_COMMAND = lexical.createCommand('INSERT_POLL_COMMAND');
-function PollPlugin() {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  React.useEffect(() => {
-    if (!editor.hasNodes([PollNode])) {
-      throw new Error('PollPlugin: PollNode not registered on editor');
-    }
-
-    return editor.registerCommand(INSERT_POLL_COMMAND, payload => {
-      const pollNode = $createPollNode(payload);
-      lexical.$insertNodes([pollNode]);
-
-      if (lexical.$isRootOrShadowRoot(pollNode.getParentOrThrow())) {
-        utils.$wrapNodeInElement(pollNode, lexical.$createParagraphNode).selectEnd();
-      }
-
-      return true;
-    }, lexical.COMMAND_PRIORITY_EDITOR);
-  }, [editor]);
   return null;
 }
 
@@ -10530,6 +11040,7 @@ function TreeViewPlugin() {
  * LICENSE file in the root directory of this source tree.
  *
  */
+
 const skipCollaborationInit = // @ts-ignore
 window.parent != null && window.parent.frames.right === window;
 const defaultToolbarConfig = {
@@ -10570,7 +11081,13 @@ const defaultToolbarConfig = {
   RTL: true,
   LTR: true,
   selectLang: true,
-  ai: true
+  ai: true,
+  video: true,
+  Sticky: true,
+  Poll: true,
+  Table: true,
+  Horizontal: true,
+  Collapsible: true
 };
 function Editor({
   isCollab,
@@ -10982,472 +11499,6 @@ function generateStyleString(styles) {
   return styleEntries.join('; ');
 }
 
-const StickyComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return StickyComponent$1; }));
-class StickyNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'sticky';
-  }
-
-  static clone(node) {
-    return new StickyNode(node.__x, node.__y, node.__color, node.__caption, node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    const stickyNode = new StickyNode(serializedNode.xOffset, serializedNode.yOffset, serializedNode.color);
-    const caption = serializedNode.caption;
-    const nestedEditor = stickyNode.__caption;
-    const editorState = nestedEditor.parseEditorState(caption.editorState);
-
-    if (!editorState.isEmpty()) {
-      nestedEditor.setEditorState(editorState);
-    }
-
-    return stickyNode;
-  }
-
-  constructor(x, y, color, caption, key) {
-    super(key);
-
-    _defineProperty(this, "__x", void 0);
-
-    _defineProperty(this, "__y", void 0);
-
-    _defineProperty(this, "__color", void 0);
-
-    _defineProperty(this, "__caption", void 0);
-
-    this.__x = x;
-    this.__y = y;
-    this.__caption = caption || lexical.createEditor();
-    this.__color = color;
-  }
-
-  exportJSON() {
-    return {
-      caption: this.__caption.toJSON(),
-      color: this.__color,
-      type: 'sticky',
-      version: 1,
-      xOffset: this.__x,
-      yOffset: this.__y
-    };
-  }
-
-  createDOM(config) {
-    const div = document.createElement('div');
-    div.style.display = 'contents';
-    return div;
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  setPosition(x, y) {
-    const writable = this.getWritable();
-    writable.__x = x;
-    writable.__y = y;
-    lexical.$setSelection(null);
-  }
-
-  toggleColor() {
-    const writable = this.getWritable();
-    writable.__color = writable.__color === 'pink' ? 'yellow' : 'pink';
-  }
-
-  decorate(editor, config) {
-    return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React.createElement(React.Suspense, {
-      fallback: null
-    }, /*#__PURE__*/React.createElement(StickyComponent$2, {
-      color: this.__color,
-      x: this.__x,
-      y: this.__y,
-      nodeKey: this.getKey(),
-      caption: this.__caption
-    })), document.body);
-  }
-
-  isIsolated() {
-    return true;
-  }
-
-}
-function $isStickyNode(node) {
-  return node instanceof StickyNode;
-}
-
-const cellHTMLCache = new Map();
-const cellTextContentCache = new Map();
-const emptyEditorJSON = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
-
-const plainTextEditorJSON = text => text === '' ? emptyEditorJSON : `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":${text},"type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
-
-const TableComponent$2 = /*#__PURE__*/React.lazy( // @ts-ignore
-() => Promise.resolve().then(function () { return TableComponent$1; }));
-function createUID() {
-  return Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-}
-
-function createCell(type) {
-  return {
-    colSpan: 1,
-    id: createUID(),
-    json: emptyEditorJSON,
-    type,
-    width: null
-  };
-}
-
-function createRow() {
-  return {
-    cells: [],
-    height: null,
-    id: createUID()
-  };
-}
-function extractRowsFromHTML(tableElem) {
-  const rowElems = tableElem.querySelectorAll('tr');
-  const rows = [];
-
-  for (let y = 0; y < rowElems.length; y++) {
-    const rowElem = rowElems[y];
-    const cellElems = rowElem.querySelectorAll('td,th');
-
-    if (!cellElems || cellElems.length === 0) {
-      continue;
-    }
-
-    const cells = [];
-
-    for (let x = 0; x < cellElems.length; x++) {
-      const cellElem = cellElems[x];
-      const isHeader = cellElem.nodeName === 'TH';
-      const cell = createCell(isHeader ? 'header' : 'normal');
-      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
-      cells.push(cell);
-    }
-
-    const row = createRow();
-    row.cells = cells;
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function convertTableElement(domNode) {
-  const rowElems = domNode.querySelectorAll('tr');
-
-  if (!rowElems || rowElems.length === 0) {
-    return null;
-  }
-
-  const rows = [];
-
-  for (let y = 0; y < rowElems.length; y++) {
-    const rowElem = rowElems[y];
-    const cellElems = rowElem.querySelectorAll('td,th');
-
-    if (!cellElems || cellElems.length === 0) {
-      continue;
-    }
-
-    const cells = [];
-
-    for (let x = 0; x < cellElems.length; x++) {
-      const cellElem = cellElems[x];
-      const isHeader = cellElem.nodeName === 'TH';
-      const cell = createCell(isHeader ? 'header' : 'normal');
-      cell.json = plainTextEditorJSON(JSON.stringify(cellElem.innerText.replace(/\n/g, ' ')));
-      cells.push(cell);
-    }
-
-    const row = createRow();
-    row.cells = cells;
-    rows.push(row);
-  }
-
-  return {
-    node: $createTableNode(rows)
-  };
-}
-
-function exportTableCellsToHTML(rows, rect) {
-  const table = document.createElement('table');
-  const colGroup = document.createElement('colgroup');
-  const tBody = document.createElement('tbody');
-  const firstRow = rows[0];
-
-  for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : firstRow.cells.length); x++) {
-    const col = document.createElement('col');
-    colGroup.append(col);
-  }
-
-  for (let y = rect != null ? rect.startY : 0; y < (rect != null ? rect.endY + 1 : rows.length); y++) {
-    const row = rows[y];
-    const cells = row.cells;
-    const rowElem = document.createElement('tr');
-
-    for (let x = rect != null ? rect.startX : 0; x < (rect != null ? rect.endX + 1 : cells.length); x++) {
-      const cell = cells[x];
-      const cellElem = document.createElement(cell.type === 'header' ? 'th' : 'td');
-      cellElem.innerHTML = cellHTMLCache.get(cell.json) || '';
-      rowElem.appendChild(cellElem);
-    }
-
-    tBody.appendChild(rowElem);
-  }
-
-  table.appendChild(colGroup);
-  table.appendChild(tBody);
-  return table;
-}
-class TableNode extends lexical.DecoratorNode {
-  static getType() {
-    return 'tablesheet';
-  }
-
-  static clone(node) {
-    return new TableNode(Array.from(node.__rows), node.__key);
-  }
-
-  static importJSON(serializedNode) {
-    return $createTableNode(serializedNode.rows);
-  }
-
-  exportJSON() {
-    return {
-      rows: this.__rows,
-      type: 'tablesheet',
-      version: 1
-    };
-  }
-
-  static importDOM() {
-    return {
-      table: _node => ({
-        conversion: convertTableElement,
-        priority: 0
-      })
-    };
-  }
-
-  exportDOM() {
-    return {
-      element: exportTableCellsToHTML(this.__rows)
-    };
-  }
-
-  constructor(rows, key) {
-    super(key);
-
-    _defineProperty(this, "__rows", void 0);
-
-    this.__rows = rows || [];
-  }
-
-  createDOM() {
-    return document.createElement('div');
-  }
-
-  updateDOM() {
-    return false;
-  }
-
-  mergeRows(startX, startY, mergeRows) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const endY = Math.min(rows.length, startY + mergeRows.length);
-
-    for (let y = startY; y < endY; y++) {
-      const row = rows[y];
-      const mergeRow = mergeRows[y - startY];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const mergeCells = mergeRow.cells;
-      const endX = Math.min(cells.length, startX + mergeCells.length);
-
-      for (let x = startX; x < endX; x++) {
-        const cell = cells[x];
-        const mergeCell = mergeCells[x - startX];
-        const cellClone = { ...cell,
-          json: mergeCell.json,
-          type: mergeCell.type
-        };
-        cellsClone[x] = cellClone;
-      }
-
-      rows[y] = rowClone;
-    }
-  }
-
-  updateCellJSON(x, y, json) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const row = rows[y];
-    const cells = row.cells;
-    const cell = cells[x];
-    const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
-      json
-    };
-    const rowClone = { ...row,
-      cells: cellsClone
-    };
-    cellsClone[x] = cellClone;
-    rows[y] = rowClone;
-  }
-
-  updateCellType(x, y, type) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const row = rows[y];
-    const cells = row.cells;
-    const cell = cells[x];
-    const cellsClone = Array.from(cells);
-    const cellClone = { ...cell,
-      type
-    };
-    const rowClone = { ...row,
-      cells: cellsClone
-    };
-    cellsClone[x] = cellClone;
-    rows[y] = rowClone;
-  }
-
-  insertColumnAt(x) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const type = (cells[x] || cells[x - 1]).type;
-      cellsClone.splice(x, 0, createCell(type));
-      rows[y] = rowClone;
-    }
-  }
-
-  deleteColumnAt(x) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      cellsClone.splice(x, 1);
-      rows[y] = rowClone;
-    }
-  }
-
-  addColumns(count) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      const type = cells[cells.length - 1].type;
-
-      for (let x = 0; x < count; x++) {
-        cellsClone.push(createCell(type));
-      }
-
-      rows[y] = rowClone;
-    }
-  }
-
-  insertRowAt(y) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const prevRow = rows[y] || rows[y - 1];
-    const cellCount = prevRow.cells.length;
-    const row = createRow();
-
-    for (let x = 0; x < cellCount; x++) {
-      const cell = createCell(prevRow.cells[x].type);
-      row.cells.push(cell);
-    }
-
-    rows.splice(y, 0, row);
-  }
-
-  deleteRowAt(y) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    rows.splice(y, 1);
-  }
-
-  addRows(count) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-    const prevRow = rows[rows.length - 1];
-    const cellCount = prevRow.cells.length;
-
-    for (let y = 0; y < count; y++) {
-      const row = createRow();
-
-      for (let x = 0; x < cellCount; x++) {
-        const cell = createCell(prevRow.cells[x].type);
-        row.cells.push(cell);
-      }
-
-      rows.push(row);
-    }
-  }
-
-  updateColumnWidth(x, width) {
-    const self = this.getWritable();
-    const rows = self.__rows;
-
-    for (let y = 0; y < rows.length; y++) {
-      const row = rows[y];
-      const cells = row.cells;
-      const cellsClone = Array.from(cells);
-      const rowClone = { ...row,
-        cells: cellsClone
-      };
-      cellsClone[x].width = width;
-      rows[y] = rowClone;
-    }
-  }
-
-  decorate(_, config) {
-    return /*#__PURE__*/React.createElement(React.Suspense, null, /*#__PURE__*/React.createElement(TableComponent$2, {
-      nodeKey: this.__key,
-      theme: config.theme,
-      rows: this.__rows
-    }));
-  }
-
-  isInline() {
-    return false;
-  }
-
-}
-function $isTableNode(node) {
-  return node instanceof TableNode;
-}
-function $createTableNode(rows) {
-  return new TableNode(rows);
-}
-
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -11455,7 +11506,8 @@ function $createTableNode(rows) {
  * LICENSE file in the root directory of this source tree.
  *
  */
-const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode, PdfNode, OfficeNode];
+const PlaygroundNodes = [richText.HeadingNode, list.ListNode, list.ListItemNode, richText.QuoteNode, code.CodeNode, TableNode, table.TableNode, table.TableCellNode, table.TableRowNode, hashtag.HashtagNode, code.CodeHighlightNode, link.AutoLinkNode, link.LinkNode, overflow.OverflowNode, PollNode, StickyNode, ImageNode, MentionNode, EmojiNode, AutocompleteNode, KeywordNode, LexicalHorizontalRuleNode.HorizontalRuleNode, TweetNode, YouTubeNode, FigmaNode, mark.MarkNode, CollapsibleContainerNode, CollapsibleContentNode, CollapsibleTitleNode, ExtendedTextNode, VideoNode, PdfNode, OfficeNode // ExcalidrawNode
+];
 var PlaygroundNodes$1 = PlaygroundNodes;
 
 /* eslint-disable header/header */
@@ -27512,183 +27564,6 @@ var emojiList$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-
-function getTotalVotes(options) {
-  return options.reduce((totalVotes, next) => {
-    return totalVotes + next.votes.length;
-  }, 0);
-}
-
-function PollOptionComponent({
-  option,
-  index,
-  options,
-  totalVotes,
-  withPollNode
-}) {
-  const {
-    clientID
-  } = LexicalCollaborationContext.useCollaborationContext();
-  const checkboxRef = React.useRef(null);
-  const votesArray = option.votes;
-  const checkedIndex = votesArray.indexOf(clientID);
-  const checked = checkedIndex !== -1;
-  const votes = votesArray.length;
-  const text = option.text;
-  return /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionContainer"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
-  }, /*#__PURE__*/React.createElement("input", {
-    ref: checkboxRef,
-    className: "PollNode__optionCheckbox",
-    type: "checkbox",
-    onChange: e => {
-      withPollNode(node => {
-        node.toggleVote(option, clientID);
-      });
-    },
-    checked: checked
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputWrapper"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__optionInputVotes",
-    style: {
-      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "PollNode__optionInputVotesCount"
-  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
-    className: "PollNode__optionInput",
-    type: "text",
-    value: text,
-    onChange: e => {
-      const target = e.target;
-      const value = target.value;
-      const selectionStart = target.selectionStart;
-      const selectionEnd = target.selectionEnd;
-      withPollNode(node => {
-        node.setOptionText(option, value);
-      }, () => {
-        target.selectionStart = selectionStart;
-        target.selectionEnd = selectionEnd;
-      });
-    },
-    placeholder: `Option ${index + 1}`
-  })), /*#__PURE__*/React.createElement("button", {
-    disabled: options.length < 3,
-    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
-    "arial-label": "Remove",
-    onClick: () => {
-      withPollNode(node => {
-        node.deleteOption(option);
-      });
-    }
-  }));
-}
-
-function PollComponent({
-  question,
-  options,
-  nodeKey
-}) {
-  const [editor] = LexicalComposerContext.useLexicalComposerContext();
-  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
-  const [selection, setSelection] = React.useState(null);
-  const ref = React.useRef(null);
-  const onDelete = React.useCallback(payload => {
-    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
-      const event = payload;
-      event.preventDefault();
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isPollNode(node)) {
-        node.remove();
-      }
-
-      setSelected(false);
-    }
-
-    return false;
-  }, [isSelected, nodeKey, setSelected]);
-  React.useEffect(() => {
-    return utils.mergeRegister(editor.registerUpdateListener(({
-      editorState
-    }) => {
-      setSelection(editorState.read(() => lexical.$getSelection()));
-    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
-      const event = payload;
-
-      if (event.target === ref.current) {
-        if (!event.shiftKey) {
-          clearSelection();
-        }
-
-        setSelected(!isSelected);
-        return true;
-      }
-
-      return false;
-    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
-  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
-
-  const withPollNode = (cb, onUpdate) => {
-    editor.update(() => {
-      const node = lexical.$getNodeByKey(nodeKey);
-
-      if ($isPollNode(node)) {
-        cb(node);
-      }
-    }, {
-      onUpdate
-    });
-  };
-
-  const addOption = () => {
-    withPollNode(node => {
-      node.addOption(createPollOption());
-    });
-  };
-
-  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
-  return /*#__PURE__*/React.createElement("div", {
-    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
-    ref: ref
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__inner"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "PollNode__heading"
-  }, question), options.map((option, index) => {
-    const key = option.uid;
-    return /*#__PURE__*/React.createElement(PollOptionComponent, {
-      key: key,
-      withPollNode: withPollNode,
-      option: option,
-      index: index,
-      options: options,
-      totalVotes: totalVotes
-    });
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "PollNode__footer"
-  }, /*#__PURE__*/React.createElement(Button, {
-    onClick: addOption,
-    small: true
-  }, "Add Option"))));
-}
-
-var PollComponent$1 = {
-  __proto__: null,
-  'default': PollComponent
-};
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
 const theme = { ...baseTheme,
   paragraph: 'StickyEditorTheme__paragraph'
 };
@@ -27924,13 +27799,175 @@ var StickyComponent$1 = {
  * LICENSE file in the root directory of this source tree.
  *
  */
-lexical.createCommand('INSERT_NEW_TABLE_COMMAND');
-const CellContext = /*#__PURE__*/React.createContext({
-  cellEditorConfig: null,
-  cellEditorPlugins: null,
-  set: () => {// Empty
-  }
-});
+
+function getTotalVotes(options) {
+  return options.reduce((totalVotes, next) => {
+    return totalVotes + next.votes.length;
+  }, 0);
+}
+
+function PollOptionComponent({
+  option,
+  index,
+  options,
+  totalVotes,
+  withPollNode
+}) {
+  const {
+    clientID
+  } = LexicalCollaborationContext.useCollaborationContext();
+  const checkboxRef = React.useRef(null);
+  const votesArray = option.votes;
+  const checkedIndex = votesArray.indexOf(clientID);
+  const checked = checkedIndex !== -1;
+  const votes = votesArray.length;
+  const text = option.text;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionContainer"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: joinClasses('PollNode__optionCheckboxWrapper', checked && 'PollNode__optionCheckboxChecked')
+  }, /*#__PURE__*/React.createElement("input", {
+    ref: checkboxRef,
+    className: "PollNode__optionCheckbox",
+    type: "checkbox",
+    onChange: e => {
+      withPollNode(node => {
+        node.toggleVote(option, clientID);
+      });
+    },
+    checked: checked
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputWrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__optionInputVotes",
+    style: {
+      width: `${votes === 0 ? 0 : votes / totalVotes * 100}%`
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "PollNode__optionInputVotesCount"
+  }, votes > 0 && (votes === 1 ? '1 vote' : `${votes} votes`)), /*#__PURE__*/React.createElement("input", {
+    className: "PollNode__optionInput",
+    type: "text",
+    value: text,
+    onChange: e => {
+      const target = e.target;
+      const value = target.value;
+      const selectionStart = target.selectionStart;
+      const selectionEnd = target.selectionEnd;
+      withPollNode(node => {
+        node.setOptionText(option, value);
+      }, () => {
+        target.selectionStart = selectionStart;
+        target.selectionEnd = selectionEnd;
+      });
+    },
+    placeholder: `Option ${index + 1}`
+  })), /*#__PURE__*/React.createElement("button", {
+    disabled: options.length < 3,
+    className: joinClasses('PollNode__optionDelete', options.length < 3 && 'PollNode__optionDeleteDisabled'),
+    "arial-label": "Remove",
+    onClick: () => {
+      withPollNode(node => {
+        node.deleteOption(option);
+      });
+    }
+  }));
+}
+
+function PollComponent({
+  question,
+  options,
+  nodeKey
+}) {
+  const [editor] = LexicalComposerContext.useLexicalComposerContext();
+  const totalVotes = React.useMemo(() => getTotalVotes(options), [options]);
+  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection.useLexicalNodeSelection(nodeKey);
+  const [selection, setSelection] = React.useState(null);
+  const ref = React.useRef(null);
+  const onDelete = React.useCallback(payload => {
+    if (isSelected && lexical.$isNodeSelection(lexical.$getSelection())) {
+      const event = payload;
+      event.preventDefault();
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isPollNode(node)) {
+        node.remove();
+      }
+
+      setSelected(false);
+    }
+
+    return false;
+  }, [isSelected, nodeKey, setSelected]);
+  React.useEffect(() => {
+    return utils.mergeRegister(editor.registerUpdateListener(({
+      editorState
+    }) => {
+      setSelection(editorState.read(() => lexical.$getSelection()));
+    }), editor.registerCommand(lexical.CLICK_COMMAND, payload => {
+      const event = payload;
+
+      if (event.target === ref.current) {
+        if (!event.shiftKey) {
+          clearSelection();
+        }
+
+        setSelected(!isSelected);
+        return true;
+      }
+
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_DELETE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW), editor.registerCommand(lexical.KEY_BACKSPACE_COMMAND, onDelete, lexical.COMMAND_PRIORITY_LOW));
+  }, [clearSelection, editor, isSelected, nodeKey, onDelete, setSelected]);
+
+  const withPollNode = (cb, onUpdate) => {
+    editor.update(() => {
+      const node = lexical.$getNodeByKey(nodeKey);
+
+      if ($isPollNode(node)) {
+        cb(node);
+      }
+    }, {
+      onUpdate
+    });
+  };
+
+  const addOption = () => {
+    withPollNode(node => {
+      node.addOption(createPollOption());
+    });
+  };
+
+  const isFocused = lexical.$isNodeSelection(selection) && isSelected;
+  return /*#__PURE__*/React.createElement("div", {
+    className: `PollNode__container ${isFocused ? 'focused' : ''}`,
+    ref: ref
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__inner"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "PollNode__heading"
+  }, question), options.map((option, index) => {
+    const key = option.uid;
+    return /*#__PURE__*/React.createElement(PollOptionComponent, {
+      key: key,
+      withPollNode: withPollNode,
+      option: option,
+      index: index,
+      options: options,
+      totalVotes: totalVotes
+    });
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "PollNode__footer"
+  }, /*#__PURE__*/React.createElement(Button, {
+    onClick: addOption,
+    small: true
+  }, "Add Option"))));
+}
+
+var PollComponent$1 = {
+  __proto__: null,
+  'default': PollComponent
+};
 
 /**
  * Copyright (c) Meta Platforms, Inc. and affiliates.

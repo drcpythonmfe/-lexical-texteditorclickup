@@ -79,16 +79,9 @@ Add emojis to give your content some flair!
 ![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image13.png)
 
 
-## AI
-![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image18.png)
 
-# You can use your own AI model implemented in a text editor.
+![image info](https://raw.githubusercontent.com/drcpythonmfe/-lexical-texteditorclickup/refs/heads/main/image/image22.png)
 
-
-const handleAIData = async (data: string): Promise<any> => {
-  await delay(500);  // api call
-  return "AI Data";
-};
 
 
 
@@ -212,6 +205,12 @@ const toolbarConfig ={
   RTL:true,
   LTR:true,
   ai:true  // handleAIData
+  video:true,
+  Sticky:true,
+  Poll:true,
+  Table:true,
+  Horizontal:true,
+  Collapsible:true,
 }
 
 
